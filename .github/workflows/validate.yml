@@ -26,6 +26,7 @@ jobs:
           bash tests/network-disk-test.sh
           python3 tests/preflight-test.py
           python3 tests/install-update-test.py
+          python3 tests/uninstall-test.py
       - name: Build and verify package and CA metadata
         run: |
           python3 build/package.py
