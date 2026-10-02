@@ -1,0 +1,33 @@
+name: Validate plugin
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell and PHP syntax
+        run: |
+          bash -n src/ugreen-pro-leds
+          for file in src/*.sh build/*.sh; do bash -n "$file"; done
+          for file in src/web/*.php; do php -l "$file"; done
+      - name: Settings and native CSRF regression
+        run: |
+          php tests/settings-test.php
+          php tests/csrf-test.php
+          php tests/native-csrf-test.php
+      - name: Monitor and installer regression
+        run: |
+          bash tests/monitor-test.sh
+          bash tests/network-disk-test.sh
+          python3 tests/preflight-test.py
+          python3 tests/install-update-test.py
+      - name: Build and verify package and CA metadata
+        run: |
+          python3 build/package.py
+          python3 tests/package-test.py
+          python3 tests/ca-metadata-test.py
