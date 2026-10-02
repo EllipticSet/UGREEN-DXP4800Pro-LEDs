@@ -17,7 +17,18 @@ if [[ -r /run/ugreen-pro-leds.owned-bus ]]; then
   fi
   rm -f /run/ugreen-pro-leds.owned-bus
 fi
-modprobe -r led-ugreen 2>/dev/null || true
+# The packaged module is loaded with insmod, outside the modprobe index.
+# Keep the installed uninstaller available if unloading fails, so removal can retry.
+if [[ -d /sys/module/led_ugreen ]]; then
+  if ! rmmod led_ugreen; then
+    echo 'LED module could not unload. Stop other LED users and retry removal.' >&2
+    exit 1
+  fi
+  if [[ -d /sys/module/led_ugreen ]]; then
+    echo 'LED module is still loaded; removal incomplete.' >&2
+    exit 1
+  fi
+fi
 # Remove only our package; shared i2c-tools and all user settings are retained.
-removepkg ugreen-pro-leds-2026.10.02.3-x86_64-1 >/dev/null
+removepkg ugreen-pro-leds-2026.10.02.4-x86_64-1 >/dev/null
 printf 'Removed. Settings retained in %s.\n' "$plugin"
