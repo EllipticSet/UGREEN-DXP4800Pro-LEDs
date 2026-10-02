@@ -1,6 +1,6 @@
 # Validation report — October 2, 2026
 
-This release passed package integrity and English-content checks. PHP regression results below are from the preceding release; PHP code is unchanged. A repeat PHP-WASM run was blocked by local loopback permissions.
+The 2026.10.02.3 public GitHub Actions run passed syntax, PHP configuration/CSRF, monitor, update/rollback, package and CA metadata tests. Version 2026.10.02.4 changes module removal; its targeted regression and package checks are described below.
 
 Local environment: macOS arm64, Bash 5.2 and PHP-WASM CLI 3.1.56. The Linux x86_64 module was inspected, not loaded locally.
 
@@ -24,3 +24,9 @@ Not yet verified: this newly packaged release on the NAS, reboot startup, shutdo
 ## Public beta packaging — 2026.10.02.3
 
 The installer now supports upgrades using Slackware upgradepkg, with a runtime snapshot and rollback on startup failure. Simulated update/rollback passed locally. GitHub/CA URLs, profile, wrapper, root license and beta compatibility metadata are checked by tests/ca-metadata-test.py. Actual update, reboot, shutdown and removal on the NAS are pending before submission.
+
+## Hardware lifecycle tests and removal fix — 2026.10.02.4
+
+User-confirmed on October 2: the 2026.10.02.3 update preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
+
+Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands. The corrected removal/reinstallation flow still needs verification on the NAS; fault indications remain untested.

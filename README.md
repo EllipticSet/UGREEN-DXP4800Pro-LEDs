@@ -1,8 +1,10 @@
-# UGREEN DXP4800 Pro LEDs — 2026.10.02.3
+# UGREEN DXP4800 Pro LEDs — 2026.10.02.4
 
 Experimental plugin for **Unraid 7.3.2, kernel 6.18.38-Unraid, DMI model DXP4800 Pro**. This is not an official UGREEN, ich777 or flybrys release.
 
 ## Included fixes
+
+- Unloads the manually loaded LED module with `rmmod` during removal and reports unload failures instead of hiding them.
 
 - Uses Unraid's native CSRF validation for Apply settings. Unraid consumes the token before executing the page, so the plugin does not compare the removed token a second time. Saving is blocked if the native guard is unavailable.
 - Uses a compact Plugins description and a normal-size bold title. The full guide is stored separately at `/usr/local/share/ugreen-pro-leds/USER-GUIDE.md`.
@@ -88,7 +90,7 @@ Failed installation attempts try to remove the newly installed monitor and prese
 
 The user confirmed on a DXP4800 Pro with this kernel: installation, monitor startup, solid white Power, white LAN activity on br0, successful Apply settings after the CSRF fix, correct four-bay mapping, disk read pulses and white standby breathing.
 
-Shutdown indication, startup after reboot, actual hardware-fault indications and this freshly packaged English release have not been confirmed on the NAS. Local package, syntax, configuration and CSRF tests are described in `TEST-REPORT.md`.
+The 2026.10.02.3 update retained settings; Apply restarted the monitor; reboot and full shutdown followed by power-on started it automatically. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, detached the I2C client and retained settings, but left the module loaded because modprobe could not find it. Manual rmmod succeeded. Version 2026.10.02.4 corrects module removal; its removal/reinstallation flow still needs hardware verification. Actual hardware-fault indications remain untested. Local package, syntax, configuration and CSRF tests are described in `TEST-REPORT.md`.
 
 ## Sources and licensing
 
