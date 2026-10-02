@@ -5,7 +5,7 @@ import base64, hashlib, io, os, shutil, tarfile, tempfile, xml.etree.ElementTree
 ROOT=Path(__file__).resolve().parent.parent
 DIST=ROOT/'dist'
 NAME='UGREEN-DXP4800Pro-LEDs'
-PKG='ugreen-pro-leds-2026.10.02.3-x86_64-1'
+PKG='ugreen-pro-leds-2026.10.02.4-x86_64-1'
 KERNEL='6.18.38-Unraid'
 def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def archive(stage,out):
@@ -55,8 +55,8 @@ printf '%s  %s\\n' "'''+digest(bundle)+'''" "$scratch/bundle.tar.xz" | sha256sum
 tar -xJf "$scratch/bundle.tar.xz" -C "$scratch"
 "$scratch/install.sh" "$scratch"
 '''
- plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues','version':'2026.10.02.3','icon':'lightbulb-o','launch':f'Settings/{NAME}','min':'7.3.2','max':'7.3.2'})
- ET.SubElement(plg,'CHANGES').text='\n###2026.10.02.3\n- Public GitHub and Community Applications metadata; preserve settings on updates with rollback.\n- English plugin listing and documentation; compact title and description.\n- Keep the native Unraid CSRF fix.\n- Experimental DXP4800 Pro build: Intel legacy I801, isolated workers, native settings, offline installer.\n'
+ plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues','version':'2026.10.02.4','icon':'lightbulb-o','launch':f'Settings/{NAME}','min':'7.3.2','max':'7.3.2'})
+ ET.SubElement(plg,'CHANGES').text='\n###2026.10.02.4\n- Remove the manually loaded LED module with rmmod; report unload failures.\n\n###2026.10.02.3\n- Public GitHub and Community Applications metadata; preserve settings on updates with rollback.\n- English plugin listing and documentation; compact title and description.\n- Keep the native Unraid CSRF fix.\n- Experimental DXP4800 Pro build: Intel legacy I801, isolated workers, native settings, offline installer.\n'
  desc=ET.SubElement(plg,'FILE',{'Name':f'/usr/local/emhttp/plugins/{NAME}/README.md'})
  # Plugin manager can read the description; installation will replace it with full documentation.
  # Do not install a description ahead of the preflight checks.
