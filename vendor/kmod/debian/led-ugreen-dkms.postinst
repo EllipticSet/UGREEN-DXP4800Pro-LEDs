@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+# Create module autoload configuration
+if [ "$1" = "configure" ]; then
+    cat > /etc/modules-load.d/led-ugreen.conf << 'EOFINNER'
+# UGREEN LED driver modules
+i2c-dev
+ledtrig-oneshot
+ledtrig-netdev
+EOFINNER
+
+    echo "UGREEN LED kernel module configured for autoload."
+    echo "The ugreen-probe-leds service will load led-ugreen with model-specific options."
+fi
+
+#DEBHELPER#
+
+exit 0
