@@ -1,0 +1,17 @@
+*.o
+dx4600_leds_cli
+ugreen_leds_cli
+run.sh
+zpool_leds.sh
+
+*.mod.c
+*.o
+*.cmd
+*.mod
+*.d
+modules.order
+compile_commands.json
+
+.cache
+Module.symvers
+release
