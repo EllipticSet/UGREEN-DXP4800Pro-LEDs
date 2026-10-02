@@ -1,0 +1,8 @@
+Menu="OtherSettings"
+Type="xmenu"
+Title="UGREEN DXP4800 Pro LEDs"
+Icon="lightbulb-o"
+Tag="lightbulb-o"
+Markdown="false"
+---
+<?php require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings.php'; ?>
