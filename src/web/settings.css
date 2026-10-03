@@ -1,0 +1,39 @@
+/* SPDX-License-Identifier: MIT. Inherit Unraid's active theme and native controls. */
+.nas-front-settings { max-width: 1380px; margin: 28px auto; }
+.nas-front-settings .nas-front-layout { display: grid; grid-template-columns: minmax(260px, 440px) minmax(400px, 1fr); gap: clamp(24px, 4vw, 64px); align-items: start; }
+.nas-front-settings .nas-front-figure { margin: 0; padding: 12px 0; }
+.nas-front-settings .nas-front-image { position: relative; width: 100%; }
+.nas-front-settings .nas-front-image img { display: block; width: 100%; height: auto; border-radius: 5%; }
+.nas-front-settings figcaption { text-align: center; margin-top: 20px; }
+.nas-front-settings figcaption strong { display: block; font-size: 1.15em; }
+.nas-front-settings figcaption span { display: block; opacity: .65; margin-top: 6px; }
+.nas-front-settings .nas-led-marker { position: absolute; top: 88.48%; width: 2.5%; height: 2.5%; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; }
+.nas-front-settings .nas-led-power { left: 15.1%; width: 6%; height: 3.6%; border-radius: 35%; }
+.nas-front-settings .nas-led-lan { left: 25.9%; }
+.nas-front-settings .nas-led-disk1 { left: 29.5%; }
+.nas-front-settings .nas-led-disk2 { left: 33.2%; }
+.nas-front-settings .nas-led-disk3 { left: 36.8%; }
+.nas-front-settings .nas-led-disk4 { left: 40.4%; }
+.nas-front-settings .nas-led-marker.is-highlighted { border: 2px solid #ff8c28; background: #ff8c2850; box-shadow: 0 0 0 5px #ff8c2830, 0 0 18px 6px #ff8c2850; }
+.nas-front-settings .nas-front-intro { margin: 8px 0 26px; opacity: .8; line-height: 1.5; }
+.nas-front-settings .field { display: grid; grid-template-columns: minmax(155px, 220px) minmax(0, 1fr); gap: 6px 20px; margin: 20px 0; align-items: center; }
+.nas-front-settings .field label { font-weight: 600; text-align: right; }
+.nas-front-settings .field input:not([type=color]), .nas-front-settings .field select { box-sizing: border-box; width: 100%; min-width: 0; }
+.nas-front-settings .field input[type=color] { width: 76px; height: 36px; padding: 3px; cursor: pointer; }
+.nas-front-settings .help, .nas-front-settings .field-error { grid-column: 2; font-size: .9em; line-height: 1.5; }
+.nas-front-settings .help { opacity: .65; }
+.nas-front-settings .field-error, .nas-front-settings .notice.error { color: #e8543f; }
+.nas-front-settings .notice.success { color: #679f35; }
+.nas-front-settings .nas-front-note { margin: 26px 0; padding: 12px 16px; border-left: 3px solid #ff8c28; line-height: 1.6; }
+.nas-front-settings .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 30px 0 0; }
+.nas-front-settings .actions button { margin: 0; }
+@media (max-width: 900px) {
+  .nas-front-settings .nas-front-layout { grid-template-columns: 1fr; gap: 20px; }
+  .nas-front-settings .nas-front-figure { width: min(100%, 340px); margin: 0 auto; }
+}
+@media (max-width: 550px) {
+  .nas-front-settings { margin: 18px 0; }
+  .nas-front-settings .field { grid-template-columns: 1fr; }
+  .nas-front-settings .field label { text-align: left; }
+  .nas-front-settings .help, .nas-front-settings .field-error { grid-column: 1; }
+}

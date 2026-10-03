@@ -57,7 +57,8 @@ check(isset($errors['NETWORK_INTERFACE'], $errors['POWER_COLOR'], $errors['CONNE
 $_SERVER['REQUEST_METHOD'] = 'GET';
 $var = ['csrf_token' => 'test-token'];
 ob_start();
-require __DIR__ . '/../src/web/settings.php';
+require_once __DIR__ . '/../src/web/settings-controller.php';
+foreach (array_keys(ugreen_pro_groups()) as $ugreenTab) require __DIR__ . '/../src/web/settings.php';
 $html = ob_get_clean();
 check(substr_count($html, 'type="color"') === 5, 'Five native colour pickers must render.');
 check(str_contains($html, 'name="DISK_ACTIVITY_STYLE"'), 'Activity style selector must render.');

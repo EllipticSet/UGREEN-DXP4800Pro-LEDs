@@ -1,0 +1,6 @@
+Menu="UGREEN-DXP4800Pro-LEDs:1"
+Title="Power LED"
+Tag="power-off"
+Markdown="false"
+---
+<?php $ugreenTab = 'Power LED'; require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings.php'; ?>

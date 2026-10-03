@@ -1,0 +1,6 @@
+Menu="UGREEN-DXP4800Pro-LEDs:2"
+Title="LAN LED"
+Tag="exchange"
+Markdown="false"
+---
+<?php $ugreenTab = 'LAN LED'; require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings.php'; ?>

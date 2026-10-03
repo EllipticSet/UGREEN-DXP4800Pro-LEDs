@@ -18,6 +18,7 @@ jobs:
       - name: Settings and native CSRF regression
         run: |
           php tests/settings-test.php
+          php tests/tab-settings-test.php
           php tests/csrf-test.php
           php tests/native-csrf-test.php
       - name: Monitor and installer regression
