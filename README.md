@@ -22,7 +22,7 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 
 ## Settings screenshots
 
-Interface previews using the native Unraid tab renderer and a simulated dark theme. The installed page inherits your active Unraid theme; verification of this update on the NAS is still pending. Click any preview to open the full-size screenshot.
+Screenshots captured directly from the plugin running on Unraid 7.3.2 in Safari. The Settings page follows the active Unraid theme. Click any screenshot to open it at full size.
 
 | Power LED | LAN LED |
 | --- | --- |
@@ -42,7 +42,11 @@ Interface previews using the native Unraid tab renderer and a simulated dark the
 <details>
 <summary>Mobile preview</summary>
 
-<a href="docs/screenshots/NAS-Front-LEDs-mobile.jpg"><img src="docs/screenshots/NAS-Front-LEDs-mobile.jpg" alt="Drives LEDs settings at 390px, with the front-panel image above the controls" width="200"></a>
+Live NAS page captured in Safari responsive mode at 402 × 874: front panel and controls shown in two screenshots.
+
+<a href="docs/screenshots/NAS-Front-LEDs-mobile.jpg"><img src="docs/screenshots/NAS-Front-LEDs-mobile.jpg" alt="Live Drives LEDs page in Safari responsive mode at 402px" width="200"></a>
+
+<a href="docs/screenshots/NAS-Front-LEDs-mobile-controls.jpg"><img src="docs/screenshots/NAS-Front-LEDs-mobile-controls.jpg" alt="Live Drives LEDs controls in Safari responsive mode" width="200"></a>
 
 </details>
 
