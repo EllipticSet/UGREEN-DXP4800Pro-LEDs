@@ -1,4 +1,4 @@
-**NAS Front LEDs**
+**UGREEN DXP4800 Pro LEDs**
 
 Controls the Power, LAN and four drive-bay LEDs on Unraid, with configurable colours, disk activity pulses and standby breathing.
 

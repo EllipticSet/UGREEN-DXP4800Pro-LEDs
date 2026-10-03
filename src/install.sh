@@ -2,9 +2,9 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-2026.10.03.5-x86_64-1
+package=ugreen-pro-leds-2026.10.03.6-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
-echo 'Installing NAS Front LEDs'
+echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"
 [[ $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid/led-ugreen.ko") == '6.18.38-Unraid '* ]] || { echo 'Wrong module release.' >&2; exit 1; }
 mkdir -p "$plugin"

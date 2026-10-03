@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="icon.svg" alt="NAS Front LEDs logo" width="150">
+<img src="icon.svg" alt="UGREEN DXP4800 Pro LEDs logo" width="150">
 
-<h1>NAS Front LEDs</h1>
+<h1>UGREEN DXP4800 Pro LEDs</h1>
 
 <p><strong>Front-panel LED control for the UGREEN DXP4800 Pro running <a href="https://unraid.net/">Unraid</a>.</strong></p>
 
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
-  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.5"></a>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.6"></a>
   <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
@@ -90,7 +90,7 @@ An older version of this same plugin can be updated directly. Existing settings 
 /boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg
 ```
 
-The public name is **NAS Front LEDs**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
+The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **NAS Front LEDs**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
 
 Community Applications metadata is included in this repository; listing requires approval.
 
