@@ -8,7 +8,7 @@
 
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
-  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.4"></a>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.5"></a>
   <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
@@ -22,20 +22,27 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 
 ## Settings screenshots
 
-Interface previews using the native Unraid tab renderer and a simulated dark theme. The installed page inherits your active Unraid theme; verification of this update on the NAS is still pending.
+Interface previews using the native Unraid tab renderer and a simulated dark theme. The installed page inherits your active Unraid theme; verification of this update on the NAS is still pending. Click any preview to open the full-size screenshot.
 
 | Power LED | LAN LED |
 | --- | --- |
-| ![Power LED settings](docs/screenshots/NAS-Front-LEDs-power.jpg) | ![LAN LED settings](docs/screenshots/NAS-Front-LEDs-lan.jpg) |
+| <a href="docs/screenshots/NAS-Front-LEDs-power.jpg"><img src="docs/screenshots/NAS-Front-LEDs-power.jpg" alt="Power LED settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-lan.jpg"><img src="docs/screenshots/NAS-Front-LEDs-lan.jpg" alt="LAN LED settings" width="260"></a> |
 
 | Drives LEDs | Advanced Settings |
 | --- | --- |
-| ![Drives LEDs settings](docs/screenshots/NAS-Front-LEDs-drives.jpg) | ![Advanced Settings](docs/screenshots/NAS-Front-LEDs-advanced.jpg) |
+| <a href="docs/screenshots/NAS-Front-LEDs-drives.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives.jpg" alt="Drives LEDs settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-advanced.jpg"><img src="docs/screenshots/NAS-Front-LEDs-advanced.jpg" alt="Advanced Settings" width="260"></a> |
+
+<details>
+<summary>Collapsed setup guide</summary>
+
+<a href="docs/screenshots/NAS-Front-LEDs-drives-collapsed.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives-collapsed.jpg" alt="Drive setup guide collapsed with Show guide control" width="260"></a>
+
+</details>
 
 <details>
 <summary>Mobile preview</summary>
 
-<img src="docs/screenshots/NAS-Front-LEDs-mobile.jpg" alt="Drives LEDs settings at 390px, with the front-panel image above the controls" width="320">
+<a href="docs/screenshots/NAS-Front-LEDs-mobile.jpg"><img src="docs/screenshots/NAS-Front-LEDs-mobile.jpg" alt="Drives LEDs settings at 390px, with the front-panel image above the controls" width="200"></a>
 
 </details>
 

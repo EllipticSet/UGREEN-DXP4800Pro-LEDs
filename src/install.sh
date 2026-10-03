@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-2026.10.03.4-x86_64-1
+package=ugreen-pro-leds-2026.10.03.5-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing NAS Front LEDs'
 "$root/preflight.sh"

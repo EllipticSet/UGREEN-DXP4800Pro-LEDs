@@ -20,7 +20,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=2026.10.03.4">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=2026.10.03.5">
 <?php endif; ?>
 <div class="nas-front-settings" data-led-tab="<?= $tabKey ?>">
   <div class="nas-front-layout">
@@ -42,13 +42,20 @@ $tabDescriptions = [
       <?php endif; ?>
       <?php if ($tabKey === 'drives'): ?>
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
-          <strong>First-time setup: drive LEDs are unmanaged</strong>
+          <div class="nas-guide-header">
+            <strong>First-time setup: drive LEDs are unmanaged</strong>
+            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="true" hidden>Show guide</button>
+          </div>
+          <div id="nas-mapping-content">
           <p>The initial bay mapping is <code>0 0 0 0</code>. Drive LEDs remain unmanaged until you configure the physical bay mapping.</p>
           <p>Open the Unraid terminal and run:</p>
           <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
           <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave unmanaged.</p>
           <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#configuration" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
+          <div class="actions"><button type="button" class="nas-guide-done">Done</button></div>
+          </div>
         </aside>
+        <script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=2026.10.03.5"></script>
       <?php endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
@@ -75,9 +82,7 @@ $tabDescriptions = [
           </div>
         <?php endforeach; ?>
 
-        <?php if ($tabKey === 'drives'): ?>
-          <p class="nas-front-note">Confirm the ATA port for each physical bay before enabling its LED. Use 0 to leave a bay unmanaged.</p>
-        <?php elseif ($tabKey === 'power'): ?>
+        <?php if ($tabKey === 'power'): ?>
           <p class="nas-front-note">During shutdown, the Power LED blinks using the running colour.</p>
         <?php endif; ?>
         <div class="actions">
