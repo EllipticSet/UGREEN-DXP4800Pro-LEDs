@@ -30,7 +30,7 @@ $var = ['csrf_token' => 'preview-token'];
 foreach (array_keys(ugreen_pro_groups()) as $ugreenTab) require __DIR__ . '/../src/web/settings.php';
 $html = ob_get_clean();
 check(substr_count($html, '<form ') === 4, 'Native tab rendering failed.');
-check(substr_count($html, 'is-highlighted') === 12, 'Wrong highlight groups.');
+check(substr_count($html, 'is-highlighted') === 6, 'Wrong highlight groups.');
 check(substr_count($html, 'name="csrf_token"') === 4, 'Missing form tokens.');
 preg_match_all('/id="([^"]+)"/', $html, $matches);
 check(count($matches[1]) === count(array_unique($matches[1])), 'Duplicate input IDs.');

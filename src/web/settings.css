@@ -37,3 +37,9 @@
   .nas-front-settings .field label { text-align: left; }
   .nas-front-settings .help, .nas-front-settings .field-error { grid-column: 1; }
 }
+
+.nas-front-settings .nas-mapping-guide { margin: 0 0 28px; padding: 18px 20px; border: 1px solid #ff8c2870; border-left: 4px solid #ff8c28; border-radius: 4px; background: #ff8c280c; line-height: 1.6; }
+.nas-front-settings .nas-mapping-guide > strong { display: block; font-size: 1.1em; }
+.nas-front-settings .nas-mapping-guide p { margin: 10px 0; }
+.nas-front-settings .nas-mapping-guide pre { margin: 12px 0; padding: 10px 12px; border: 1px solid #9995; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.nas-front-settings .nas-mapping-guide a { font-weight: 600; }

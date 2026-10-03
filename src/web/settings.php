@@ -20,7 +20,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=2026.10.03.3">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=2026.10.03.4">
 <?php endif; ?>
 <div class="nas-front-settings" data-led-tab="<?= $tabKey ?>">
   <div class="nas-front-layout">
@@ -28,7 +28,7 @@ $tabDescriptions = [
       <div class="nas-front-image">
         <img src="/plugins/UGREEN-DXP4800Pro-LEDs/images/nas-front.png" alt="UGREEN DXP4800 Pro front panel with Power, LAN and four drive LEDs" width="730" height="729">
         <?php foreach (['power', 'lan', 'disk1', 'disk2', 'disk3', 'disk4'] as $led):
-          $active = $tabKey === 'advanced' || $led === $tabKey || ($tabKey === 'drives' && str_starts_with($led, 'disk'));
+          $active = $led === $tabKey || ($tabKey === 'drives' && str_starts_with($led, 'disk'));
         ?>
           <span class="nas-led-marker nas-led-<?= $led ?> <?= $active ? 'is-highlighted' : '' ?>" aria-hidden="true"></span>
         <?php endforeach; ?>
@@ -39,6 +39,16 @@ $tabDescriptions = [
       <p class="nas-front-intro"><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></p>
       <?php if ($ugreenNotice !== '' && $submittedTab === $ugreenTab): ?>
         <p class="notice <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="status"><?= ugreen_pro_escape($ugreenNotice) ?></p>
+      <?php endif; ?>
+      <?php if ($tabKey === 'drives'): ?>
+        <aside class="nas-mapping-guide" aria-label="Drive LED setup">
+          <strong>First-time setup: drive LEDs are unmanaged</strong>
+          <p>The initial bay mapping is <code>0 0 0 0</code>. Drive LEDs remain unmanaged until you configure the physical bay mapping.</p>
+          <p>Open the Unraid terminal and run:</p>
+          <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
+          <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave unmanaged.</p>
+          <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#configuration" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
+        </aside>
       <?php endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
