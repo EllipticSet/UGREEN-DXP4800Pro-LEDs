@@ -9,7 +9,7 @@
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.1"></a>
-  <img src="https://img.shields.io/badge/Unraid-7.3.2-e8543f" alt="Supported Unraid version: 7.3.2">
+  <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
 </p>
@@ -25,10 +25,10 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 | Requirement | Supported configuration |
 | --- | --- |
 | NAS | UGREEN DXP4800 Pro |
-| Unraid | 7.3.2 |
+| Unraid | 7.3+ |
 | Kernel | `6.18.38-Unraid` |
 
-The installer checks the exact DMI model and kernel before loading the bundled LED module. Other models and kernels are not supported by this build.
+The installer checks the exact DMI model and kernel before loading the bundled LED module. Unraid 7.3 or later is accepted only when that exact kernel is present. Hardware testing was performed on Unraid 7.3.2; other Unraid versions remain untested. Other models and kernels are not supported by this build.
 
 The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protocol=legacy`. No GT DesignWare modules are installed.
 

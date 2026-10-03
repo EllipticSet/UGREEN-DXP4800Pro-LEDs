@@ -3,7 +3,7 @@ import base64, hashlib, io, re, struct, subprocess, tarfile, xml.etree.ElementTr
 root=Path(__file__).resolve().parent.parent
 plg=root/'dist/UGREEN-DXP4800Pro-LEDs.plg'
 el=ET.parse(plg).getroot()
-assert el.attrib['min']==el.attrib['max']=='7.3.2'
+assert el.attrib['min']=='7.3' and 'max' not in el.attrib
 script=el.find('FILE/INLINE').text
 encoded=script.split("<<'UGREEN_PAYLOAD'\n",1)[1].split('\nUGREEN_PAYLOAD',1)[0]
 blob=base64.b64decode(encoded)
@@ -15,7 +15,7 @@ with tarfile.open(fileobj=io.BytesIO(blob),mode='r:xz') as tf:
  assert b'vermagic=6.18.38-Unraid ' in module
  assert hashlib.sha256(module).hexdigest()=='dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2'
  assert not any('designware' in m.name for m in tf.getmembers())
- pkg=tf.extractfile('ugreen-pro-leds-2026.10.03.1-x86_64-1.txz').read()
+ pkg=tf.extractfile('ugreen-pro-leds-2026.10.03.2-x86_64-1.txz').read()
  with tarfile.open(fileobj=io.BytesIO(pkg),mode='r:xz') as pt:
   names=pt.getnames()
   assert 'install/slack-desc' in names

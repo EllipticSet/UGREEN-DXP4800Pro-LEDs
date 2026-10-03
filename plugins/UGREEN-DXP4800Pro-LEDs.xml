@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plugin>
   <Name>UGREEN DXP4800 Pro LEDs</Name>
-  <Overview>Controls the Power, LAN and four drive-bay LEDs on the UGREEN DXP4800 Pro. Configurable colours, disk activity pulses and standby breathing. Beta: supports only Unraid 7.3.2 with kernel 6.18.38-Unraid. Confirm physical bay mapping before enabling disk LEDs. Remove competing LED plugins before installation.</Overview>
+  <Overview>Controls the Power, LAN and four drive-bay LEDs on the UGREEN DXP4800 Pro. Configurable colours, disk activity pulses and standby breathing. Beta: requires Unraid 7.3+ and exact kernel 6.18.38-Unraid. Confirm physical bay mapping before enabling disk LEDs. Remove competing LED plugins before installation.</Overview>
   <PluginURL>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg</PluginURL>
   <PluginAuthor>EllipticSet</PluginAuthor>
   <Support>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues</Support>
@@ -9,8 +9,7 @@
   <ReadMe>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/README.md</ReadMe>
   <Category>Tools:System</Category>
   <Beta>true</Beta>
-  <MinVer>7.3.2</MinVer>
-  <MaxVer>7.3.2</MaxVer>
+  <MinVer>7.3</MinVer>
   <IconFA>lightbulb-o</IconFA>
   <License>MIT</License>
 </Plugin>
