@@ -5,7 +5,7 @@ import base64, hashlib, io, os, shutil, tarfile, tempfile, xml.etree.ElementTree
 ROOT=Path(__file__).resolve().parent.parent
 DIST=ROOT/'dist'
 NAME='UGREEN-DXP4800Pro-LEDs'
-PKG='ugreen-pro-leds-2026.10.03.2-x86_64-1'
+PKG='ugreen-pro-leds-2026.10.03.3-x86_64-1'
 KERNEL='6.18.38-Unraid'
 def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def archive(stage,out):
@@ -27,7 +27,8 @@ with tempfile.TemporaryDirectory() as temp:
  copy(ROOT/'src/ugreen-pro-leds',stage,'usr/local/sbin/ugreen-pro-leds',0o755)
  copy(ROOT/'src/uninstall.sh',stage,'usr/local/sbin/ugreen-pro-leds-uninstall',0o755)
  web=f'usr/local/emhttp/plugins/{NAME}'
- for p in (ROOT/'src/web').iterdir(): copy(p,stage,f'{web}/{p.name}')
+ for p in (ROOT/'src/web').rglob('*'):
+  if p.is_file(): copy(p,stage,f'{web}/{p.relative_to(ROOT/"src/web")}')
  copy(ROOT/'src/plugin-readme.md',stage,f'{web}/README.md')
  copy(ROOT/'README.md',stage,'usr/local/share/ugreen-pro-leds/USER-GUIDE.md')
  copy(ROOT/'LICENSE',stage,'usr/local/share/ugreen-pro-leds/LICENSE')
@@ -37,7 +38,7 @@ with tempfile.TemporaryDirectory() as temp:
   if p.is_file() and p.suffix not in ('.txz','.ko'):
    copy(p,stage,f'usr/local/share/ugreen-pro-leds/vendor/{p.relative_to(ROOT/"vendor")}')
  slack=stage/'install/slack-desc';slack.parent.mkdir()
- slack.write_text('ugreen-pro-leds: UGREEN DXP4800 Pro LEDs (Unraid 7.3+ build)\nugreen-pro-leds: Intel I801 LED control, white/orange status and native settings.\n')
+ slack.write_text('ugreen-pro-leds: NAS Front LEDs (Unraid 7.3+ build)\nugreen-pro-leds: Intel I801 LED control, white/orange status and native settings.\n')
  payload=DIST/f'{PKG}.txz';archive(stage,payload)
  outer=Path(temp)/'outer';outer.mkdir()
  shutil.copytree(stage,outer/'payload')
@@ -55,8 +56,8 @@ printf '%s  %s\\n' "'''+digest(bundle)+'''" "$scratch/bundle.tar.xz" | sha256sum
 tar -xJf "$scratch/bundle.tar.xz" -C "$scratch"
 "$scratch/install.sh" "$scratch"
 '''
- plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues','version':'2026.10.03.2','icon':'lightbulb-o','launch':f'Settings/{NAME}','min':'7.3'})
- ET.SubElement(plg,'CHANGES').text='\n###2026.10.03.2\n- Allow Unraid 7.3 and later when the exact packaged kernel matches; retain the kernel guard.\n\n###2026.10.03.1\n- Refresh documentation and README badges; update plugin descriptions.\n\n###2026.10.02.4\n- Remove the manually loaded LED module with rmmod; report unload failures.\n\n###2026.10.02.3\n- Public GitHub and Community Applications metadata; preserve settings on updates with rollback.\n- English plugin listing and documentation; compact title and description.\n- Keep the native Unraid CSRF fix.\n- DXP4800 Pro build: Intel legacy I801, isolated workers, native settings, offline installer.\n'
+ plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues','version':'2026.10.03.3','icon':'lightbulb-o','launch':f'Settings/{NAME}','min':'7.3'})
+ ET.SubElement(plg,'CHANGES').text='\n###2026.10.03.3\n- Rename the interface to NAS Front LEDs; add native Power, LAN, Drives and Advanced tabs with front-panel LED highlights.\n- Apply and restore defaults per tab while preserving other settings.\n- Remove the Beta label from plugin descriptions and Community Applications metadata.\n- Add desktop and mobile interface screenshots to the README.\n\n###2026.10.03.2\n- Allow Unraid 7.3 and later when the exact packaged kernel matches; retain the kernel guard.\n\n###2026.10.03.1\n- Refresh documentation and README badges; update plugin descriptions.\n\n###2026.10.02.4\n- Remove the manually loaded LED module with rmmod; report unload failures.\n\n###2026.10.02.3\n- Public GitHub and Community Applications metadata; preserve settings on updates with rollback.\n- English plugin listing and documentation; compact title and description.\n- Keep the native Unraid CSRF fix.\n- DXP4800 Pro build: Intel legacy I801, isolated workers, native settings, offline installer.\n'
  desc=ET.SubElement(plg,'FILE',{'Name':f'/usr/local/emhttp/plugins/{NAME}/README.md'})
  # Plugin manager can read the description; installation will replace it with full documentation.
  # Do not install a description ahead of the preflight checks.

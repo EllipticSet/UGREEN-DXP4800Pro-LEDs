@@ -5,7 +5,7 @@ https://github.com/unraid/unraid-community-apps-starter
 
 Reference: https://ca.unraid.net/submit/help
 
-Included: root MIT license; nonempty ca_profile.xml; custom icon.svg; one plugin wrapper under plugins/; public .plg with matching pluginURL and support link; exact OS/kernel restrictions; beta marker; corresponding GPL sources, build provenance and notices.
+Included: root MIT license; nonempty ca_profile.xml; custom icon.svg; one plugin wrapper under plugins/; public .plg with matching pluginURL and support link; exact OS/kernel restrictions; stable listing metadata; corresponding GPL sources, build provenance and notices.
 
 Before submitting:
 

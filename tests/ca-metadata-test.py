@@ -10,8 +10,8 @@ assert manifest.get('author')==entry.findtext('PluginAuthor')=='EllipticSet'
 assert entry.findtext('Support')==manifest.get('support')
 assert manifest.get('min')=='7.3' and manifest.get('max') is None
 assert entry.findtext('MinVer')=='7.3' and entry.find('MaxVer') is None
-assert entry.findtext('Beta')=='true'
+assert entry.findtext('Beta')=='false'
 assert (r/'LICENSE').read_text().startswith('MIT License')
 for p in [r/'ca_profile.xml',r/'plugins/UGREEN-DXP4800Pro-LEDs.xml']:
  assert 'YOUR_' not in p.read_text()
-print('CA profile, plugin wrapper, exact manifest URL, author/support, beta and compatibility metadata passed.')
+print('CA profile, plugin wrapper, exact manifest URL, author/support, stable listing and compatibility metadata passed.')

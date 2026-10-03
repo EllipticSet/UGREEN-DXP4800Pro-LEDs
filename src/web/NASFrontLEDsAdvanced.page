@@ -1,0 +1,6 @@
+Menu="UGREEN-DXP4800Pro-LEDs:4"
+Title="Advanced Settings"
+Tag="sliders"
+Markdown="false"
+---
+<?php $ugreenTab = 'Advanced Settings'; require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings.php'; ?>
