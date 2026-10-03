@@ -7,7 +7,7 @@ with tempfile.TemporaryDirectory() as t:
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
  payload=bundle/'payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid';payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
- (bundle/'ugreen-pro-leds-2026.10.03.4-x86_64-1.txz').touch()
+ (bundle/'ugreen-pro-leds-2026.10.03.5-x86_64-1.txz').touch()
  (bundle/'settings.example.cfg').write_text('DEFAULT=1\n')
  monitor=machine/'usr/local/sbin/ugreen-pro-leds';config=machine/'boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg'
  config.write_text('CUSTOM=preserved\n')

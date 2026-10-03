@@ -43,3 +43,10 @@
 .nas-front-settings .nas-mapping-guide p { margin: 10px 0; }
 .nas-front-settings .nas-mapping-guide pre { margin: 12px 0; padding: 10px 12px; border: 1px solid #9995; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .nas-front-settings .nas-mapping-guide a { font-weight: 600; }
+
+.nas-front-settings .nas-guide-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.nas-front-settings .nas-guide-header strong { font-size: 1.1em; }
+.nas-front-settings .nas-guide-header button { flex-shrink: 0; margin: 0; }
+.nas-front-settings .nas-mapping-guide [hidden] { display: none !important; }
+.nas-front-settings .nas-mapping-guide .actions { margin-top: 16px; }
+@media (max-width: 550px) { .nas-front-settings .nas-guide-header { flex-wrap: wrap; } }
