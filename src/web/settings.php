@@ -134,7 +134,7 @@ $ugreenGroups = [
 @media (max-width: 650px) { #ugreen-pro-settings .field { grid-template-columns: 1fr; } #ugreen-pro-settings .help, #ugreen-pro-settings .field-error { grid-column: 1; } }
 </style>
 <div id="ugreen-pro-settings">
-  <p><strong>Experimental DXP4800 Pro build:</strong> configure bay mapping before enabling disk LEDs. LED signals supplement Unraid health monitoring.</p>
+  <p><strong>DXP4800 Pro build:</strong> configure bay mapping before enabling disk LEDs. LED signals supplement Unraid health monitoring.</p>
   <p>Set the front-panel LED colours and behaviour. Changes are saved on the Unraid boot device and applied when the monitor restarts.</p>
   <?php if ($ugreenNotice !== ''): ?>
     <p class="notice <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="status"><?= ugreen_pro_escape($ugreenNotice) ?></p>

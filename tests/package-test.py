@@ -15,7 +15,7 @@ with tarfile.open(fileobj=io.BytesIO(blob),mode='r:xz') as tf:
  assert b'vermagic=6.18.38-Unraid ' in module
  assert hashlib.sha256(module).hexdigest()=='dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2'
  assert not any('designware' in m.name for m in tf.getmembers())
- pkg=tf.extractfile('ugreen-pro-leds-2026.10.02.4-x86_64-1.txz').read()
+ pkg=tf.extractfile('ugreen-pro-leds-2026.10.03.1-x86_64-1.txz').read()
  with tarfile.open(fileobj=io.BytesIO(pkg),mode='r:xz') as pt:
   names=pt.getnames()
   assert 'install/slack-desc' in names

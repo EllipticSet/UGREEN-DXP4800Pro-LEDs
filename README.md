@@ -1,10 +1,24 @@
-# UGREEN DXP4800 Pro LEDs
+<div align="center">
 
-Front-panel LED control for the **UGREEN DXP4800 Pro** running [Unraid](https://unraid.net/).
+<img src="icon.svg" alt="UGREEN DXP4800 Pro LEDs logo" width="150">
+
+<h1>UGREEN DXP4800 Pro LEDs</h1>
+
+<p><strong>Front-panel LED control for the UGREEN DXP4800 Pro running <a href="https://unraid.net/">Unraid</a>.</strong></p>
+
+<p>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
+  <a href="UGREEN-DXP4800Pro-LEDs.plg"><img src="https://img.shields.io/badge/release-2026.10.03.1-blue" alt="Plugin release: 2026.10.03.1"></a>
+  <img src="https://img.shields.io/badge/Unraid-7.3.2-e8543f" alt="Supported Unraid version: 7.3.2">
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/badge/downloads-0-blueviolet" alt="GitHub release asset downloads: 0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
+</p>
+
+</div>
 
 This plugin controls the Power, LAN and four drive-bay LEDs, with configurable colours, brightness, disk activity pulses and standby breathing. Settings are managed directly in the Unraid WebGUI.
 
-> **Experimental plugin.** This is an independent project, not an official release from UGREEN, ich777 or flybrys.
+> This is an independent project, not an official release from UGREEN, ich777 or flybrys.
 
 ## Compatibility
 

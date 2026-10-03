@@ -2,7 +2,7 @@
 set -euo pipefail
 [[ $EUID == 0 ]] || { echo 'Root required.' >&2; exit 1; }
 [[ $(uname -r) == 6.18.38-Unraid ]] || { echo 'Only kernel 6.18.38-Unraid is packaged.' >&2; exit 1; }
-[[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this experimental build.' >&2; exit 1; }
+[[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this build.' >&2; exit 1; }
 grep -qx 'version="7.3.2"' /etc/unraid-version || { echo 'Unraid 7.3.2 required.' >&2; exit 1; }
 for cmd in installpkg upgradepkg removepkg sha256sum base64 xz tar flock jq smartctl timeout ip curl php modinfo i2cget; do
   # i2cget is supplied separately by this plugin.
