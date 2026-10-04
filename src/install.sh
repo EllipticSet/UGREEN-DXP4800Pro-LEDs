@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-1.0.0-x86_64-1
+package=ugreen-pro-leds-1.0.1-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"
@@ -51,7 +51,15 @@ rollback() {
 trap rollback ERR
 # Reuse any existing i2cget instead of downgrading shared tools.
 if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi
-upgradepkg --install-new "$root/$package.txz" >/dev/null
+upgradepkg --reinstall --install-new "$root/$package.txz" >/dev/null
+# Refuse success if package installation left an old page or missing icons.
+web=usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs
+for asset in UGREEN-DXP4800Pro-LEDs.page icons/icon-azure.png icons/icon-black.png icons/icon-gray.png icons/icon-white.png; do
+  cmp -s "$root/payload/$web/$asset" "/$web/$asset" || {
+    echo "Installed WebGUI file is missing or outdated: $asset" >&2
+    false
+  }
+done
 [[ -f $plugin/settings.cfg ]] || cp "$root/settings.example.cfg" "$plugin/settings.cfg"
 /usr/local/sbin/ugreen-pro-leds start
 if [[ ! -f /boot/config/stop ]]; then

@@ -2,7 +2,7 @@ Menu="OtherSettings"
 Type="xmenu"
 Title="NAS Front LEDs"
 Icon="icons/icon-azure.png"
-Tag="lightbulb-o"
+Tag="icon-azure.png"
 Tabs="true"
 Markdown="false"
 ---

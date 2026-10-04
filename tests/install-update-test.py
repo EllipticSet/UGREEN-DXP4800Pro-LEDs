@@ -7,7 +7,10 @@ with tempfile.TemporaryDirectory() as t:
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
  payload=bundle/'payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid';payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
- (bundle/'ugreen-pro-leds-2026.10.03.5-x86_64-1.txz').touch()
+ (bundle/'ugreen-pro-leds-1.0.1-x86_64-1.txz').touch()
+ web='usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs'
+ for asset in ['UGREEN-DXP4800Pro-LEDs.page','icons/icon-azure.png','icons/icon-black.png','icons/icon-gray.png','icons/icon-white.png']:
+  source=bundle/'payload'/web/asset;source.parent.mkdir(parents=True,exist_ok=True);source.write_text('new icon page fixture')
  (bundle/'settings.example.cfg').write_text('DEFAULT=1\n')
  monitor=machine/'usr/local/sbin/ugreen-pro-leds';config=machine/'boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg'
  config.write_text('CUSTOM=preserved\n')
@@ -17,13 +20,15 @@ with tempfile.TemporaryDirectory() as t:
  for path in ['/usr/local/','/boot/','/var/log/','/tmp/ugreen-pro-transaction.']:script=script.replace(path,str(machine)+path)
  script=script.replace('[[ ! -e /$path ]]', f'[[ ! -e "{machine}/$path" ]]')
  script=script.replace('-C / ',f'-C "{machine}" ').replace('-C /\n',f'-C "{machine}"\n')
+ script=script.replace('"/$web/$asset"', '"'+str(machine)+'/$web/$asset"')
  installer=base/'install';installer.write_text(script)
  old='#!/bin/bash\nexit 0\n'
- def run(fail=False):
+ def run(fail=False, stale=False):
   monitor.write_text(old);monitor.chmod(0o755)
+  update_web='' if stale else f"cp -R '{bundle}/payload/{web}/.' '{machine}/{web}/';"
   mocks=f'''modinfo() {{ echo '6.18.38-Unraid SMP'; }}
 i2cget() {{ return 0; }}
-upgradepkg() {{ printf '%s\\n' '#!/bin/bash' '[[ $1 != start ]] || exit {1 if fail else 0}' > '{monitor}'; chmod +x '{monitor}'; }}
+upgradepkg() {{ {update_web} printf '%s\\n' '#!/bin/bash' '[[ $1 != start ]] || exit {1 if fail else 0}' > '{monitor}'; chmod +x '{monitor}'; }}
 removepkg() {{ return 0; }}
 export -f modinfo i2cget upgradepkg removepkg
 '''
@@ -35,4 +40,9 @@ export -f modinfo i2cget upgradepkg removepkg
  r=run(fail=True);assert r.returncode!=0,r.stdout+r.stderr
  assert monitor.read_text()==old
  assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
- print('Simulated update preserves settings/hooks; startup failure restores previous runtime files and hook.')
+ page=machine/web/'UGREEN-DXP4800Pro-LEDs.page';page.write_text('old lightbulb page')
+ r=run(stale=True);assert r.returncode!=0,r.stdout+r.stderr
+ assert 'Installed WebGUI file is missing or outdated' in r.stderr
+ assert 'installed successfully' not in r.stdout
+ assert page.read_text()=='old lightbulb page' and config.read_text()=='CUSTOM=preserved\n'
+ print('Stale WebGUI rejected with rollback; simulated update preserves settings/hooks; startup failure restores previous runtime files and hook.')
