@@ -199,8 +199,6 @@ Hardware testing on a DXP4800 Pro with the supported kernel confirmed:
 - Automatic startup after reboot and after a full shutdown followed by power-on.
 - Power blinking during shutdown and returning to solid white after startup.
 
-Removal of `2026.10.02.3` stopped the monitor, detached the I2C client and retained settings, but required a manual module unload. **Version `2026.10.02.4` fixes module removal; its removal/reinstallation flow still needs hardware verification.** Actual hardware-fault indications also remain untested.
-
 See [TEST-REPORT.md](TEST-REPORT.md) for local package, syntax, configuration and CSRF checks.
 
 ## License and acknowledgements
