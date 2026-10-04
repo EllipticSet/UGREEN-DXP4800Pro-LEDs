@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-2026.10.03.6-x86_64-1
+package=ugreen-pro-leds-1.0.0-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"
@@ -63,4 +63,6 @@ if ! grep -Fq "$marker" /boot/config/stop; then
   printf '\n/usr/local/sbin/ugreen-pro-leds shutdown %s\n' "$marker" >> /boot/config/stop
 fi
 trap - ERR
-echo 'Installed. Open Settings > NAS Front LEDs. Existing settings were preserved.'
+printf '\n%s\n' '============================================================' 
+printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  NAS Front LEDs' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '  Existing settings were preserved.' '============================================================'
+

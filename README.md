@@ -8,7 +8,7 @@
 
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
-  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 2026.10.03.6"></a>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 1.0.0"></a>
   <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
@@ -19,6 +19,18 @@
 This plugin controls the Power, LAN and four drive-bay LEDs, with configurable colours, brightness, disk activity pulses and standby breathing. Settings are managed directly in the Unraid WebGUI.
 
 > This is an independent project, not an official release from UGREEN, ich777 or flybrys.
+
+## Versioning and upgrade to 1.0.0
+
+Releases now use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatible features, major versions for breaking changes.
+
+Unraid compares plugin versions as strings and considers `1.0.0` older than the previous `2026.*` versions. Existing users must perform this one-time migration in the Unraid terminal:
+
+```sh
+plugin install https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg forced
+```
+
+The installer preserves saved settings. Then open **Settings → NAS Front LEDs**.
 
 ## Settings screenshots
 
