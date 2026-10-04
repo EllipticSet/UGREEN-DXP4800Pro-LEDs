@@ -19,6 +19,7 @@ jobs:
         run: |
           php tests/settings-test.php
           php tests/tab-settings-test.php
+          php tests/settings-recovery-test.php
           php tests/csrf-test.php
           php tests/native-csrf-test.php
       - name: Monitor and installer regression
@@ -28,8 +29,12 @@ jobs:
           python3 tests/preflight-test.py
           python3 tests/install-update-test.py
           python3 tests/uninstall-test.py
-      - name: Build and verify package and CA metadata
+      - name: Verify committed package and CA metadata
         run: |
-          python3 build/package.py
           python3 tests/package-test.py
           python3 tests/ca-metadata-test.py
+      - name: Rebuild without changing committed artifacts
+        run: |
+          python3 build/package.py --no-publish
+          python3 tests/package-test.py dist/UGREEN-DXP4800Pro-LEDs.plg
+          python3 tests/reproducible-package-test.py

@@ -1,23 +1,54 @@
 from pathlib import Path
-import base64, hashlib, io, re, struct, subprocess, tarfile, xml.etree.ElementTree as ET
+import base64, hashlib, io, re, struct, sys, tarfile, xml.etree.ElementTree as ET
 root=Path(__file__).resolve().parent.parent
-plg=root/'dist/UGREEN-DXP4800Pro-LEDs.plg'
+sys.path.insert(0,str(root/'build'))
+from package_manifest import NAME, VERSION, PKG, payload_inputs, SLACK_DESC
+plg=Path(sys.argv[1]) if len(sys.argv)>1 else root/f'{NAME}.plg'
+checksum=Path(str(plg)+'.sha256').read_text().split()
+assert checksum == [hashlib.sha256(plg.read_bytes()).hexdigest(), plg.name], 'Committed checksum mismatch'
 el=ET.parse(plg).getroot()
+assert el.attrib['version']==VERSION
 assert el.attrib['min']=='7.3' and 'max' not in el.attrib
 script=el.find('FILE/INLINE').text
 encoded=script.split("<<'UGREEN_PAYLOAD'\n",1)[1].split('\nUGREEN_PAYLOAD',1)[0]
 blob=base64.b64decode(encoded)
 assert hashlib.sha256(blob).hexdigest() in script
 with tarfile.open(fileobj=io.BytesIO(blob),mode='r:xz') as tf:
- for m in tf.getmembers(): assert not m.name.startswith('/') and '..' not in Path(m.name).parts
+ for m in tf.getmembers():
+  assert not m.name.startswith('/') and '..' not in Path(m.name).parts
+  assert m.isdir() or m.isfile(), 'Unsupported archive entry type'
+  assert m.uid==m.gid==0 and m.mtime==0
+  assert m.mode in (0o644,0o755)
+  if m.isdir(): assert m.mode==0o755
+ for name in ['install.sh','preflight.sh','settings.example.cfg']:
+  assert tf.extractfile(name).read()==(root/'src'/name).read_bytes(), name
+ dependency=tf.extractfile('i2c-tools-4.3-x86_64-1.txz').read()
+ assert dependency==(root/'vendor/i2c-tools-4.3-x86_64-1.txz').read_bytes()
+ assert hashlib.sha256(dependency).hexdigest()=='9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c'
  module=tf.extractfile('payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid/led-ugreen.ko').read()
  assert module[:4]==b'\x7fELF' and struct.unpack_from('<H',module,18)[0]==62
  assert b'vermagic=6.18.38-Unraid ' in module
  assert hashlib.sha256(module).hexdigest()=='dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2'
  assert not any('designware' in m.name for m in tf.getmembers())
- pkg=tf.extractfile('ugreen-pro-leds-1.0.2-x86_64-1.txz').read()
+ pkg=tf.extractfile(PKG+'.txz').read()
  with tarfile.open(fileobj=io.BytesIO(pkg),mode='r:xz') as pt:
   names=pt.getnames()
+  expected=payload_inputs(root)
+  regular=[m.name for m in pt.getmembers() if m.isfile()]
+  assert len(regular)==len(set(regular)), 'Duplicate payload entries'
+  assert set(regular)==set(expected)|{'install/slack-desc'}, 'Payload manifest mismatch'
+  assert pt.extractfile('install/slack-desc').read()==SLACK_DESC.encode()
+  for name,(source,mode) in expected.items():
+   assert pt.extractfile(name).read()==source.read_bytes(), 'Stale packaged source: '+name
+   assert pt.getmember(name).mode==mode, name
+  for m in pt.getmembers():
+   assert m.isdir() or m.isfile()
+   assert not m.name.startswith('/') and '..' not in Path(m.name).parts
+   assert m.uid==m.gid==0 and m.mtime==0
+   if m.isdir(): assert m.mode==0o755
+  for name in regular:
+   assert tf.extractfile('payload/'+name).read()==pt.extractfile(name).read(), 'Outer payload differs: '+name
+  assert {m.name[8:] for m in tf.getmembers() if m.isfile() and m.name.startswith('payload/')}==set(regular)
   assert 'install/slack-desc' in names
   for asset in ['NASFrontLEDsIcons.page', 'icon-themes.css', 'settings.js', 'settings.css', 'settings-controller.php', 'images/nas-front.png', 'NASFrontLEDsPower.page', 'NASFrontLEDsLan.page', 'NASFrontLEDsDrives.page', 'NASFrontLEDsAdvanced.page']:
    assert 'usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/' + asset in names

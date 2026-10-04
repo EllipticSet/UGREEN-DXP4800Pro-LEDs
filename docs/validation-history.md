@@ -1,4 +1,8 @@
-# Validation report — October 2, 2026
+# Historical validation notes — development builds
+
+These notes describe archived development builds. They are not the current release validation status. Entries that say “pending” record the state at that point in development; later entries may supersede them.
+
+## October 2, 2026
 
 The 2026.10.02.3 public GitHub Actions run passed syntax, PHP configuration/CSRF, monitor, update/rollback, package and CA metadata tests. Version 2026.10.02.4 changes module removal; its targeted regression and package checks are described below.
 

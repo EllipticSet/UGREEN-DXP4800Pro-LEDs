@@ -8,7 +8,7 @@
 
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
-  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 1.0.2"></a>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Latest GitHub release"></a>
   <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>
@@ -94,7 +94,7 @@ Plugin updates preserve existing settings at:
 
 The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **NAS Front LEDs**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
 
-Community Applications metadata is included in this repository; listing requires approval.
+The Community Applications submission has been approved. As of October 4, 2026, the plugin is not yet available in the catalogue. Use the installation URL above in the meantime. See [Community Applications maintenance](docs/community-apps.md).
 
 <details>
 <summary>Manual installation from the terminal</summary>
@@ -145,11 +145,11 @@ HTTPS checks approximate Internet availability. An endpoint outage, DNS filterin
 
 ## LED behaviour
 
-The following indications use the default white and orange colours. Colours and brightness can be changed in Settings.
+The following indications use the default white and orange colours. Colours and brightness values can be changed in Settings. The physical brightness response depends on the LED controller; some controllers may treat nonzero values as full brightness.
 
 | LED | Indication | Meaning |
 | --- | --- | --- |
-| Power | Solid white | Monitor running |
+| Power | Solid white | Power colour set when the monitor starts; may remain on after monitoring stops |
 | Power | White blink, 500 ms on / 500 ms off | Unraid shutdown hook running |
 | LAN | White, blinking with traffic | Link present and connectivity check passing |
 | LAN | Orange, blinking with local traffic | Link present but HTTPS checks failing |
@@ -181,7 +181,7 @@ Stop LED monitoring:
 /usr/local/sbin/ugreen-pro-leds stop
 ```
 
-Stopping releases managed triggers and turns off configured drive LEDs. It does not shut down the NAS. Logs are stored in RAM; settings are stored persistently on the boot device.
+Stopping releases managed triggers and turns off configured drive LEDs. The Power LED remains on; use `status` to check whether the monitor is running. It does not shut down the NAS. Logs are stored in RAM; settings are stored persistently on the boot device.
 
 For problems or suggestions, open a [GitHub issue](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues). Include your Unraid version, kernel, plugin version, the observed behaviour and relevant status/log output. Remove any private information before posting.
 
@@ -193,17 +193,17 @@ The installer adds an identified shutdown-hook line to `/boot/config/stop`; remo
 
 ## Validation status
 
-Hardware testing on a DXP4800 Pro with the supported kernel confirmed:
+Hardware testing of earlier development builds on a DXP4800 Pro with Unraid 7.3.2 and the supported kernel confirmed:
 
 - Installation and monitor startup.
 - Solid white Power and white LAN activity on `br0`.
 - Saving settings and restarting the monitor through Apply.
 - Correct four-bay mapping, disk read pulses and standby breathing.
-- Settings retained when updating to `2026.10.02.3`.
+- Settings retained during a development-build update.
 - Automatic startup after reboot and after a full shutdown followed by power-on.
 - Power blinking during shutdown and returning to solid white after startup.
 
-See [TEST-REPORT.md](TEST-REPORT.md) for local package, syntax, configuration and CSRF checks.
+See [Validation](docs/validation.md) for automated checks, historical hardware results and remaining verification work. These earlier hardware results do not establish a complete hardware test of the current release.
 
 ## License and acknowledgements
 

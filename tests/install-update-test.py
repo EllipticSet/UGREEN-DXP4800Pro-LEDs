@@ -7,7 +7,7 @@ with tempfile.TemporaryDirectory() as t:
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
  payload=bundle/'payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid';payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
- (bundle/'ugreen-pro-leds-1.0.2-x86_64-1.txz').touch()
+ (bundle/'ugreen-pro-leds-1.0.3-x86_64-1.txz').touch()
  web='usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs'
  for asset in ['UGREEN-DXP4800Pro-LEDs.page','icons/icon-azure.png','icons/icon-black.png','icons/icon-gray.png','icons/icon-white.png']:
   source=bundle/'payload'/web/asset;source.parent.mkdir(parents=True,exist_ok=True);source.write_text('new icon page fixture')

@@ -1,26 +1,31 @@
 <?php
 // SPDX-License-Identifier: MIT
 require_once __DIR__ . '/settings-lib.php';
+require_once __DIR__ . '/settings-recovery.php';
 function ugreen_pro_escape(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-function ugreen_pro_restart_monitor(): bool
+function ugreen_pro_restart_monitor(?callable $command = null, ?callable $pause = null): bool
 {
-    exec('/usr/local/sbin/ugreen-pro-leds stop 2>&1', $output, $status);
-    exec('flock -w 10 /run/ugreen-pro-leds.lock true 2>&1', $output, $status);
-    if ($status !== 0) {
+    $command ??= static function (string $cmd): int {
+        exec($cmd . ' 2>&1', $output, $status);
+        return $status;
+    };
+    $pause ??= static function (): void { sleep(1); };
+    if ($command('/usr/local/sbin/ugreen-pro-leds stop') !== 0) {
         return false;
     }
-    exec('/usr/local/sbin/ugreen-pro-leds start 2>&1', $output, $status);
-    if ($status !== 0) {
+    if ($command('flock -w 10 /run/ugreen-pro-leds.lock true') !== 0) {
+        return false;
+    }
+    if ($command('/usr/local/sbin/ugreen-pro-leds start') !== 0) {
         return false;
     }
     for ($attempt = 0; $attempt < 3; ++$attempt) {
-        sleep(1);
-        exec('/usr/local/sbin/ugreen-pro-leds status 2>&1', $output, $status);
-        if ($status === 0) {
+        $pause();
+        if ($command('/usr/local/sbin/ugreen-pro-leds status') === 0) {
             return true;
         }
     }
@@ -77,14 +82,11 @@ function ugreen_pro_settings_state(): array
                     'Settings saved and LED monitor restarted.';
                 $ugreenNoticeClass = 'success';
             } else {
-                if ($previous === null) {
-                    @unlink($ugreenSettingsPath);
-                } else {
-                    ugreen_pro_write_atomic($ugreenSettingsPath, $previous);
-                }
-                ugreen_pro_restart_monitor();
+                $recovery = ugreen_pro_recover_settings(
+                    $ugreenSettingsPath, $previous, 'ugreen_pro_restart_monitor'
+                );
                 $ugreenValues = ugreen_pro_read_settings($ugreenSettingsPath);
-                $ugreenNotice = 'The LED monitor did not start with these settings. Previous settings were restored. Check /var/log/ugreen-pro-leds.log.';
+                $ugreenNotice = ugreen_pro_recovery_notice($recovery);
                 $ugreenNoticeClass = 'error';
             }
         } else {
@@ -126,7 +128,7 @@ function ugreen_pro_groups(): array
         ],
         'Advanced Settings' => [
             ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'Disk activity sampling interval.', 0.1, 5, 0.1],
-            ['REFRESH_INTERVAL', 'Device refresh (seconds)', 'number', 'Checks for interface and drive changes.', 1, 3600],
+            ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Checks for drives appearing or disappearing in the configured bays.', 1, 3600],
             ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby and SMART check; failures of the check are not disk failures.', 10, 3600],
         ],
     ];
