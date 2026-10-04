@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/icon-themes.gif" alt="UGREEN DXP4800 Pro LEDs — azure, black, gray and white themes" width="150">
+<img src="docs/images/icon-themes.gif" alt="UGREEN DXP4800 Pro LEDs logo" width="150">
 
 <h1>UGREEN DXP4800 Pro LEDs</h1>
 
@@ -8,7 +8,7 @@
 
 <p>
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/EllipticSet/UGREEN-DXP4800Pro-LEDs/validate.yml?branch=main&amp;label=tests" alt="Tests"></a>
-  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 1.0.1"></a>
+  <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/latest"><img src="https://img.shields.io/github/v/release/EllipticSet/UGREEN-DXP4800Pro-LEDs?label=release&amp;color=blue" alt="Plugin release: 1.0.2"></a>
   <img src="https://img.shields.io/badge/Unraid-7.3%2B-e8543f" alt="Unraid requirement: 7.3+; exact kernel required">
   <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases"><img src="https://img.shields.io/github/downloads/EllipticSet/UGREEN-DXP4800Pro-LEDs/total?color=blueviolet" alt="GitHub release asset downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/EllipticSet/UGREEN-DXP4800Pro-LEDs?color=green" alt="License: MIT"></a>

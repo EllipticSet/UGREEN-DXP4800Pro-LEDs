@@ -30,5 +30,5 @@ if [[ -d /sys/module/led_ugreen ]]; then
   fi
 fi
 # Remove only our package; shared i2c-tools and all user settings are retained.
-removepkg ugreen-pro-leds-1.0.1-x86_64-1 >/dev/null
+removepkg ugreen-pro-leds-1.0.2-x86_64-1 >/dev/null
 printf 'Removed. Settings retained in %s.\n' "$plugin"

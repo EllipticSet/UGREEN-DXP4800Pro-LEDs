@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-1.0.1-x86_64-1
+package=ugreen-pro-leds-1.0.2-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"

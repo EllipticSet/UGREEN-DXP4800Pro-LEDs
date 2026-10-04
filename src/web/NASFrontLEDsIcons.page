@@ -1,0 +1,4 @@
+Menu="Buttons:999"
+Link="nas-front-leds-icon-assets"
+---
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/icon-themes.css?v=1.0.2">
