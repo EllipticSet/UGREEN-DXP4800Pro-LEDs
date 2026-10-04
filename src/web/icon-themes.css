@@ -1,0 +1,5 @@
+/* Scoped icon variants follow Unraid and Theme Switch without a reload. */
+html.Theme--azure img[src="/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-azure.png"] { content: url("/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-azure.png"); }
+html.Theme--black img[src="/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-azure.png"] { content: url("/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-black.png"); }
+html.Theme--gray img[src="/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-azure.png"] { content: url("/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-gray.png"); }
+html.Theme--white img[src="/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-azure.png"] { content: url("/plugins/UGREEN-DXP4800Pro-LEDs/icons/icon-white.png"); }
