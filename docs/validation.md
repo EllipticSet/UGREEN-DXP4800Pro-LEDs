@@ -1,6 +1,6 @@
 # Validation
 
-## Current release: 1.0.3
+## Current release: 1.1.0
 
 Automated checks cover shell/PHP syntax, settings validation and per-tab updates, native Unraid CSRF handling, simulated disk/network states, installer preflight, update rollback and removal. Settings recovery tests also cover failed restoration, a stopped monitor after successful restoration, and failed stop commands.
 
@@ -8,7 +8,9 @@ The package tests verify the committed `.plg` and its checksum before rebuilding
 
 Run the checks in [the validation workflow](../.github/workflows/validate.yml). The [GitHub Actions results](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml) show the outcome for each commit; a successful older run is not proof that a newer commit has passed.
 
-These are automated and simulated checks, not a hardware certification. No new NAS hardware test was performed while preparing 1.0.3. The bundled module was inspected, not rebuilt or loaded locally.
+These are automated and simulated checks, not a hardware certification. No new NAS hardware test was performed while preparing 1.1.0. The bundled module was inspected, not rebuilt or loaded locally.
+
+The four icon variants and the README animation are checked locally for dimensions, colours and transparency. Theme switching is exercised with the same icon stylesheet and paths used by Settings and Plugins; live verification on the NAS remains pending.
 
 ## Historical hardware results
 

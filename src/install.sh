@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-1.0.3-x86_64-1
+package=ugreen-pro-leds-1.1.0-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"
@@ -54,7 +54,7 @@ if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1
 upgradepkg --reinstall --install-new "$root/$package.txz" >/dev/null
 # Refuse success if package installation left an old page or missing icons.
 web=usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs
-for asset in UGREEN-DXP4800Pro-LEDs.page icons/icon-azure.png icons/icon-black.png icons/icon-gray.png icons/icon-white.png; do
+for asset in UGREEN-DXP4800Pro-LEDs.page NASFrontLEDsIcons.page icon-themes.css icons/icon-azure.png icons/icon-black.png icons/icon-gray.png icons/icon-white.png; do
   cmp -s "$root/payload/$web/$asset" "/$web/$asset" || {
     echo "Installed WebGUI file is missing or outdated: $asset" >&2
     false
@@ -72,5 +72,5 @@ if ! grep -Fq "$marker" /boot/config/stop; then
 fi
 trap - ERR
 printf '\n%s\n' '============================================================' 
-printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  NAS Front LEDs' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '  Existing settings were preserved.' '============================================================'
+printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  LED Settings' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '  Existing settings were preserved.' '============================================================'
 

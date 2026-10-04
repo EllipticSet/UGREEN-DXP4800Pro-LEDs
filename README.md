@@ -84,7 +84,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
    https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg
    ```
 
-4. Open **Settings → NAS Front LEDs** to configure the plugin.
+4. Open **Settings → LED Settings** to configure the plugin.
 
 Plugin updates preserve existing settings at:
 
@@ -92,7 +92,7 @@ Plugin updates preserve existing settings at:
 /boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg
 ```
 
-The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **NAS Front LEDs**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
+The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **LED Settings**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
 
 The Community Applications submission has been approved. As of October 4, 2026, the plugin is not yet available in the catalogue. Use the installation URL above in the meantime. See [Community Applications maintenance](docs/community-apps.md).
 
@@ -111,7 +111,7 @@ Use an absolute path: Unraid's PHP startup can change the working directory.
 
 ## Configuration
 
-Open **Settings → NAS Front LEDs**. Choose a tab from the menu at the top; the front-panel image on the left highlights the relevant LEDs, and the settings appear on the right. **Apply** saves only the current tab; **Restore tab defaults** also affects only that tab. On narrow screens the image appears above the controls.
+Open **Settings → LED Settings**. Choose a tab from the menu at the top; the front-panel image on the left highlights the relevant LEDs, and the settings appear on the right. **Apply** saves only the current tab; **Restore tab defaults** also affects only that tab. On narrow screens the image appears above the controls.
 
 Use the Settings page to select colours, brightness, the network interface, connectivity checks, drive activity style and monitoring intervals.
 

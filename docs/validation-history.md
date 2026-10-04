@@ -36,7 +36,7 @@ User-confirmed on October 2: the 2026.10.02.3 update preserved settings exactly;
 Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands. The corrected removal/reinstallation flow still needs verification on the NAS; fault indications remain untested.
 
 
-## NAS Front LEDs interface — 2026.10.03.3
+## LED Settings interface — 2026.10.03.3
 
 - Public name changed in Settings, installer messages, plugin listing, README and CA metadata; internal identity and update URL retained.
 - Four ordered native Unraid tabs, with the supplied NAS photo and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
