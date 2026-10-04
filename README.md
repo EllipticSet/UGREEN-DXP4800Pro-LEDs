@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="icon.svg" alt="UGREEN DXP4800 Pro LEDs logo" width="150">
+<img src="docs/images/icon-themes.gif" alt="UGREEN DXP4800 Pro LEDs — azure, black, gray and white themes" width="150">
 
 <h1>UGREEN DXP4800 Pro LEDs</h1>
 
