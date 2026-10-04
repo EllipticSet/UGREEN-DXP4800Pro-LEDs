@@ -20,17 +20,9 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 
 > This is an independent project, not an official release from UGREEN, ich777 or flybrys.
 
-## Versioning and upgrade to 1.0.0
+## Versioning
 
-Releases now use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatible features, major versions for breaking changes.
-
-Unraid compares plugin versions as strings and considers `1.0.0` older than the previous `2026.*` versions. Existing users must perform this one-time migration in the Unraid terminal:
-
-```sh
-plugin install https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg forced
-```
-
-The installer preserves saved settings. Then open **Settings → NAS Front LEDs**.
+Releases use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatible features, major versions for breaking changes.
 
 ## Settings screenshots
 
@@ -94,7 +86,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 
 4. Open **Settings → NAS Front LEDs** to configure the plugin.
 
-An older version of this same plugin can be updated directly. Existing settings are preserved at:
+Plugin updates preserve existing settings at:
 
 ```text
 /boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg
