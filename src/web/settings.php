@@ -16,14 +16,26 @@ $tabDescriptions = [
     'power' => 'Power indication while running and during shutdown.',
     'lan' => 'Network activity and connectivity status.',
     'drives' => 'Activity, standby and health indications for the four drive bays.',
-    'advanced' => 'Sampling and refresh intervals shared by the LED monitor.',
+    'advanced' => 'Drive-bay mapping and sampling and refresh intervals.',
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=2026.10.03.5">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.1.5">
+<span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
+<script>
+(() => {
+  const badge = document.getElementById('nas-plugin-version');
+  const bar = document.querySelector('#displaybox > .tabs > .tabs-container');
+  if (badge && bar) {
+    bar.classList.add('nas-plugin-tabs');
+    bar.appendChild(badge);
+  }
+})();
+</script>
 <?php endif; ?>
 <div class="nas-front-settings" data-led-tab="<?= $tabKey ?>">
-  <div class="nas-front-layout">
+  <div class="nas-front-layout <?= $tabKey === 'advanced' ? 'nas-front-layout-advanced' : '' ?>">
+    <?php if ($tabKey !== 'advanced'): ?>
     <figure class="nas-front-figure">
       <div class="nas-front-image">
         <img src="/plugins/UGREEN-DXP4800Pro-LEDs/images/nas-front.png" alt="UGREEN DXP4800 Pro front panel with Power, LAN and four drive LEDs" width="730" height="729">
@@ -35,27 +47,28 @@ $tabDescriptions = [
       </div>
       <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span>UGREEN DXP4800 Pro</span></figcaption>
     </figure>
+    <?php endif; ?>
     <div class="nas-front-controls">
       <p class="nas-front-intro"><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></p>
       <?php if ($ugreenNotice !== '' && $submittedTab === $ugreenTab): ?>
         <p class="notice <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="status"><?= ugreen_pro_escape($ugreenNotice) ?></p>
       <?php endif; ?>
-      <?php if ($tabKey === 'drives'): ?>
+      <?php if ($tabKey === 'advanced'): ?>
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
           <div class="nas-guide-header">
-            <strong>First-time setup: drive LEDs are unmanaged</strong>
+            <strong>Optional drive-bay mapping guide</strong>
             <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="true" hidden>Show guide</button>
           </div>
           <div id="nas-mapping-content">
-          <p>The initial bay mapping is <code>0 0 0 0</code>. Drive LEDs remain unmanaged until you configure the physical bay mapping.</p>
-          <p>Open the Unraid terminal and run:</p>
+          <p>The standard mapping is 1 2 3 4. Empty bays remain off; newly added drives are detected automatically within approximately 15 seconds. Change the mapping only for troubleshooting or to disable a bay.</p>
+          <p>For troubleshooting or a custom mapping, open the Unraid terminal and run:</p>
           <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
-          <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave unmanaged.</p>
+          <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave disabled.</p>
           <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#configuration" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
           <div class="actions"><button type="button" class="nas-guide-done">Done</button></div>
           </div>
         </aside>
-        <script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=2026.10.03.5"></script>
+        <script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.1.1"></script>
       <?php endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">

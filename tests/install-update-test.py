@@ -7,11 +7,11 @@ with tempfile.TemporaryDirectory() as t:
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
  payload=bundle/'payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid';payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
- (bundle/'ugreen-pro-leds-1.1.0-x86_64-1.txz').touch()
+ (bundle/'ugreen-pro-leds-1.1.5-x86_64-1.txz').touch()
  web='usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs'
- for asset in ['UGREEN-DXP4800Pro-LEDs.page','NASFrontLEDsIcons.page','icon-themes.css','icons/icon-azure.png','icons/icon-black.png','icons/icon-gray.png','icons/icon-white.png']:
+ for asset in ['LED-Settings.page','NASFrontLEDsIcons.page','icon-themes.css','icons/icon-azure.png','icons/icon-black.png','icons/icon-gray.png','icons/icon-white.png']:
   source=bundle/'payload'/web/asset;source.parent.mkdir(parents=True,exist_ok=True);source.write_text('new icon page fixture')
- (bundle/'settings.example.cfg').write_text('DEFAULT=1\n')
+ (bundle/'settings.example.cfg').write_text('DISK_ATA_PORTS=(1 2 3 4)\n')
  monitor=machine/'usr/local/sbin/ugreen-pro-leds';config=machine/'boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg'
  config.write_text('CUSTOM=preserved\n')
  stop=machine/'boot/config/stop';stop.write_text('#!/bin/bash\necho unrelated-hook\n')
@@ -23,14 +23,15 @@ with tempfile.TemporaryDirectory() as t:
  script=script.replace('"/$web/$asset"', '"'+str(machine)+'/$web/$asset"')
  installer=base/'install';installer.write_text(script)
  old='#!/bin/bash\nexit 0\n'
- def run(fail=False, stale=False):
+ def run(fail=False, stale=False, occupied="1 2"):
   monitor.write_text(old);monitor.chmod(0o755)
   update_web='' if stale else f"cp -R '{bundle}/payload/{web}/.' '{machine}/{web}/';"
   mocks=f'''modinfo() {{ echo '6.18.38-Unraid SMP'; }}
 i2cget() {{ return 0; }}
-upgradepkg() {{ {update_web} printf '%s\\n' '#!/bin/bash' '[[ $1 != start ]] || exit {1 if fail else 0}' > '{monitor}'; chmod +x '{monitor}'; }}
+php() {{ if [[ $(cat "$2") == CUSTOM* ]]; then echo 'DISK_ATA_PORTS=(4 3 2 1)'; else cat "$2"; fi; }}
+upgradepkg() {{ {update_web} printf '%s\\n' '#!/bin/bash' 'device_on_ata_port() {{ [[ " {occupied} " == *" $1 "* ]] || return 1; printf "sd%s\\n" "$1"; }}' '[[ ${{BASH_SOURCE[0]}} != $0 ]] || {{ [[ $1 != start ]] || exit {1 if fail else 0}; }}' > '{monitor}'; chmod +x '{monitor}'; }}
 removepkg() {{ return 0; }}
-export -f modinfo i2cget upgradepkg removepkg
+export -f modinfo i2cget php upgradepkg removepkg
 '''
   return subprocess.run([bash,'-c',mocks+f'"{bash}" "{installer}" "{bundle}"'],capture_output=True,text=True)
  r=run();assert r.returncode==0,r.stderr+r.stdout
@@ -40,9 +41,21 @@ export -f modinfo i2cget upgradepkg removepkg
  r=run(fail=True);assert r.returncode!=0,r.stdout+r.stderr
  assert monitor.read_text()==old
  assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
- page=machine/web/'UGREEN-DXP4800Pro-LEDs.page';page.write_text('old lightbulb page')
+ page=machine/web/'LED-Settings.page';page.write_text('old lightbulb page')
  r=run(stale=True);assert r.returncode!=0,r.stdout+r.stderr
  assert 'Installed WebGUI file is missing or outdated' in r.stderr
  assert 'installed successfully' not in r.stdout
  assert page.read_text()=='old lightbulb page' and config.read_text()=='CUSTOM=preserved\n'
- print('Stale WebGUI rejected with rollback; simulated update preserves settings/hooks; startup failure restores previous runtime files and hook.')
+ for occupied in ['1 2','1 2 3 4','2 4','']:
+  config.unlink()
+  r=run(occupied=occupied);assert r.returncode==0,r.stderr+r.stdout
+  assert config.read_text()=='DISK_ATA_PORTS=(1 2 3 4)\n',config.read_text()
+  assert 'DRIVE-BAY MAPPING:' not in r.stdout
+ config.write_text('DISK_ATA_PORTS=(1 2 0 0)\n')
+ r=run(fail=True);assert r.returncode!=0
+ assert config.read_text()=='DISK_ATA_PORTS=(1 2 0 0)\n'
+ for before,after in [('1 2 0 0','1 2 3 4'),('4 3 2 1','4 3 2 1')]:
+  config.write_text(f'DISK_ATA_PORTS=({before})\n')
+  r=run();assert r.returncode==0,r.stderr+r.stdout
+  assert config.read_text()==f'DISK_ATA_PORTS=({after})\n'
+ print('Four-bay defaults, migration, custom mapping preservation and rollback passed.')

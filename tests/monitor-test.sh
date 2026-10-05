@@ -32,10 +32,11 @@ smart_json='{"smart_status":{"passed":true}}'
 [[ $(disk_health_mode sda) == active ]]
 smart_json='not JSON'
 [[ $(disk_health_mode sda) == active ]]
-# 0 does not enumerate a device or alter its LED.
+# 0 does not enumerate a device and explicitly turns its LED off.
 [[ -z $(device_on_ata_port 0 || true) ]]
 configure_bay 2 0
-[[ ! -f $test_root/disk2/brightness ]]
+assert_file "$test_root/disk2/brightness" 0
+assert_file "$test_root/disk2/trigger" none
 # Existing drive disappears: warn; startup empty bay: off.
 device_on_ata_port() { return 1; }
 bay_device[1]=sda

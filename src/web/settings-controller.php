@@ -124,9 +124,10 @@ function ugreen_pro_groups(): array
             ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Choose the idle indication; both styles flash for reads and writes.',
                 ['solid' => 'Solid when idle, brief off pulse for I/O', 'dark' => 'Dark when idle, brief on pulse for I/O']],
             ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'Length of each activity pulse.', 30, 1000],
-            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'Set ATA ports in physical bay order. 0 disables a bay. Start with detect in the terminal.'],
         ],
         'Advanced Settings' => [
+            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'Set ATA ports in physical bay order. 0 disables a bay. Use the optional mapping guide below to diagnose or change the mapping.'],
+
             ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'Disk activity sampling interval.', 0.1, 5, 0.1],
             ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Checks for drives appearing or disappearing in the configured bays.', 1, 3600],
             ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby and SMART check; failures of the check are not disk failures.', 10, 3600],

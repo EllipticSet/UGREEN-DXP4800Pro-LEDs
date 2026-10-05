@@ -26,7 +26,7 @@ DISK_COLOR_FAILED='255 165 0'
 DISK_BRIGHTNESS=180
 DISK_ACTIVITY_STYLE=dark
 DISK_PULSE_MS=80
-DISK_ATA_PORTS=(0 0 0 0)
+DISK_ATA_PORTS=(1 2 3 4)
 POLL_INTERVAL=0.5
 REFRESH_INTERVAL=15
 DISK_STATUS_INTERVAL=60
@@ -249,7 +249,18 @@ refresh_bay_health() {
 configure_bay() {
   local bay=$1 port=$2 led="disk$1" device path
   path=$(led_path "$led")
-  [[ -d $path && $port != 0 ]] || return 0
+  [[ -d $path ]] || return 0
+  if [[ $port == 0 ]]; then
+    if [[ ${bay_mode[$bay]:-} != disabled ]]; then
+      printf 'none\n' > "$path/trigger"
+      printf 'none\n' > "$path/blink_type"
+      printf '0\n' > "$path/brightness"
+      bay_device[$bay]=''
+      bay_signature[$bay]=''
+      bay_mode[$bay]=disabled
+    fi
+    return 0
+  fi
   device=$(device_on_ata_port "$port" || true)
   if [[ ${bay_device[$bay]-unset} == "$device" ]]; then return 0; fi
   if [[ -n $device ]]; then

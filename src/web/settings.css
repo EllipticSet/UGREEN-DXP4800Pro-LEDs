@@ -50,3 +50,10 @@
 .nas-front-settings .nas-mapping-guide [hidden] { display: none !important; }
 .nas-front-settings .nas-mapping-guide .actions { margin-top: 16px; }
 @media (max-width: 550px) { .nas-front-settings .nas-guide-header { flex-wrap: wrap; } }
+
+.nas-front-settings .nas-front-layout-advanced { grid-template-columns: minmax(0, 1fr); }
+
+#displaybox > .tabs > .nas-plugin-tabs { display: flex; align-items: center; width: 100%; box-sizing: border-box; overflow-x: auto; }
+#displaybox > .tabs > .nas-plugin-tabs > [role="tab"] { flex-shrink: 0; }
+.nas-plugin-version { flex: 0 0 auto; margin-left: auto; padding: 0 18px; color: inherit; opacity: .65; font-size: 13px; white-space: nowrap; }
+@media (max-width: 550px) { .nas-plugin-version { padding: 0 10px; font-size: 12px; } }

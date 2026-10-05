@@ -1,4 +1,4 @@
-Menu="UGREEN-DXP4800Pro-LEDs:1"
+Menu="LED-Settings:1"
 Title="Power LED"
 Tag="power-off"
 Markdown="false"

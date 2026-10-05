@@ -34,4 +34,8 @@ check(substr_count($html, 'is-highlighted') === 6, 'Wrong highlight groups.');
 check(substr_count($html, 'name="csrf_token"') === 4, 'Missing form tokens.');
 preg_match_all('/id="([^"]+)"/', $html, $matches);
 check(count($matches[1]) === count(array_unique($matches[1])), 'Duplicate input IDs.');
+check(substr_count($html, '<figure ') === 3, 'Advanced Settings must not render a NAS image.');
+check(!str_contains($html, 'First-time setup'), 'Obsolete first-time guide remains.');
+check(in_array('DISK_ATA_PORTS', array_column(ugreen_pro_groups()['Advanced Settings'], 0), true), 'Mapping is not in Advanced Settings.');
+check(!in_array('DISK_ATA_PORTS', array_column(ugreen_pro_groups()['Drives LEDs'], 0), true), 'Mapping remains in Drives LEDs.');
 echo "Per-tab save/reset preserves other tabs and bay mapping; missing fields/unknown tabs rejected; all tabs render once with unique inputs and CSRF tokens.\n";

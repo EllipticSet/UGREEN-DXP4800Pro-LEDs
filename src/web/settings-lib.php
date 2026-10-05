@@ -19,7 +19,7 @@ function ugreen_pro_defaults(): array
         'DISK_BRIGHTNESS' => '180',
         'DISK_ACTIVITY_STYLE' => 'dark',
         'DISK_PULSE_MS' => '80',
-        'DISK_ATA_PORTS' => '0 0 0 0',
+        'DISK_ATA_PORTS' => '1 2 3 4',
         'POLL_INTERVAL' => '0.5',
         'REFRESH_INTERVAL' => '15',
         'DISK_STATUS_INTERVAL' => '60',

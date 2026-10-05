@@ -64,7 +64,7 @@ assert icon.endswith('.png') and not icon.startswith('/'), icon
 with tarfile.open(fileobj=io.BytesIO(blob),mode='r:xz') as tf:
  web='payload/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/'
  assert tf.extractfile(web+icon).read()[:8]==b'\x89PNG\r\n\x1a\n'
- page=tf.extractfile(web+'UGREEN-DXP4800Pro-LEDs.page').read().decode()
+ page=tf.extractfile(web+'LED-Settings.page').read().decode()
  page_icon=re.search(r'^Icon="([^"]+)"',page,re.M).group(1)
  tag=re.search(r'^Tag="([^"]+)"',page,re.M).group(1)
  assert page_icon==icon and 'lightbulb' not in page

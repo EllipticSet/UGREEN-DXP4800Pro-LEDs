@@ -111,25 +111,19 @@ Use an absolute path: Unraid's PHP startup can change the working directory.
 
 ## Configuration
 
-Open **Settings → LED Settings**. Choose a tab from the menu at the top; the front-panel image on the left highlights the relevant LEDs, and the settings appear on the right. **Apply** saves only the current tab; **Restore tab defaults** also affects only that tab. On narrow screens the image appears above the controls.
+Open **Settings → LED Settings**. Choose a tab from the menu at the top; the front-panel image on the left highlights the relevant LEDs, and the settings appear on the right. Advanced Settings uses the full width without the NAS image and contains the optional ATA mapping guide. The installed plugin version appears at the right inside the tab bar. **Apply** saves only the current tab; **Restore tab defaults** also affects only that tab. On narrow screens the image appears above the controls.
 
 Use the Settings page to select colours, brightness, the network interface, connectivity checks, drive activity style and monitoring intervals.
 
 ### Drive-bay mapping
 
-Drive LEDs are **unmanaged by default**: the initial ATA port mapping is `0 0 0 0`.
+The standard DXP4800 Pro mapping is `1 2 3 4`, regardless of installed drive count. Empty bays remain off; the monitor checks ports every 15 seconds and detects newly added drives automatically.
 
-1. Run the detection command on the NAS:
+Updates migrate previous occupancy-based defaults, such as `1 2 0 0`, to `1 2 3 4`. Manually reordered ports are retained. Advanced Settings provides an optional mapping override for troubleshooting.
 
-   ```bash
-   /usr/local/sbin/ugreen-pro-leds detect
-   ```
+The optional guide in Advanced Settings explains `/usr/local/sbin/ugreen-pro-leds detect`. Detection lists ATA ports and devices; verify a custom physical mapping one drive at a time by reading existing data and observing its LED.
 
-2. Confirm which ATA port corresponds to each physical bay, in bay order. ATA numbering alone does not establish physical bay order.
-3. Enter the confirmed mapping in the Settings page and apply it.
-4. Verify one drive at a time by reading existing data and observing its LED.
-
-Mapping `1 2 3 4` was verified on the test NAS. Check your own machine before using it. Leave a bay set to `0` to keep it unmanaged.
+The Settings page URL is `/LED-Settings`, and its name is **LED Settings**.
 
 ### Network connectivity
 
@@ -158,7 +152,7 @@ The following indications use the default white and orange colours. Colours and 
 | Drive | White breathing | SMART reports standby |
 | Drive | Slow orange blink | Explicit SMART failure or disappearance of a previously present drive |
 | Drive | Off | Initially empty mapped bay |
-| Drive | Left unmanaged | Bay mapping set to `0` |
+| Drive | Off | Bay mapping set to `0` (disabled) |
 
 A solid-while-idle drive style with brief off pulses is also available. Dark idle is this plugin's default; the UGREEN LED guide does not specify an active-but-idle indication.
 

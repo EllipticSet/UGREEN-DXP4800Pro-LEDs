@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-1.1.0-x86_64-1
+package=ugreen-pro-leds-1.1.5-x86_64-1
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"
@@ -10,6 +10,11 @@ echo 'Installing UGREEN DXP4800 Pro LEDs'
 mkdir -p "$plugin"
 transaction=$(mktemp -d /tmp/ugreen-pro-transaction.XXXXXX)
 trap 'rm -rf -- "$transaction"' EXIT
+config_existed=0
+if [[ -f $plugin/settings.cfg ]]; then
+  config_existed=1
+  cp -p "$plugin/settings.cfg" "$transaction/settings.cfg"
+fi
 old_install=0
 if [[ -x /usr/local/sbin/ugreen-pro-leds ]]; then
   old_install=1
@@ -34,6 +39,11 @@ rollback() {
   trap - ERR
   echo 'Installation failed; restoring the previous plugin state.' >&2
   /usr/local/sbin/ugreen-pro-leds stop 2>/dev/null || true
+  if (( config_existed )); then
+    cp -p "$transaction/settings.cfg" "$plugin/settings.cfg"
+  else
+    rm -f "$plugin/settings.cfg"
+  fi
   if (( old_install )); then
     removepkg "$package" >/dev/null 2>&1 || true
     tar -xf "$transaction/runtime.tar" -C /
@@ -54,13 +64,20 @@ if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1
 upgradepkg --reinstall --install-new "$root/$package.txz" >/dev/null
 # Refuse success if package installation left an old page or missing icons.
 web=usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs
-for asset in UGREEN-DXP4800Pro-LEDs.page NASFrontLEDsIcons.page icon-themes.css icons/icon-azure.png icons/icon-black.png icons/icon-gray.png icons/icon-white.png; do
+for asset in LED-Settings.page NASFrontLEDsIcons.page icon-themes.css icons/icon-azure.png icons/icon-black.png icons/icon-gray.png icons/icon-white.png; do
   cmp -s "$root/payload/$web/$asset" "/$web/$asset" || {
     echo "Installed WebGUI file is missing or outdated: $asset" >&2
     false
   }
 done
+# Remove the former Settings route after the new assets have been verified.
+rm -f "/$web/UGREEN-DXP4800Pro-LEDs.page"
 [[ -f $plugin/settings.cfg ]] || cp "$root/settings.example.cfg" "$plugin/settings.cfg"
+# Upgrade previous occupancy-based defaults to monitor all four bays.
+if grep -Eq '^DISK_ATA_PORTS=\([01] [02] [03] [04]\)$' "$plugin/settings.cfg"; then
+  sed 's/^DISK_ATA_PORTS=.*/DISK_ATA_PORTS=(1 2 3 4)/' "$plugin/settings.cfg" > "$plugin/settings.cfg.tmp"
+  mv "$plugin/settings.cfg.tmp" "$plugin/settings.cfg"
+fi
 /usr/local/sbin/ugreen-pro-leds start
 if [[ ! -f /boot/config/stop ]]; then
   printf '#!/bin/bash\n' > /boot/config/stop
@@ -72,5 +89,4 @@ if ! grep -Fq "$marker" /boot/config/stop; then
 fi
 trap - ERR
 printf '\n%s\n' '============================================================' 
-printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  LED Settings' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '  Existing settings were preserved.' '============================================================'
-
+printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  LED Settings' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '============================================================'
