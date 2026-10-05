@@ -34,12 +34,7 @@ Releases use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatib
 | --- | --- |
 | <a href="docs/screenshots/NAS-Front-LEDs-drives.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives.jpg" alt="Drives LEDs settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-advanced.jpg"><img src="docs/screenshots/NAS-Front-LEDs-advanced.jpg" alt="Advanced Settings" width="260"></a> |
 
-<details>
-<summary>Collapsed setup guide</summary>
 
-<a href="docs/screenshots/NAS-Front-LEDs-drives-collapsed.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives-collapsed.jpg" alt="Drive setup guide collapsed with Show guide control" width="260"></a>
-
-</details>
 
 <details>
 <summary>Mobile preview</summary>
