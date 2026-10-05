@@ -22,7 +22,7 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 
 ## Versioning
 
-Releases use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatible features, major versions for breaking changes.
+Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions for backward-compatible features, and major versions for breaking changes.
 
 ## Settings screenshots
 
@@ -34,10 +34,8 @@ Releases use `MAJOR.MINOR.PATCH`: patches for fixes, minor versions for compatib
 | --- | --- |
 | <a href="docs/screenshots/NAS-Front-LEDs-drives.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives.jpg" alt="Drives LEDs settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-advanced.jpg"><img src="docs/screenshots/NAS-Front-LEDs-advanced.jpg" alt="Advanced Settings" width="260"></a> |
 
-
-
 <details>
-<summary>Mobile preview</summary>
+<summary>Mobile preview from an earlier version</summary>
 
 <a href="docs/screenshots/NAS-Front-LEDs-mobile.gif"><img src="docs/screenshots/NAS-Front-LEDs-mobile.gif" alt="Drives LEDs mobile scrolling preview" width="200"></a>
 
@@ -66,7 +64,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 - Configurable physical bay mapping and monitoring intervals.
 - Non-waking SMART checks, scheduled separately from disk activity sampling.
 - Persistent settings, validated configuration and atomic saves.
-- Existing configuration retained during updates, with runtime rollback attempted if the new monitor fails to start.
+- Settings retained during updates, apart from migration of earlier default bay mappings; rollback is attempted if the new monitor fails to start.
 - Bundled dependencies and checksums, with no separate package downloads during installation.
 
 ## Installation
@@ -81,7 +79,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 
 4. Open **Settings → LED Settings** to configure the plugin.
 
-Plugin updates preserve existing settings at:
+Settings are stored persistently at:
 
 ```text
 /boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg
@@ -89,7 +87,7 @@ Plugin updates preserve existing settings at:
 
 The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **LED Settings**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
 
-The Community Applications submission has been approved. As of October 4, 2026, the plugin is not yet available in the catalogue. Use the installation URL above in the meantime. See [Community Applications maintenance](docs/community-apps.md).
+The URL above supports direct installation without Community Applications. See [Community Applications maintenance](docs/community-apps.md) for submission and catalogue details.
 
 <details>
 <summary>Manual installation from the terminal</summary>
@@ -106,19 +104,19 @@ Use an absolute path: Unraid's PHP startup can change the working directory.
 
 ## Configuration
 
-Open **Settings → LED Settings**. Choose a tab from the menu at the top; the front-panel image on the left highlights the relevant LEDs, and the settings appear on the right. Advanced Settings uses the full width without the NAS image and contains the optional ATA mapping guide. The installed plugin version appears at the right inside the tab bar. **Apply** saves only the current tab; **Restore tab defaults** also affects only that tab. On narrow screens the image appears above the controls.
+Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a tab from the bar at the top. The Power, LAN and Drives tabs show a front-panel image with the relevant LEDs highlighted; on narrow screens, the image appears above the controls. **Advanced Settings** uses the full width without the NAS image and contains the optional ATA mapping guide. The installed plugin version appears on the right inside the tab bar.
+
+**Apply** saves only the selected tab. **Restore tab defaults** also affects only that tab.
 
 Use the Settings page to select colours, brightness, the network interface, connectivity checks, drive activity style and monitoring intervals.
 
 ### Drive-bay mapping
 
-The standard DXP4800 Pro mapping is `1 2 3 4`, regardless of installed drive count. Empty bays remain off; the monitor checks ports every 15 seconds and detects newly added drives automatically.
+The standard DXP4800 Pro mapping is `1 2 3 4`, corresponding to ATA ports 1–4 in physical bay order, regardless of how many drives are installed. Initially empty bays remain off. By default, the monitor checks the mapped ports every 15 seconds and detects newly added drives automatically. Manual detection is not required during installation.
 
 Updates migrate previous occupancy-based defaults, such as `1 2 0 0`, to `1 2 3 4`. Manually reordered ports are retained. Advanced Settings provides an optional mapping override for troubleshooting.
 
 The optional guide in Advanced Settings explains `/usr/local/sbin/ugreen-pro-leds detect`. Detection lists ATA ports and devices; verify a custom physical mapping one drive at a time by reading existing data and observing its LED.
-
-The Settings page URL is `/LED-Settings`, and its name is **LED Settings**.
 
 ### Network connectivity
 
@@ -127,10 +125,10 @@ Automatic interface selection follows the default route, typically `br0`. You ca
 | Mode | What is checked |
 | --- | --- |
 | HTTPS (default) | Link status and reachability of configured HTTPS endpoints |
-| Gateway | Link status and local routing |
+| Gateway | Link status and a ping to the default gateway |
 | None | Link status only |
 
-HTTPS checks approximate Internet availability. An endpoint outage, DNS filtering or firewall rule can produce an orange LAN LED even when other sites remain accessible. Background traffic also triggers LAN blinking.
+HTTPS checks approximate Internet availability. An endpoint outage, DNS filtering or firewall rule can produce an orange LAN LED even when other sites remain accessible. LAN blinking follows traffic on the selected interface; it is not a continuous timed blink. Background traffic also triggers it, including local traffic when Internet checks fail.
 
 ## LED behaviour
 
@@ -141,7 +139,7 @@ The following indications use the default white and orange colours. Colours and 
 | Power | Solid white | Power colour set when the monitor starts; may remain on after monitoring stops |
 | Power | White blink, 500 ms on / 500 ms off | Unraid shutdown hook running |
 | LAN | White, blinking with traffic | Link present and connectivity check passing |
-| LAN | Orange, blinking with local traffic | Link present but HTTPS checks failing |
+| LAN | Orange, blinking with traffic | Link present but the selected connectivity check is failing |
 | LAN | Solid orange | Interface or link unavailable |
 | Drive | Off when idle, white pulses during I/O | Active drive |
 | Drive | White breathing | SMART reports standby |
@@ -149,7 +147,7 @@ The following indications use the default white and orange colours. Colours and 
 | Drive | Off | Initially empty mapped bay |
 | Drive | Off | Bay mapping set to `0` (disabled) |
 
-A solid-while-idle drive style with brief off pulses is also available. Dark idle is this plugin's default; the UGREEN LED guide does not specify an active-but-idle indication.
+The default drive activity style is **Dark when idle**, with brief white pulses during I/O. **Solid when idle**, with brief off pulses during I/O, is also available.
 
 Disk activity is sampled every **0.5 seconds** by default and reflects aggregated activity rather than every individual request. SMART checks use `-n standby,0` to avoid waking sleeping drives. A failed SMART query is not treated as a confirmed disk failure. Intentional removal of a drive can trigger the same warning as unexpected disappearance.
 
@@ -170,13 +168,13 @@ Stop LED monitoring:
 /usr/local/sbin/ugreen-pro-leds stop
 ```
 
-Stopping releases managed triggers and turns off configured drive LEDs. The Power LED remains on; use `status` to check whether the monitor is running. It does not shut down the NAS. Logs are stored in RAM; settings are stored persistently on the boot device.
+Stopping the monitor releases its LED triggers and turns off configured drive LEDs. The Power LED remains on; use `status` to check whether the monitor is running. This command does not shut down the NAS. Logs are stored in RAM; settings are stored persistently on the boot device.
 
 For problems or suggestions, open a [GitHub issue](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues). Include your Unraid version, kernel, plugin version, the observed behaviour and relevant status/log output. Remove any private information before posting.
 
 ## Removal
 
-Remove the plugin from **Plugins** in Unraid. Saved settings and shared `i2c-tools` remain installed.
+Remove the plugin from **Plugins** in Unraid. Saved settings and shared `i2c-tools` are retained.
 
 The installer adds an identified shutdown-hook line to `/boot/config/stop`; removal deletes that line while preserving unrelated changes. If removal is incomplete or an old LED module remains loaded, reboot before installing another LED controller.
 
