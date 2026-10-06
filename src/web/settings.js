@@ -6,8 +6,14 @@
     panel.querySelectorAll('.nas-help-toggle').forEach(button => {
       button.addEventListener('click', () => {
         const help = document.getElementById(button.getAttribute('aria-controls'));
-        help.hidden = !help.hidden;
-        button.setAttribute('aria-expanded', String(!help.hidden));
+        const expanded = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(expanded));
+        if (window.jQuery) {
+          // Use the same jQuery animation as Unraid's inline setting help.
+          window.jQuery(help).stop(true, true).toggle('slow');
+        } else {
+          help.style.display = expanded ? 'block' : 'none';
+        }
       });
     });
     panel.querySelectorAll('.nas-feedback.success').forEach(notice => {

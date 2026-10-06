@@ -27,7 +27,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test2">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test3">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -109,7 +109,7 @@ $tabDescriptions = [
                      type="<?= ugreen_pro_escape($type) ?>" value="<?= ugreen_pro_escape($value) ?>"
                      <?php if ($type === 'number'): ?>min="<?= ugreen_pro_escape((string)$field[4]) ?>" max="<?= ugreen_pro_escape((string)$field[5]) ?>" step="<?= ugreen_pro_escape((string)($field[6] ?? 1)) ?>"<?php endif; ?> required>
             <?php endif; ?>
-            <blockquote class="nas-inline-help" id="ugreen-help-<?= ugreen_pro_escape($key) ?>" hidden><?= ugreen_pro_escape($help) ?></blockquote>
+            <blockquote class="nas-inline-help" id="ugreen-help-<?= ugreen_pro_escape($key) ?>" style="display:none"><?= ugreen_pro_escape($help) ?></blockquote>
             <?php if (isset($ugreenErrors[$key])): ?><span class="field-error"><?= ugreen_pro_escape($ugreenErrors[$key]) ?></span><?php endif; ?>
           </div>
         <?php endforeach; ?>
@@ -127,4 +127,4 @@ $tabDescriptions = [
   </div>
 </div>
 
-<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test2"></script>
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test3"></script>

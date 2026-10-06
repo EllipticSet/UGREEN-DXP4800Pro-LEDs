@@ -60,7 +60,7 @@
 
 .nas-front-settings .nas-help-toggle { all: unset; box-sizing: border-box; font-weight: 600; text-align: right; cursor: help; color: inherit; }
 .nas-front-settings .nas-help-toggle:focus-visible { outline: 2px solid #ff8c28; outline-offset: 4px; }
-.nas-front-settings .nas-inline-help { grid-column: 1 / -1; margin: 4px 0 8px; padding: 12px 16px; border-left: 3px solid #ff8c28; background: #8881; line-height: 1.5; }
+
 .nas-front-settings [hidden] { display: none !important; }
 .nas-front-settings .nas-feedback { display: flex; align-items: center; gap: 12px; margin: 8px 0 24px; padding: 14px 16px; border: 1px solid; border-radius: 6px; line-height: 1.5; }
 .nas-front-settings .nas-feedback.success { border-color: #679f3570; background: #679f3514; }
@@ -88,7 +88,7 @@
 .nas-front-settings button.nas-feedback-close[type=button]:hover,
 .nas-front-settings button.nas-feedback-close[type=button]:active,
 .nas-front-settings button.nas-feedback-close[type=button]:focus { background: transparent; color: inherit; border: 0; box-shadow: none; }
-.nas-front-settings .nas-inline-help { color: var(--blockquote-text-color, #111); background: var(--blue-100, #d3eaf4); border: 1px solid var(--blue-200, #91b8df); border-radius: 6px; padding: 16px 20px; }
+
 @media (max-width: 1100px) {
   .nas-front-settings .nas-front-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .nas-front-settings .nas-front-figure { width: min(100%, 340px); margin-inline: auto; }
@@ -97,3 +97,7 @@
   .nas-front-settings .field { grid-template-columns: minmax(0, 1fr); }
   .nas-front-settings .field input:not([type=color]), .nas-front-settings .field select { max-width: none; }
 }
+
+/* Let Unraid supply its native help colours, borders, padding and typography. */
+.nas-front-settings .nas-inline-help { grid-column: 1 / -1; }
+.nas-front-settings .nas-front-form > .actions { justify-content: center; }
