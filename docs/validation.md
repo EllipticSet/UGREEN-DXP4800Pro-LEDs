@@ -2,7 +2,7 @@
 
 ## Version 1.2.0 preparation
 
-Changes cover tab captions, click-to-open setting help, dismissible success/error feedback, percentage/raw brightness with a 70% default, advanced connectivity controls and coordinated standby breathing restarts. Existing brightness values are preserved; 0 disables activity and breathing as well as steady illumination.
+Changes cover tab captions, click-to-open setting help, dismissible success/error feedback, percentage/raw brightness with a 70% default, advanced connectivity controls and coordinated standby breathing restarts. In percentage mode, existing brightness values are rounded to the nearest ten percent (halfway values upward); raw mode retains exact values; 0 disables activity and breathing as well as steady illumination.
 
 Package structure, checksums and metadata were checked locally. The full PHP, monitor, installer and reproducibility suite runs in GitHub Actions. Hardware validation is still required for perceived brightness and breathing alignment: the MCU exposes individual start commands rather than a shared phase clock.
 

@@ -77,6 +77,13 @@ function ugreen_pro_read_settings(string $path): array
         }
         $values[$key] = $value;
     }
+    if ($values['BRIGHTNESS_MODE'] === 'percent') {
+        foreach (['POWER_BRIGHTNESS', 'NETWORK_BRIGHTNESS', 'DISK_BRIGHTNESS'] as $key) {
+            if (preg_match('/^\d{1,3}$/', $values[$key]) && (int)$values[$key] <= 255) {
+                $values[$key] = ugreen_pro_round_brightness($values[$key]);
+            }
+        }
+    }
     return $values;
 }
 
@@ -198,4 +205,11 @@ function ugreen_pro_write_atomic(string $path, string $contents): bool
         @unlink($temp);
     }
     return $ok;
+}
+
+// Nearest ten percent, with halfway values rounded upward, then controller units.
+function ugreen_pro_round_brightness(string $raw): string
+{
+    $percent = (int)round((int)$raw * 100 / 255 / 10) * 10;
+    return (string)(int)round($percent * 255 / 100);
 }

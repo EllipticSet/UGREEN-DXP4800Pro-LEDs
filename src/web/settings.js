@@ -10,6 +10,9 @@
         button.setAttribute('aria-expanded', String(!help.hidden));
       });
     });
+    panel.querySelectorAll('.nas-feedback.success').forEach(notice => {
+      setTimeout(() => notice.remove(), 5000);
+    });
     panel.querySelectorAll('.nas-feedback-close').forEach(button => {
       button.addEventListener('click', () => button.closest('.nas-feedback').remove());
     });

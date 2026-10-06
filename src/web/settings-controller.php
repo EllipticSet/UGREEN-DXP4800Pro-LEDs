@@ -148,18 +148,14 @@ function ugreen_pro_tab_candidate(array $current, array $posted, string $group, 
     return $current;
 }
 
-// Keep stored brightness in controller units in both display modes. Include an
-// exact current-value option so opening/saving a tab never rounds legacy values.
+// Percentage mode has exactly eleven choices. Legacy values are rounded when
+// read in percentage mode; raw mode retains their exact controller values.
 function ugreen_pro_brightness_options(string $current): array
 {
     $options = [];
     for ($percent = 0; $percent <= 100; $percent += 10) {
         $raw = (string)(int)round($percent * 255 / 100);
         $options[$raw] = $percent === 0 ? '0% (off)' : "$percent%";
-    }
-    if (!array_key_exists($current, $options)) {
-        $options[$current] = rtrim(rtrim(number_format((int)$current * 100 / 255, 1, '.', ''), '0'), '.') . '% (current)';
-        ksort($options, SORT_NUMERIC);
     }
     return $options;
 }

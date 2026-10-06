@@ -113,7 +113,7 @@ Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a 
 
 Use the Settings page to select colours, brightness, the network interface and drive activity style. Click a setting name to open its help text. Advanced Settings contains the brightness display mode, connectivity checks, drive mapping and monitoring intervals.
 
-Brightness defaults to 70% for each LED group. Percentage mode offers 0% (off) through 100% in 10% steps. Raw mode accepts 0–255; both modes store controller values. Switching modes preserves existing values, with a current-value entry for percentages between steps. Existing installations retain their saved brightness; restoring tab defaults selects 70%.
+Brightness defaults to 70% for each LED group. Percentage mode offers 0% (off) through 100% in 10% steps. Raw mode accepts 0–255; both modes store controller values. Percentage mode rounds existing values to the nearest ten percent, with halfway values rounded upward (180 raw becomes 70%). Raw mode retains exact controller values. Restoring tab defaults selects 70%.
 
 ### Drive-bay mapping
 

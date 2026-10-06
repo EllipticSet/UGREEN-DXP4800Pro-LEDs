@@ -12,6 +12,13 @@ $submittedTab = $_POST['ugreen_pro_group'] ?? 'Power LED';
 if (!is_string($submittedTab) || !isset(ugreen_pro_groups()[$submittedTab])) $submittedTab = 'Power LED';
 $tabKeys = ['Power LED' => 'power', 'LAN LED' => 'lan', 'Drives LEDs' => 'drives', 'Advanced Settings' => 'advanced'];
 $tabKey = $tabKeys[$ugreenTab];
+$categoryStarts = [
+    'BRIGHTNESS_MODE' => 'Brightness',
+    'CONNECTIVITY_METHOD' => 'Connectivity',
+    'DISK_ATA_PORTS' => 'Drive mapping',
+    'POLL_INTERVAL' => 'Monitoring',
+];
+$ugreenMappingGuide = '';
 $tabDescriptions = [
     'power' => 'Power indication while running and during shutdown.',
     'lan' => 'Network activity and connectivity status.',
@@ -20,7 +27,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test2">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -57,7 +64,7 @@ $tabDescriptions = [
           <button type="button" class="nas-feedback-close" aria-label="Dismiss message">&times;</button>
         </div>
       <?php endif; ?>
-      <?php if ($tabKey === 'advanced'): ?>
+      <?php if ($tabKey === 'advanced'): ob_start(); ?>
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
           <div class="nas-guide-header">
             <strong>Optional drive-bay mapping guide</strong>
@@ -72,7 +79,7 @@ $tabDescriptions = [
           <div class="actions"><button type="button" class="nas-guide-done">Done</button></div>
           </div>
         </aside>
-      <?php endif; ?>
+      <?php $ugreenMappingGuide = ob_get_clean(); endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
         <input type="hidden" name="ugreen_pro_group" value="<?= ugreen_pro_escape($ugreenTab) ?>">
@@ -81,9 +88,14 @@ $tabDescriptions = [
             $value = (string)($ugreenValues[$key] ?? '');
             if (str_ends_with($key, '_BRIGHTNESS') && $ugreenValues['BRIGHTNESS_MODE'] === 'percent') {
                 $type = 'select';
+                $value = ugreen_pro_round_brightness($value);
                 $field[4] = ugreen_pro_brightness_options($value);
             }
         ?>
+          <?php if ($tabKey === 'advanced' && isset($categoryStarts[$key])): ?>
+            <h2 class="nas-settings-category"><?= ugreen_pro_escape($categoryStarts[$key]) ?></h2>
+            <?php if ($key === 'DISK_ATA_PORTS') echo $ugreenMappingGuide; ?>
+          <?php endif; ?>
           <div class="field">
             <button type="button" class="nas-help-toggle" id="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-controls="ugreen-help-<?= ugreen_pro_escape($key) ?>" aria-expanded="false"><?= ugreen_pro_escape($label) ?></button>
             <?php if ($type === 'select'): ?>
@@ -115,4 +127,4 @@ $tabDescriptions = [
   </div>
 </div>
 
-<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0"></script>
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test2"></script>

@@ -83,8 +83,16 @@ $mode['BRIGHTNESS_MODE'] = 'invalid';
 check(isset($errors['BRIGHTNESS_MODE']), 'Unknown display mode accepted.');
 $options = ugreen_pro_brightness_options('179');
 check(count($options) === 11 && $options[179] === '70%' && $options[0] === '0% (off)' && $options[255] === '100%', 'Percentage scale incorrect.');
-check(isset(ugreen_pro_brightness_options('180')[180]), 'Existing raw brightness would be rounded.');
+check(count(ugreen_pro_brightness_options('180')) === 11 && !isset(ugreen_pro_brightness_options('180')[180]), 'Percentage options must stay on ten-percent steps.');
 $legacy = tempnam(__DIR__, 'legacy-');
 file_put_contents($legacy, "POWER_BRIGHTNESS=180\nNETWORK_BRIGHTNESS=180\nDISK_BRIGHTNESS=180\n");
 $legacyValues = ugreen_pro_read_settings($legacy); unlink($legacy);
-check($legacyValues['POWER_BRIGHTNESS'] === '180' && $legacyValues['BRIGHTNESS_MODE'] === 'percent', 'Legacy brightness changed.');
+check($legacyValues['POWER_BRIGHTNESS'] === '179' && $legacyValues['BRIGHTNESS_MODE'] === 'percent', 'Legacy brightness did not round to 70%.');
+
+check(ugreen_pro_round_brightness('128') === '128', '50% midpoint rounded incorrectly.');
+check(ugreen_pro_round_brightness('180') === '179', '180 must round to 70%.');
+check(ugreen_pro_round_brightness('0') === '0' && ugreen_pro_round_brightness('255') === '255', 'Brightness endpoints changed.');
+$legacy = tempnam(__DIR__, 'raw-');
+file_put_contents($legacy, "BRIGHTNESS_MODE='raw'\nPOWER_BRIGHTNESS=180\n");
+$rawValues = ugreen_pro_read_settings($legacy); unlink($legacy);
+check($rawValues['POWER_BRIGHTNESS'] === '180', 'Raw mode must retain exact brightness.');
