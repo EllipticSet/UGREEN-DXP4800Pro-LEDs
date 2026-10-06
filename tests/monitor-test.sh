@@ -58,11 +58,11 @@ echo 'Monitor state transitions, non-waking SMART arguments, disabled mapping an
 # unchanged health refreshes or touching a failed/active bay.
 bay_device[1]=sda
 bay_device[2]=sdb
-printf standby > "$state_dir/sda"
-printf active > "$state_dir/sdb"
+printf 'standby\n' > "$state_dir/sda"
+printf 'active\n' > "$state_dir/sdb"
 refresh_bay_health
 printf sentinel > "$test_root/disk1/blink_type"
-printf standby > "$state_dir/sdb"
+printf 'standby\n' > "$state_dir/sdb"
 refresh_bay_health
 assert_file "$test_root/disk1/blink_type" 'breath 1000 1000'
 assert_file "$test_root/disk2/blink_type" 'breath 1000 1000'
