@@ -25,28 +25,29 @@
     });
   });
 })();
-// SPDX-License-Identifier: MIT
 (() => {
   const guide = document.querySelector('.nas-mapping-guide');
   if (!guide || guide.dataset.initialized) return;
   guide.dataset.initialized = 'true';
   const content = guide.querySelector('#nas-mapping-content');
-  const reopen = guide.querySelector('.nas-guide-open');
-  const done = guide.querySelector('.nas-guide-done');
+  const toggle = guide.querySelector('.nas-guide-open');
   const key = 'nas-front-leds.mapping-guide.dismissed';
-  function show(expanded, focus) {
-    content.hidden = !expanded;
-    reopen.hidden = expanded;
-    reopen.setAttribute('aria-expanded', String(expanded));
-    if (focus) (expanded ? done : reopen).focus();
+  let expanded = true;
+  try { expanded = localStorage.getItem(key) !== 'true'; } catch (_) {}
+  function updateButton() {
+    toggle.textContent = expanded ? 'Hide guide' : 'Show guide';
+    toggle.setAttribute('aria-expanded', String(expanded));
   }
-  try { show(localStorage.getItem(key) !== 'true', false); } catch (_) { show(true, false); }
-  done.addEventListener('click', () => {
-    show(false, true);
-    try { localStorage.setItem(key, 'true'); } catch (_) {}
-  });
-  reopen.addEventListener('click', () => {
-    show(true, true);
-    try { localStorage.removeItem(key); } catch (_) {}
+  content.style.display = expanded ? '' : 'none';
+  updateButton();
+  toggle.addEventListener('click', () => {
+    expanded = !expanded;
+    updateButton();
+    // Use the same jQuery animation as Unraid's native inline help.
+    $(content).stop(true, true).toggle('slow');
+    try {
+      if (expanded) localStorage.removeItem(key);
+      else localStorage.setItem(key, 'true');
+    } catch (_) {}
   });
 })();

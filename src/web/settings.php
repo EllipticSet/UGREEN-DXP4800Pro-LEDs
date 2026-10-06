@@ -27,7 +27,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test6">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test7">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -68,7 +68,7 @@ $tabDescriptions = [
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
           <div class="nas-guide-header">
             <strong>Optional drive-bay mapping guide</strong>
-            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="true" hidden>Show guide</button>
+            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="true">Hide guide</button>
           </div>
           <div id="nas-mapping-content">
           <p>The standard mapping is 1 2 3 4. Empty bays remain off; newly added drives are detected automatically within approximately 15 seconds. Change the mapping only for troubleshooting or to disable a bay.</p>
@@ -76,7 +76,6 @@ $tabDescriptions = [
           <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
           <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave disabled.</p>
           <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#configuration" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
-          <div class="actions"><button type="button" class="nas-guide-done">Done</button></div>
           </div>
         </aside>
       <?php $ugreenMappingGuide = ob_get_clean(); endif; ?>
@@ -126,4 +125,4 @@ $tabDescriptions = [
   </div>
 </div>
 
-<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test6"></script>
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test7"></script>
