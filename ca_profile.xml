@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CommunityApplications>
   <Profile>UGREEN DXP4800 Pro LEDs for the UGREEN DXP4800 Pro running Unraid. This repository contains the plugin, matching kernel module, sources, licenses and Community Applications metadata. Support and bug reports: https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues. Requires Unraid 7.3.2 or later with exact kernel 6.18.38-Unraid.</Profile>
-  <Icon>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/icon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/icon.svg</Icon>
   <Forum>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues</Forum>
   <WebPage>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs</WebPage>
 </CommunityApplications>
