@@ -48,3 +48,6 @@ foreach (['CONNECTIVITY_METHOD', 'CONNECTIVITY_URL', 'CONNECTIVITY_FALLBACK_URL'
 check(substr_count($html, 'class="nas-help-toggle"') === count(ugreen_pro_defaults()), 'Each field must have click help.');
 check(!str_contains($html, '<label for='), 'Setting labels must not activate colour inputs.');
 check(!str_contains($html, '<span>UGREEN DXP4800 Pro</span>'), 'Old image caption remains.');
+
+check(substr_count($html, 'class="nas-settings-category"') === 4, 'Advanced settings categories are missing.');
+check(strpos($html, '>Drive mapping</h2>') < strpos($html, 'Optional drive-bay mapping guide'), 'Mapping guide must belong to its category.');
