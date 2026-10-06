@@ -51,3 +51,6 @@ check(!str_contains($html, '<span>UGREEN DXP4800 Pro</span>'), 'Old image captio
 
 check(substr_count($html, 'class="nas-settings-category"') === 4, 'Advanced settings categories are missing.');
 check(strpos($html, '>Drive mapping</h2>') < strpos($html, 'Optional drive-bay mapping guide'), 'Mapping guide must belong to its category.');
+
+check(!preg_match('/class="nas-inline-help"[^>]* hidden/', $html), 'Native animated help must not be blocked by hidden.');
+check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults()), 'Each native help panel must start collapsed.');
