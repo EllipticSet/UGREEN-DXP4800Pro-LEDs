@@ -1,9 +1,12 @@
 """Run removal against temporary paths and mocked kernel/package commands."""
 from pathlib import Path
 import os, subprocess, tempfile
+import xml.etree.ElementTree as ET
 
 project = Path(__file__).resolve().parent.parent
 bash = os.environ.get('BASH_TEST', 'bash')
+version = ET.parse(project/'UGREEN-DXP4800Pro-LEDs.plg').getroot().get('version')
+expected_package = f'ugreen-pro-leds-{version}-x86_64-1'
 for scenario in ['loaded', 'absent', 'failure', 'still-loaded']:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -31,7 +34,7 @@ for scenario in ['loaded', 'absent', 'failure', 'still-loaded']:
             'return 0' if scenario == 'still-loaded' else f'rmdir "{module}"')
         mocks = f'''sed() {{ python3 -c 'from pathlib import Path; p=Path("{stop}"); p.write_text("".join(line for line in p.read_text().splitlines(True) if not line.rstrip().endswith("shutdown # UGREEN-DXP4800Pro-LEDs")))'; }}
 rmmod() {{ [[ $1 == led_ugreen ]] || return 2; touch "{unloaded}"; {action}; }}
-removepkg() {{ touch "{removed}"; }}
+removepkg() {{ printf '%s\\n' "$1" > "{removed}"; }}
 modprobe() {{ echo 'Module not found' >&2; return 1; }}
 export -f sed rmmod removepkg modprobe
 '''
@@ -45,6 +48,7 @@ export -f sed rmmod removepkg modprobe
         assert 'echo unrelated' in stop.read_text() and '# UGREEN-DXP4800Pro-LEDs' not in stop.read_text()
         if success:
             assert not module.exists()
+            assert removed.read_text().strip() == expected_package
         else:
             assert 'module' in result.stderr.lower()
 print('Removal unloads an unindexed module; failures stay visible and preserve retry/configuration.')

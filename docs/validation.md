@@ -1,6 +1,12 @@
 # Validation
 
-## Current release: 1.1.5
+## Current release: 1.2.0
+
+Changes cover tab captions, click-to-open setting help, dismissible success/error feedback, percentage/raw brightness with a 70% default, advanced connectivity controls and coordinated standby breathing restarts. In percentage mode, existing brightness values are rounded to the nearest ten percent (halfway values upward); raw mode retains exact values; 0 disables activity and breathing as well as steady illumination.
+
+Package structure, checksums and metadata were checked locally. The full PHP, monitor, installer and reproducibility suite runs in GitHub Actions. Hardware validation is still required for perceived brightness and breathing alignment: the MCU exposes individual start commands rather than a shared phase clock.
+
+## Automated coverage
 
 Automated checks cover shell/PHP syntax, settings validation and per-tab updates, native Unraid CSRF handling, simulated disk/network states, installer preflight, update rollback and removal. Settings recovery tests also cover failed restoration, a stopped monitor after successful restoration, and failed stop commands.
 
@@ -8,7 +14,7 @@ The package tests verify the committed `.plg` and its checksum before rebuilding
 
 Run the checks in [the validation workflow](../.github/workflows/validate.yml). The [GitHub Actions results](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml) show the outcome for each commit; a successful older run is not proof that a newer commit has passed.
 
-These are automated and simulated checks, not a hardware certification. The owner confirmed successful installation and monitor startup during the 1.1.1–1.1.4 development iterations and accepted the version placement inside the tab container. The final 1.1.5 mapping change has passed simulated checks; adding or replacing a disk has not been tested live for this release. The bundled module was inspected, not rebuilt or loaded locally.
+The owner tested and approved the 1.2.0 settings interface on the NAS. Safari checks included repeated help opening and closing, centred action buttons, percentage brightness, and the mapping guide toggle. The Power LED screenshot was captured from the actual WebGUI; the Drives LEDs mobile preview was captured in Safari responsive mode. Automated and simulated checks do not certify hardware behaviour; the bundled module was inspected, not rebuilt locally.
 
 The four icon variants and the README animation are checked locally for dimensions, colours and transparency. Theme switching is exercised with the same icon stylesheet and paths used by Settings and Plugins; live verification on the NAS remains pending.
 
@@ -31,7 +37,7 @@ These results apply to the builds tested at the time. The original, dated eviden
 - Install/update the current release and exercise recovery after failed Apply.
 - Confirm the complete corrected removal/reinstallation flow.
 - Verify fault indications and the physical response to different brightness values.
-- Verify all four themes and narrow layouts for the current interface on the actual Unraid WebGUI.
+- Complete coverage of all four themes on the actual Unraid WebGUI; desktop and narrow Safari layouts have been exercised.
 - Verify empty bays and subsequent disk insertion/replacement using the standard four-port mapping.
 
 The current interface highlights Power, LAN or the four drive LEDs according to the selected tab. Advanced Settings has no NAS image. The historical interface notes describe an earlier layout.

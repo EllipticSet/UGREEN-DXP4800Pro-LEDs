@@ -12,9 +12,9 @@ ready_file=/run/ugreen-pro-leds.ready
 log_file=${UGREEN_PRO_LOG_FILE:-/var/log/ugreen-pro-leds.log}
 
 POWER_COLOR='255 255 255'
-POWER_BRIGHTNESS=180
+POWER_BRIGHTNESS=179
 NETWORK_INTERFACE=auto
-NETWORK_BRIGHTNESS=180
+NETWORK_BRIGHTNESS=179
 NETWORK_COLOR_ONLINE='255 255 255'
 NETWORK_COLOR_OFFLINE='255 165 0'
 CONNECTIVITY_METHOD=https
@@ -23,7 +23,7 @@ CONNECTIVITY_FALLBACK_URL='https://ai.ugreen.com/'
 CONNECTIVITY_INTERVAL=60
 DISK_COLOR='255 255 255'
 DISK_COLOR_FAILED='255 165 0'
-DISK_BRIGHTNESS=180
+DISK_BRIGHTNESS=179
 DISK_ACTIVITY_STYLE=dark
 DISK_PULSE_MS=80
 DISK_ATA_PORTS=(1 2 3 4)
@@ -132,6 +132,15 @@ configure_network() {
   local iface carrier color mode
   iface=$(pick_network_interface)
   carrier=$(cat "/sys/class/net/$iface/carrier" 2>/dev/null || true)
+  if (( NETWORK_BRIGHTNESS == 0 )); then
+    if [[ ${current_network_mode:-} != off ]]; then
+      printf 'none\n' > /sys/class/leds/netdev/trigger
+      printf 'none\n' > /sys/class/leds/netdev/blink_type
+      printf '0\n' > /sys/class/leds/netdev/brightness
+      current_network_mode=off
+    fi
+    return 0
+  fi
   mode=down
   if [[ -n $iface && $carrier == 1 ]]; then
     if [[ ${current_network_interface:-} != "$iface" || ${current_network_mode:-} == down ]] ||
@@ -185,10 +194,14 @@ declare -A bay_device bay_signature bay_mode
 
 set_bay_mode() {
   local bay=$1 mode=$2 path
+  (( DISK_BRIGHTNESS > 0 )) || mode=off
   [[ ${bay_mode[$bay]:-} == "$mode" ]] && return 0
   path=$(led_path "disk$bay")
   printf 'none\n' > "$path/trigger"
   case $mode in
+    off)
+      printf 'none\n' > "$path/blink_type"
+      printf '0\n' > "$path/brightness" ;;
     active)
       printf 'none\n' > "$path/blink_type"
       case $DISK_ACTIVITY_STYLE in
@@ -235,7 +248,8 @@ disk_health_mode() {
 }
 
 refresh_bay_health() {
-  local bay device mode
+  local bay device mode before after
+  before=$(standby_bays)
   for bay in 1 2 3 4; do
     device=${bay_device[$bay]:-}
     [[ -n $device ]] || continue
@@ -243,6 +257,33 @@ refresh_bay_health() {
     if [[ -r $state_dir/"$device" ]]; then read -r mode < "$state_dir/$device" || mode=active; fi
     [[ $mode == active || $mode == standby || $mode == failed ]] || mode=active
     set_bay_mode "$bay" "$mode"
+  done
+  after=$(standby_bays)
+  if [[ $before != "$after" && -n $after ]]; then synchronize_standby_breathing; fi
+}
+
+standby_bays() {
+  local bay
+  for bay in 1 2 3 4; do
+    [[ ${bay_mode[$bay]:-} != standby ]] || printf '%s ' "$bay"
+  done
+  return 0
+}
+
+synchronize_standby_breathing() {
+  local bay path
+  # The MCU has no exposed shared phase. Reset all sleeping LEDs first; then
+  # start their identical hardware cycles together when membership changes.
+  # Writing breath alone is insufficient: the driver caches unchanged modes.
+  for bay in 1 2 3 4; do
+    [[ ${bay_mode[$bay]:-} == standby ]] || continue
+    path=$(led_path "disk$bay")
+    printf 'none\n' > "$path/blink_type"
+  done
+  for bay in 1 2 3 4; do
+    [[ ${bay_mode[$bay]:-} == standby ]] || continue
+    path=$(led_path "disk$bay")
+    printf 'breath 1000 1000\n' > "$path/blink_type"
   done
 }
 
@@ -438,7 +479,12 @@ case ${1:-} in
       printf 'none\n' > /sys/class/leds/power/trigger
       printf '%s\n' "$POWER_COLOR" > /sys/class/leds/power/color
       printf '%s\n' "$POWER_BRIGHTNESS" > /sys/class/leds/power/brightness
-      printf 'blink 500 500\n' > /sys/class/leds/power/blink_type
+      if (( POWER_BRIGHTNESS > 0 )); then
+        printf 'blink 500 500\n' > /sys/class/leds/power/blink_type
+      else
+        printf 'none\n' > /sys/class/leds/power/blink_type
+        printf '0\n' > /sys/class/leds/power/brightness
+      fi
     fi
     ;;
   status)

@@ -20,7 +20,7 @@ assert_file "$test_root/disk1/blink_type" 'blink 500 500'
 DISK_ACTIVITY_STYLE=solid
 set_bay_mode 1 active
 assert_file "$test_root/disk1/invert" 1
-assert_file "$test_root/disk1/brightness" 180
+assert_file "$test_root/disk1/brightness" 179
 # A sleeping disk is not woken by the SMART request.
 smartctl() { [[ $1 == -n && $2 == standby,0 && $3 == -H && $4 == -j ]] || exit 1; printf '%s' "$smart_json"; }
 timeout() { shift; "$@"; }
@@ -53,3 +53,26 @@ printf "standby\n" > "$state_dir/sdb"
 refresh_bay_health
 assert_file "$test_root/disk1/blink_type" 'breath 1000 1000'
 echo 'Monitor state transitions, non-waking SMART arguments, disabled mapping and hotplug passed.'
+
+# A later sleeping bay rephases existing sleepers, without restarting them on
+# unchanged health refreshes or touching a failed/active bay.
+bay_device[1]=sda
+bay_device[2]=sdb
+printf 'standby\n' > "$state_dir/sda"
+printf 'active\n' > "$state_dir/sdb"
+refresh_bay_health
+printf sentinel > "$test_root/disk1/blink_type"
+printf 'standby\n' > "$state_dir/sdb"
+refresh_bay_health
+assert_file "$test_root/disk1/blink_type" 'breath 1000 1000'
+assert_file "$test_root/disk2/blink_type" 'breath 1000 1000'
+printf sentinel > "$test_root/disk1/blink_type"
+refresh_bay_health
+assert_file "$test_root/disk1/blink_type" sentinel
+DISK_BRIGHTNESS=0
+for mode in active standby failed; do
+  set_bay_mode 1 "$mode"
+  assert_file "$test_root/disk1/brightness" 0
+  assert_file "$test_root/disk1/blink_type" none
+  assert_file "$test_root/disk1/trigger" none
+done

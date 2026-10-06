@@ -103,30 +103,32 @@ function ugreen_pro_groups(): array
 {
     $ugreenGroups = [
         'Power LED' => [
-            ['POWER_COLOR', 'Running colour', 'color', 'Shown while Unraid is running.'],
-            ['POWER_BRIGHTNESS', 'Brightness', 'number', '1–255; the MCU may treat nonzero values as full brightness.', 1, 255],
+            ['POWER_COLOR', 'Running colour', 'color', 'Colour shown while Unraid is running and used for blinking during shutdown.'],
+            ['POWER_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
         ],
         'LAN LED' => [
             ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Normally solid; flashes for network traffic.'],
             ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Shown when the link or internet check fails.'],
-            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', '1–255, where supported by the MCU.', 1, 255],
+            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
             ['NETWORK_INTERFACE', 'Network interface', 'text', 'auto uses the first default route, usually br0.'],
-            ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS checks the two sites below; gateway checks only local routing.',
-                ['https' => 'HTTPS', 'gateway' => 'Gateway ping', 'none' => 'Always online when linked']],
-            ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'HTTPS endpoint checked first.'],
-            ['CONNECTIVITY_FALLBACK_URL', 'Fallback check URL', 'url', 'Used if the primary endpoint fails.'],
-            ['CONNECTIVITY_INTERVAL', 'Check interval (seconds)', 'number', 'Time between internet checks.', 10, 3600],
         ],
         'Drives LEDs' => [
             ['DISK_COLOR', 'Healthy drive colour', 'color', 'Used for active and sleeping drives.'],
             ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Slow flash when SMART explicitly reports failure.'],
-            ['DISK_BRIGHTNESS', 'Brightness', 'number', '1–255, where supported by the MCU.', 1, 255],
+            ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
             ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Choose the idle indication; both styles flash for reads and writes.',
                 ['solid' => 'Solid when idle, brief off pulse for I/O', 'dark' => 'Dark when idle, brief on pulse for I/O']],
             ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'Length of each activity pulse.', 30, 1000],
         ],
         'Advanced Settings' => [
-            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'Set ATA ports in physical bay order. 0 disables a bay. Use the optional mapping guide below to diagnose or change the mapping.'],
+            ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Choose percentages in 10% steps or raw controller values from 0 to 255. Percentage mode rounds brightness to the nearest 10%; raw mode keeps the exact controller value. 0 turns the LED off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
+            ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS checks the two sites below; gateway checks only local routing.',
+                ['https' => 'HTTPS', 'gateway' => 'Gateway ping', 'none' => 'Always online when linked']],
+            ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'HTTPS endpoint checked first.'],
+            ['CONNECTIVITY_FALLBACK_URL', 'Fallback check URL', 'url', 'Used if the primary endpoint fails.'],
+            ['CONNECTIVITY_INTERVAL', 'Check interval (seconds)', 'number', 'Time between internet checks.', 10, 3600],
+
+            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'Set ATA ports in physical bay order. 0 disables a bay. Use the optional mapping guide above to diagnose or change the mapping.'],
 
             ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'Disk activity sampling interval.', 0.1, 5, 0.1],
             ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Checks for drives appearing or disappearing in the configured bays.', 1, 3600],
@@ -144,4 +146,16 @@ function ugreen_pro_tab_candidate(array $current, array $posted, string $group, 
     $source = $reset ? ugreen_pro_defaults() : $posted;
     foreach ($fields as $field) $current[$field[0]] = $source[$field[0]] ?? '';
     return $current;
+}
+
+// Percentage mode has exactly eleven choices. Legacy values are rounded when
+// read in percentage mode; raw mode retains their exact controller values.
+function ugreen_pro_brightness_options(string $current): array
+{
+    $options = [];
+    for ($percent = 0; $percent <= 100; $percent += 10) {
+        $raw = (string)(int)round($percent * 255 / 100);
+        $options[$raw] = $percent === 0 ? '0% (off)' : "$percent%";
+    }
+    return $options;
 }

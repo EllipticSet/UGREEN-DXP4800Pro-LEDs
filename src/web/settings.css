@@ -57,3 +57,54 @@
 #displaybox > .tabs > .nas-plugin-tabs > [role="tab"] { flex-shrink: 0; }
 .nas-plugin-version { flex: 0 0 auto; margin-left: auto; padding: 0 18px; color: inherit; opacity: .65; font-size: 13px; white-space: nowrap; }
 @media (max-width: 550px) { .nas-plugin-version { padding: 0 10px; font-size: 12px; } }
+
+.nas-front-settings .nas-help-toggle { all: unset; box-sizing: border-box; font-weight: 600; text-align: right; cursor: help; color: inherit; }
+.nas-front-settings .nas-help-toggle:focus-visible { outline: 2px solid #ff8c28; outline-offset: 4px; }
+
+.nas-front-settings [hidden] { display: none !important; }
+.nas-front-settings .nas-feedback { display: flex; align-items: center; gap: 12px; margin: 8px 0 24px; padding: 14px 16px; border: 1px solid; border-radius: 6px; line-height: 1.5; }
+.nas-front-settings .nas-feedback.success { border-color: #679f3570; background: #679f3514; }
+.nas-front-settings .nas-feedback.error { border-color: #e8543f90; background: #e8543f14; }
+.nas-front-settings .nas-feedback.success > i { color: #679f35; }
+.nas-front-settings .nas-feedback.error > i { color: #e8543f; }
+.nas-front-settings .nas-feedback-close { all: unset; cursor: pointer; margin-left: auto; padding: 0 6px; font-size: 24px; }
+.nas-front-settings .nas-feedback-close:focus-visible { outline: 2px solid #ff8c28; }
+@media (max-width: 550px) { .nas-front-settings .nas-help-toggle { text-align: left; } }
+
+/* Match the native desktop control width without stretching wide screens. */
+.nas-front-settings { max-width: 1304px; }
+.nas-front-settings .nas-front-layout { grid-template-columns: minmax(260px, 440px) minmax(0, 800px); }
+.nas-front-settings .nas-front-controls { width: 100%; max-width: 800px; min-width: 0; margin-inline: auto; }
+.nas-front-settings .nas-front-layout-advanced { grid-template-columns: minmax(0, 800px); justify-content: center; }
+.nas-front-settings .field { grid-template-columns: minmax(180px, 260px) minmax(0, 400px); justify-content: center; }
+.nas-front-settings .field input:not([type=color]), .nas-front-settings .field select { max-width: 400px; }
+.nas-front-settings .nas-settings-category { font-size: 1.15em; margin: 30px 0 16px; padding-bottom: 10px; border-bottom: 1px solid #8885; color: inherit; }
+/* Override native button hover gradients only for labels and close controls. */
+.nas-front-settings button.nas-help-toggle[type=button],
+.nas-front-settings button.nas-help-toggle[type=button]:hover,
+.nas-front-settings button.nas-help-toggle[type=button]:active,
+.nas-front-settings button.nas-help-toggle[type=button]:focus,
+.nas-front-settings button.nas-feedback-close[type=button],
+.nas-front-settings button.nas-feedback-close[type=button]:hover,
+.nas-front-settings button.nas-feedback-close[type=button]:active,
+.nas-front-settings button.nas-feedback-close[type=button]:focus { background: transparent; color: inherit; border: 0; box-shadow: none; }
+
+@media (max-width: 1100px) {
+  .nas-front-settings .nas-front-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .nas-front-settings .nas-front-figure { width: min(100%, 340px); margin-inline: auto; }
+}
+@media (max-width: 550px) {
+  .nas-front-settings .field { grid-template-columns: minmax(0, 1fr); }
+  .nas-front-settings .field input:not([type=color]), .nas-front-settings .field select { max-width: none; }
+}
+
+/* Let Unraid supply its native help colours, borders, padding and typography. */
+.nas-front-settings dl.field { padding: 0; }
+.nas-front-settings dl.field dd { min-width: 0; }
+.nas-front-settings dl.field dt .nas-help-toggle { width: 100%; }
+.nas-front-settings .nas-front-form > .actions { justify-content: center; }
+
+/* Keep sibling margins from collapsing when native help enters/leaves the flow.
+   This avoids an immediate spacing jump before jQuery animates its dimensions. */
+.nas-front-settings .nas-front-form { display: flex; flex-direction: column; }
+.nas-front-settings .nas-front-form > dl.field { margin: 10px 0; }

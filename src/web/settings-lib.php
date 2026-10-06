@@ -4,10 +4,11 @@
 function ugreen_pro_defaults(): array
 {
     return [
+        'BRIGHTNESS_MODE' => 'percent',
         'POWER_COLOR' => '#ffffff',
-        'POWER_BRIGHTNESS' => '180',
+        'POWER_BRIGHTNESS' => '179',
         'NETWORK_INTERFACE' => 'auto',
-        'NETWORK_BRIGHTNESS' => '180',
+        'NETWORK_BRIGHTNESS' => '179',
         'NETWORK_COLOR_ONLINE' => '#ffffff',
         'NETWORK_COLOR_OFFLINE' => '#ffa500',
         'CONNECTIVITY_METHOD' => 'https',
@@ -16,7 +17,7 @@ function ugreen_pro_defaults(): array
         'CONNECTIVITY_INTERVAL' => '60',
         'DISK_COLOR' => '#ffffff',
         'DISK_COLOR_FAILED' => '#ffa500',
-        'DISK_BRIGHTNESS' => '180',
+        'DISK_BRIGHTNESS' => '179',
         'DISK_ACTIVITY_STYLE' => 'dark',
         'DISK_PULSE_MS' => '80',
         'DISK_ATA_PORTS' => '1 2 3 4',
@@ -76,6 +77,13 @@ function ugreen_pro_read_settings(string $path): array
         }
         $values[$key] = $value;
     }
+    if ($values['BRIGHTNESS_MODE'] === 'percent') {
+        foreach (['POWER_BRIGHTNESS', 'NETWORK_BRIGHTNESS', 'DISK_BRIGHTNESS'] as $key) {
+            if (preg_match('/^\d{1,3}$/', $values[$key]) && (int)$values[$key] <= 255) {
+                $values[$key] = ugreen_pro_round_brightness($values[$key]);
+            }
+        }
+    }
     return $values;
 }
 
@@ -85,10 +93,10 @@ function ugreen_pro_validate(array $input): array
     $errors = [];
     $defaults = ugreen_pro_defaults();
     $integerRanges = [
-        'POWER_BRIGHTNESS' => [1, 255],
-        'NETWORK_BRIGHTNESS' => [1, 255],
+        'POWER_BRIGHTNESS' => [0, 255],
+        'NETWORK_BRIGHTNESS' => [0, 255],
         'CONNECTIVITY_INTERVAL' => [10, 3600],
-        'DISK_BRIGHTNESS' => [1, 255],
+        'DISK_BRIGHTNESS' => [0, 255],
         'DISK_PULSE_MS' => [30, 1000],
         'REFRESH_INTERVAL' => [1, 3600],
         'DISK_STATUS_INTERVAL' => [10, 3600],
@@ -115,6 +123,8 @@ function ugreen_pro_validate(array $input): array
             } else {
                 $values[$key] = (string)(int)$value;
             }
+        } elseif ($key === 'BRIGHTNESS_MODE') {
+            if (!in_array($value, ['percent', 'raw'], true)) $errors[$key] = 'Choose a brightness display mode.';
         } elseif ($key === 'NETWORK_INTERFACE') {
             if ($value !== 'auto' && !preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,14}$/', $value)) {
                 $errors[$key] = 'Use auto or a Linux interface name of at most 15 characters.';
@@ -175,7 +185,7 @@ function ugreen_pro_render_settings(array $values): string
         if ($key === 'DISK_ATA_PORTS') {
             $value = "($value)";
         } elseif ($key === 'NETWORK_INTERFACE' || str_starts_with($key, 'CONNECTIVITY_') ||
-                  $key === 'DISK_ACTIVITY_STYLE') {
+                  $key === 'DISK_ACTIVITY_STYLE' || $key === 'BRIGHTNESS_MODE') {
             $value = "'$value'";
         }
         $lines[] = "$key=$value";
@@ -195,4 +205,11 @@ function ugreen_pro_write_atomic(string $path, string $contents): bool
         @unlink($temp);
     }
     return $ok;
+}
+
+// Nearest ten percent, with halfway values rounded upward, then controller units.
+function ugreen_pro_round_brightness(string $raw): string
+{
+    $percent = (int)round((int)$raw * 100 / 255 / 10) * 10;
+    return (string)(int)round($percent * 255 / 100);
 }

@@ -55,3 +55,9 @@ printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
 [[ ! -f $sim/sys/class/leds/disk1/shot ]]
 echo 'Network online/offline/down/reconnect and disk activity/standby/failure transitions passed.'
+
+NETWORK_BRIGHTNESS=0
+configure_network
+check "$sim/sys/class/leds/netdev/trigger" none
+check "$sim/sys/class/leds/netdev/blink_type" none
+check "$sim/sys/class/leds/netdev/brightness" 0

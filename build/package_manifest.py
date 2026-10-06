@@ -1,7 +1,7 @@
 """Explicit source inputs for the installed plugin payload."""
 NAME = 'UGREEN-DXP4800Pro-LEDs'
 KERNEL = '6.18.38-Unraid'
-VERSION = '1.1.5'
+VERSION = '1.2.0'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',
@@ -31,5 +31,5 @@ def payload_inputs(root):
         result[f'{share}/docs/{name}'] = (root/'docs'/name, 0o644)
     return result
 
-SLACK_DESC = ('ugreen-pro-leds: UGREEN DXP4800 Pro LEDs (Unraid 7.3+ build)\n'
+SLACK_DESC = ('ugreen-pro-leds: UGREEN DXP4800 Pro LEDs (Unraid 7.3.2+ build)\n'
               'ugreen-pro-leds: Intel I801 LED control, white/orange status and native settings.\n')
