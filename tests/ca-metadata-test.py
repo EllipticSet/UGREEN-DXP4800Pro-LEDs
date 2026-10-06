@@ -8,8 +8,8 @@ assert (profile.findtext('Profile') or '').strip()
 assert entry.tag=='Plugin' and entry.findtext('PluginURL')==manifest.get('pluginURL')
 assert manifest.get('author')==entry.findtext('PluginAuthor')=='EllipticSet'
 assert entry.findtext('Support')==manifest.get('support')
-assert manifest.get('min')=='7.3' and manifest.get('max') is None
-assert entry.findtext('MinVer')=='7.3' and entry.find('MaxVer') is None
+assert manifest.get('min')=='7.3.2' and manifest.get('max') is None
+assert entry.findtext('MinVer')=='7.3.2' and entry.find('MaxVer') is None
 assert entry.findtext('Beta')=='false'
 assert (r/'LICENSE').read_text().startswith('MIT License')
 for p in [r/'ca_profile.xml',r/'plugins/UGREEN-DXP4800Pro-LEDs.xml']:

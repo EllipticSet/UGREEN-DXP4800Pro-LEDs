@@ -20,10 +20,10 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
  def run(kernel='6.18.38-Unraid'):
   return subprocess.run([bash,'-c',mocks+f'source "{script}"'],env={**os.environ,'TEST_KERNEL':kernel},capture_output=True,text=True)
  assert run().returncode==0,run().stderr
- for version in ['7.3', '7.3.1', '7.3.2', '7.4.0', '8.0.0']:
+ for version in ['7.3.2', '7.3.3', '7.4', '7.4.0', '8.0.0']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run().returncode==0, (version, run().stderr)
- for version in ['6.12.0', '7.2.9', 'invalid', '']:
+ for version in ['6.12.0', '7.2.9', '7.3', '7.3.0', '7.3.1', 'invalid', '']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run().returncode!=0, version
  (p/'etc/unraid-version').write_text('version="7.3.2"\n')

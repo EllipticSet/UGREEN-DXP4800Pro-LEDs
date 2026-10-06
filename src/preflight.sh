@@ -4,11 +4,12 @@ set -euo pipefail
 [[ $(uname -r) == 6.18.38-Unraid ]] || { echo 'Only kernel 6.18.38-Unraid is packaged.' >&2; exit 1; }
 [[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this build.' >&2; exit 1; }
 unraid_version=$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version)
-if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.[0-9]+)?$ ]]; then
+if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then
   echo 'Cannot determine Unraid version.' >&2; exit 1
 fi
 major=$((10#${BASH_REMATCH[1]})); minor=$((10#${BASH_REMATCH[2]}))
-(( major > 7 || (major == 7 && minor >= 3) )) || { echo 'Unraid 7.3 or later required.' >&2; exit 1; }
+patch=$((10#${BASH_REMATCH[4]:-0}))
+(( major > 7 || (major == 7 && (minor > 3 || (minor == 3 && patch >= 2))) )) || { echo 'Unraid 7.3.2 or later required.' >&2; exit 1; }
 for cmd in installpkg upgradepkg removepkg sha256sum base64 xz tar flock jq smartctl timeout ip curl php modinfo i2cget; do
   # i2cget is supplied separately by this plugin.
   [[ $cmd == i2cget ]] && continue

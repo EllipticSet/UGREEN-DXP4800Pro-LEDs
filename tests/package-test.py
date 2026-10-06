@@ -8,7 +8,7 @@ checksum=Path(str(plg)+'.sha256').read_text().split()
 assert checksum == [hashlib.sha256(plg.read_bytes()).hexdigest(), plg.name], 'Committed checksum mismatch'
 el=ET.parse(plg).getroot()
 assert el.attrib['version']==VERSION
-assert el.attrib['min']=='7.3' and 'max' not in el.attrib
+assert el.attrib['min']=='7.3.2' and 'max' not in el.attrib
 script=el.find('FILE/INLINE').text
 encoded=script.split("<<'UGREEN_PAYLOAD'\n",1)[1].split('\nUGREEN_PAYLOAD',1)[0]
 blob=base64.b64decode(encoded)
