@@ -58,3 +58,9 @@ check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults(
 check(substr_count($html, '<dl class="field">') === count(ugreen_pro_defaults()), 'Each setting must use the native definition-list structure.');
 preg_match_all('/<\/dl>\s*<blockquote class="inline_help nas-inline-help"/', $html, $nativePairs);
 check(count($nativePairs[0]) === count(ugreen_pro_defaults()), 'Native help must immediately follow its definition list.');
+
+// Resource URLs must follow content changes, even when a release version is reused.
+foreach (['settings.css', 'settings.js'] as $asset) {
+    $fingerprint = substr(hash_file('sha256', __DIR__ . '/../src/web/' . $asset), 0, 12);
+    check(str_contains($html, $asset . '?v=' . $fingerprint), 'Stale cache key for ' . $asset);
+}
