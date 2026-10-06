@@ -14,6 +14,6 @@ https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN
 - [`plugins/UGREEN-DXP4800Pro-LEDs.xml`](../plugins/UGREEN-DXP4800Pro-LEDs.xml): plugin listing, installation URL, compatibility, icons and desktop screenshots.
 - Support: [GitHub Issues](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues).
 
-Keep the listing consistent with the plugin: DXP4800 Pro only, Unraid 7.3 or later with exact kernel `6.18.38-Unraid`. Keep referenced public assets reachable and run the metadata and package checks after changes. Local tests do not establish catalogue availability or replace the Community Applications scanner.
+Keep the listing consistent with the plugin: DXP4800 Pro only, Unraid 7.3.2 or later with exact kernel `6.18.38-Unraid`. Keep referenced public assets reachable and run the metadata and package checks after changes. Local tests do not establish catalogue availability or replace the Community Applications scanner.
 
 Reference layout: [official plugin starter](https://github.com/unraid/unraid-community-apps-starter). Maintainer help: [Community Applications submission help](https://ca.unraid.net/submit/help).
