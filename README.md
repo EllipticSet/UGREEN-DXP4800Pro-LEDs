@@ -111,7 +111,9 @@ Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a 
 
 **Apply** saves only the selected tab. **Restore tab defaults** also affects only that tab.
 
-Use the Settings page to select colours, brightness, the network interface, connectivity checks, drive activity style and monitoring intervals.
+Use the Settings page to select colours, brightness, the network interface and drive activity style. Click a setting name to open its help text. Advanced Settings contains the brightness display mode, connectivity checks, drive mapping and monitoring intervals.
+
+Brightness defaults to 70% for each LED group. Percentage mode offers 0% (off) through 100% in 10% steps. Raw mode accepts 0–255; both modes store controller values. Switching modes preserves existing values, with a current-value entry for percentages between steps. Existing installations retain their saved brightness; restoring tab defaults selects 70%.
 
 ### Drive-bay mapping
 
@@ -218,3 +220,5 @@ Sources, original licence notices, the module patch and `BUILD_INFO` are include
 [`build/package.py`](build/package.py) regenerates the offline package without changing the host. Rebuilding the kernel module requires Linux x86_64, the exact Unraid kernel source and the tools described in [`build/build-module.sh`](build/build-module.sh).
 
 </details>
+
+Standby breathing is restarted together whenever the set of sleeping drives changes. The MCU cycles are started in consecutive controller writes; exact visual alignment still requires hardware validation.

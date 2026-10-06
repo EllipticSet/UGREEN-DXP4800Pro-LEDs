@@ -1,7 +1,25 @@
 // SPDX-License-Identifier: MIT
 (() => {
+  document.querySelectorAll('.nas-front-settings').forEach(panel => {
+    if (panel.dataset.initialized) return;
+    panel.dataset.initialized = 'true';
+    panel.querySelectorAll('.nas-help-toggle').forEach(button => {
+      button.addEventListener('click', () => {
+        const help = document.getElementById(button.getAttribute('aria-controls'));
+        help.hidden = !help.hidden;
+        button.setAttribute('aria-expanded', String(!help.hidden));
+      });
+    });
+    panel.querySelectorAll('.nas-feedback-close').forEach(button => {
+      button.addEventListener('click', () => button.closest('.nas-feedback').remove());
+    });
+  });
+})();
+// SPDX-License-Identifier: MIT
+(() => {
   const guide = document.querySelector('.nas-mapping-guide');
-  if (!guide) return;
+  if (!guide || guide.dataset.initialized) return;
+  guide.dataset.initialized = 'true';
   const content = guide.querySelector('#nas-mapping-content');
   const reopen = guide.querySelector('.nas-guide-open');
   const done = guide.querySelector('.nas-guide-done');

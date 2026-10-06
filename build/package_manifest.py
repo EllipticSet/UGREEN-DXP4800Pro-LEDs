@@ -1,7 +1,7 @@
 """Explicit source inputs for the installed plugin payload."""
 NAME = 'UGREEN-DXP4800Pro-LEDs'
 KERNEL = '6.18.38-Unraid'
-VERSION = '1.1.5'
+VERSION = '1.2.0'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',

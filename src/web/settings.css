@@ -57,3 +57,16 @@
 #displaybox > .tabs > .nas-plugin-tabs > [role="tab"] { flex-shrink: 0; }
 .nas-plugin-version { flex: 0 0 auto; margin-left: auto; padding: 0 18px; color: inherit; opacity: .65; font-size: 13px; white-space: nowrap; }
 @media (max-width: 550px) { .nas-plugin-version { padding: 0 10px; font-size: 12px; } }
+
+.nas-front-settings .nas-help-toggle { all: unset; box-sizing: border-box; font-weight: 600; text-align: right; cursor: help; color: inherit; }
+.nas-front-settings .nas-help-toggle:focus-visible { outline: 2px solid #ff8c28; outline-offset: 4px; }
+.nas-front-settings .nas-inline-help { grid-column: 1 / -1; margin: 4px 0 8px; padding: 12px 16px; border-left: 3px solid #ff8c28; background: #8881; line-height: 1.5; }
+.nas-front-settings [hidden] { display: none !important; }
+.nas-front-settings .nas-feedback { display: flex; align-items: center; gap: 12px; margin: 8px 0 24px; padding: 14px 16px; border: 1px solid; border-radius: 6px; line-height: 1.5; }
+.nas-front-settings .nas-feedback.success { border-color: #679f3570; background: #679f3514; }
+.nas-front-settings .nas-feedback.error { border-color: #e8543f90; background: #e8543f14; }
+.nas-front-settings .nas-feedback.success > i { color: #679f35; }
+.nas-front-settings .nas-feedback.error > i { color: #e8543f; }
+.nas-front-settings .nas-feedback-close { all: unset; cursor: pointer; margin-left: auto; padding: 0 6px; font-size: 24px; }
+.nas-front-settings .nas-feedback-close:focus-visible { outline: 2px solid #ff8c28; }
+@media (max-width: 550px) { .nas-front-settings .nas-help-toggle { text-align: left; } }

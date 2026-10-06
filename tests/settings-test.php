@@ -65,3 +65,26 @@ check(str_contains($html, 'name="DISK_ACTIVITY_STYLE"'), 'Activity style selecto
 check(str_contains($html, 'value="test-token"'), 'Unraid CSRF token must be included.');
 
 echo "Settings validation, rendering, and reload passed.\n";
+
+foreach (['POWER_BRIGHTNESS', 'NETWORK_BRIGHTNESS', 'DISK_BRIGHTNESS'] as $key) {
+    check(ugreen_pro_defaults()[$key] === '179', 'Default brightness must be 70%.');
+    $off = ugreen_pro_defaults(); $off[$key] = '0';
+    [, $errors] = ugreen_pro_validate($off);
+    check(!$errors, 'Off brightness rejected.');
+    $off[$key] = '256';
+    [, $errors] = ugreen_pro_validate($off);
+    check(isset($errors[$key]), 'Out-of-range brightness accepted.');
+}
+$mode = ugreen_pro_defaults(); $mode['BRIGHTNESS_MODE'] = 'raw';
+[$raw, $errors] = ugreen_pro_validate($mode);
+check(!$errors, 'Raw display rejected.');
+$mode['BRIGHTNESS_MODE'] = 'invalid';
+[, $errors] = ugreen_pro_validate($mode);
+check(isset($errors['BRIGHTNESS_MODE']), 'Unknown display mode accepted.');
+$options = ugreen_pro_brightness_options('179');
+check(count($options) === 11 && $options[179] === '70%' && $options[0] === '0% (off)' && $options[255] === '100%', 'Percentage scale incorrect.');
+check(isset(ugreen_pro_brightness_options('180')[180]), 'Existing raw brightness would be rounded.');
+$legacy = tempnam(__DIR__, 'legacy-');
+file_put_contents($legacy, "POWER_BRIGHTNESS=180\nNETWORK_BRIGHTNESS=180\nDISK_BRIGHTNESS=180\n");
+$legacyValues = ugreen_pro_read_settings($legacy); unlink($legacy);
+check($legacyValues['POWER_BRIGHTNESS'] === '180' && $legacyValues['BRIGHTNESS_MODE'] === 'percent', 'Legacy brightness changed.');

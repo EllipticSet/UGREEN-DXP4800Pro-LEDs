@@ -16,11 +16,11 @@ $tabDescriptions = [
     'power' => 'Power indication while running and during shutdown.',
     'lan' => 'Network activity and connectivity status.',
     'drives' => 'Activity, standby and health indications for the four drive bays.',
-    'advanced' => 'Drive-bay mapping and sampling and refresh intervals.',
+    'advanced' => 'Brightness display, connectivity checks, drive-bay mapping and monitoring intervals.',
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.1.5">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -45,13 +45,17 @@ $tabDescriptions = [
           <span class="nas-led-marker nas-led-<?= $led ?> <?= $active ? 'is-highlighted' : '' ?>" aria-hidden="true"></span>
         <?php endforeach; ?>
       </div>
-      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span>UGREEN DXP4800 Pro</span></figcaption>
+      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span></figcaption>
     </figure>
     <?php endif; ?>
     <div class="nas-front-controls">
-      <p class="nas-front-intro"><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></p>
+      <?php if ($tabKey === 'advanced'): ?><p class="nas-front-intro"><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></p><?php endif; ?>
       <?php if ($ugreenNotice !== '' && $submittedTab === $ugreenTab): ?>
-        <p class="notice <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="status"><?= ugreen_pro_escape($ugreenNotice) ?></p>
+        <div class="nas-feedback <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="<?= $ugreenNoticeClass === 'error' ? 'alert' : 'status' ?>">
+          <i class="fa <?= $ugreenNoticeClass === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle' ?>" aria-hidden="true"></i>
+          <span><?= ugreen_pro_escape($ugreenNotice) ?></span>
+          <button type="button" class="nas-feedback-close" aria-label="Dismiss message">&times;</button>
+        </div>
       <?php endif; ?>
       <?php if ($tabKey === 'advanced'): ?>
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
@@ -68,7 +72,6 @@ $tabDescriptions = [
           <div class="actions"><button type="button" class="nas-guide-done">Done</button></div>
           </div>
         </aside>
-        <script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.1.1"></script>
       <?php endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
@@ -76,21 +79,25 @@ $tabDescriptions = [
         <?php foreach ($fields as $field):
             [$key, $label, $type, $help] = $field;
             $value = (string)($ugreenValues[$key] ?? '');
+            if (str_ends_with($key, '_BRIGHTNESS') && $ugreenValues['BRIGHTNESS_MODE'] === 'percent') {
+                $type = 'select';
+                $field[4] = ugreen_pro_brightness_options($value);
+            }
         ?>
           <div class="field">
-            <label for="ugreen-<?= ugreen_pro_escape($key) ?>"><?= ugreen_pro_escape($label) ?></label>
+            <button type="button" class="nas-help-toggle" id="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-controls="ugreen-help-<?= ugreen_pro_escape($key) ?>" aria-expanded="false"><?= ugreen_pro_escape($label) ?></button>
             <?php if ($type === 'select'): ?>
-              <select id="ugreen-<?= ugreen_pro_escape($key) ?>" name="<?= ugreen_pro_escape($key) ?>">
+              <select id="ugreen-<?= ugreen_pro_escape($key) ?>" name="<?= ugreen_pro_escape($key) ?>" aria-labelledby="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-describedby="ugreen-help-<?= ugreen_pro_escape($key) ?>">
                 <?php foreach ($field[4] as $optionValue => $optionLabel): ?>
-                  <option value="<?= ugreen_pro_escape((string)$optionValue) ?>" <?= $value === $optionValue ? 'selected' : '' ?>><?= ugreen_pro_escape($optionLabel) ?></option>
+                  <option value="<?= ugreen_pro_escape((string)$optionValue) ?>" <?= $value === (string)$optionValue ? 'selected' : '' ?>><?= ugreen_pro_escape($optionLabel) ?></option>
                 <?php endforeach; ?>
               </select>
             <?php else: ?>
-              <input id="ugreen-<?= ugreen_pro_escape($key) ?>" name="<?= ugreen_pro_escape($key) ?>"
+              <input id="ugreen-<?= ugreen_pro_escape($key) ?>" name="<?= ugreen_pro_escape($key) ?>" aria-labelledby="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-describedby="ugreen-help-<?= ugreen_pro_escape($key) ?>"
                      type="<?= ugreen_pro_escape($type) ?>" value="<?= ugreen_pro_escape($value) ?>"
                      <?php if ($type === 'number'): ?>min="<?= ugreen_pro_escape((string)$field[4]) ?>" max="<?= ugreen_pro_escape((string)$field[5]) ?>" step="<?= ugreen_pro_escape((string)($field[6] ?? 1)) ?>"<?php endif; ?> required>
             <?php endif; ?>
-            <span class="help"><?= ugreen_pro_escape($help) ?></span>
+            <blockquote class="nas-inline-help" id="ugreen-help-<?= ugreen_pro_escape($key) ?>" hidden><?= ugreen_pro_escape($help) ?></blockquote>
             <?php if (isset($ugreenErrors[$key])): ?><span class="field-error"><?= ugreen_pro_escape($ugreenErrors[$key]) ?></span><?php endif; ?>
           </div>
         <?php endforeach; ?>
@@ -107,3 +114,5 @@ $tabDescriptions = [
     </div>
   </div>
 </div>
+
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0"></script>

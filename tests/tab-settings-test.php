@@ -39,3 +39,12 @@ check(!str_contains($html, 'First-time setup'), 'Obsolete first-time guide remai
 check(in_array('DISK_ATA_PORTS', array_column(ugreen_pro_groups()['Advanced Settings'], 0), true), 'Mapping is not in Advanced Settings.');
 check(!in_array('DISK_ATA_PORTS', array_column(ugreen_pro_groups()['Drives LEDs'], 0), true), 'Mapping remains in Drives LEDs.');
 echo "Per-tab save/reset preserves other tabs and bay mapping; missing fields/unknown tabs rejected; all tabs render once with unique inputs and CSRF tokens.\n";
+
+$advanced = array_column(ugreen_pro_groups()['Advanced Settings'], 0);
+$lan = array_column(ugreen_pro_groups()['LAN LED'], 0);
+foreach (['CONNECTIVITY_METHOD', 'CONNECTIVITY_URL', 'CONNECTIVITY_FALLBACK_URL', 'CONNECTIVITY_INTERVAL'] as $key) {
+    check(in_array($key, $advanced, true) && !in_array($key, $lan, true), 'Connectivity ownership incorrect.');
+}
+check(substr_count($html, 'class="nas-help-toggle"') === count(ugreen_pro_defaults()), 'Each field must have click help.');
+check(!str_contains($html, '<label for='), 'Setting labels must not activate colour inputs.');
+check(!str_contains($html, '<span>UGREEN DXP4800 Pro</span>'), 'Old image caption remains.');
