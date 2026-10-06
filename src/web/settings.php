@@ -75,7 +75,7 @@ $tabDescriptions = [
           <p>For troubleshooting or a custom mapping, open the Unraid terminal and run:</p>
           <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
           <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave disabled.</p>
-          <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#configuration" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
+          <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#drive-bay-mapping" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
           </div>
         </aside>
       <?php $ugreenMappingGuide = ob_get_clean(); endif; ?>
