@@ -103,25 +103,25 @@ function ugreen_pro_groups(): array
 {
     $ugreenGroups = [
         'Power LED' => [
-            ['POWER_COLOR', 'Running colour', 'color', 'Shown while Unraid is running.'],
-            ['POWER_BRIGHTNESS', 'Brightness', 'number', '0 turns the LED off. Brightness response depends on the MCU; some controllers may treat nonzero values as full brightness.', 0, 255],
+            ['POWER_COLOR', 'Running colour', 'color', 'Colour shown while Unraid is running and used for blinking during shutdown.'],
+            ['POWER_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
         ],
         'LAN LED' => [
             ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Normally solid; flashes for network traffic.'],
             ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Shown when the link or internet check fails.'],
-            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', '0 turns the LED off. Brightness response depends on the MCU; some controllers may treat nonzero values as full brightness.', 0, 255],
+            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
             ['NETWORK_INTERFACE', 'Network interface', 'text', 'auto uses the first default route, usually br0.'],
         ],
         'Drives LEDs' => [
             ['DISK_COLOR', 'Healthy drive colour', 'color', 'Used for active and sleeping drives.'],
             ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Slow flash when SMART explicitly reports failure.'],
-            ['DISK_BRIGHTNESS', 'Brightness', 'number', '0 turns the LED off. Brightness response depends on the MCU; some controllers may treat nonzero values as full brightness.', 0, 255],
+            ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
             ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Choose the idle indication; both styles flash for reads and writes.',
                 ['solid' => 'Solid when idle, brief off pulse for I/O', 'dark' => 'Dark when idle, brief on pulse for I/O']],
             ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'Length of each activity pulse.', 30, 1000],
         ],
         'Advanced Settings' => [
-            ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Choose percentages in 10% steps or raw controller values from 0 to 255. Changing the display preserves the saved brightness. 0 turns the LED off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
+            ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Choose percentages in 10% steps or raw controller values from 0 to 255. Percentage mode rounds brightness to the nearest 10%; raw mode keeps the exact controller value. 0 turns the LED off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
             ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS checks the two sites below; gateway checks only local routing.',
                 ['https' => 'HTTPS', 'gateway' => 'Gateway ping', 'none' => 'Always online when linked']],
             ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'HTTPS endpoint checked first.'],

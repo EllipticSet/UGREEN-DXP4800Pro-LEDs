@@ -27,7 +27,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test5">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test6">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -116,9 +116,6 @@ $tabDescriptions = [
           <blockquote class="inline_help nas-inline-help" id="ugreen-help-<?= ugreen_pro_escape($key) ?>" style="display:none"><?= ugreen_pro_escape($help) ?></blockquote>
         <?php endforeach; ?>
 
-        <?php if ($tabKey === 'power'): ?>
-          <p class="nas-front-note">During shutdown, the Power LED blinks using the running colour.</p>
-        <?php endif; ?>
         <div class="actions">
           <button type="submit" name="ugreen_pro_action" value="save">Apply</button>
           <button type="button" class="nas-front-done" onclick="location.href='/Settings'">Done</button>
@@ -129,4 +126,4 @@ $tabDescriptions = [
   </div>
 </div>
 
-<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test5"></script>
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test6"></script>
