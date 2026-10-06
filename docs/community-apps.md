@@ -11,7 +11,7 @@ https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN
 ## Repository metadata
 
 - [`ca_profile.xml`](../ca_profile.xml): repository profile.
-- [`plugins/UGREEN-DXP4800Pro-LEDs.xml`](../plugins/UGREEN-DXP4800Pro-LEDs.xml): plugin listing, installation URL, compatibility, icons and desktop screenshots.
+- [`plugins/UGREEN-DXP4800Pro-LEDs.xml`](../plugins/UGREEN-DXP4800Pro-LEDs.xml): plugin listing, installation URL, compatibility, icons and the Power LED screenshot.
 - Support: [GitHub Issues](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues).
 
 Keep the listing consistent with the plugin: DXP4800 Pro only, Unraid 7.3.2 or later with exact kernel `6.18.38-Unraid`. Keep referenced public assets reachable and run the metadata and package checks after changes. Local tests do not establish catalogue availability or replace the Community Applications scanner.

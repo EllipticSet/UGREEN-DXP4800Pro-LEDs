@@ -24,18 +24,12 @@ This plugin controls the Power, LAN and four drive-bay LEDs, with configurable c
 
 Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions for backward-compatible features, and major versions for breaking changes.
 
-## Settings screenshots
+## Settings preview
 
-| Power LED | LAN LED |
-| --- | --- |
-| <a href="docs/screenshots/NAS-Front-LEDs-power.jpg"><img src="docs/screenshots/NAS-Front-LEDs-power.jpg" alt="Power LED settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-lan.jpg"><img src="docs/screenshots/NAS-Front-LEDs-lan.jpg" alt="LAN LED settings" width="260"></a> |
-
-| Drives LEDs | Advanced Settings |
-| --- | --- |
-| <a href="docs/screenshots/NAS-Front-LEDs-drives.jpg"><img src="docs/screenshots/NAS-Front-LEDs-drives.jpg" alt="Drives LEDs settings" width="260"></a> | <a href="docs/screenshots/NAS-Front-LEDs-advanced.jpg"><img src="docs/screenshots/NAS-Front-LEDs-advanced.jpg" alt="Advanced Settings" width="260"></a> |
+<a href="docs/screenshots/NAS-Front-LEDs-power.jpg"><img src="docs/screenshots/NAS-Front-LEDs-power.jpg" alt="Power LED settings" width="600"></a>
 
 <details>
-<summary>Mobile preview from an earlier version</summary>
+<summary>Mobile preview — Drives LEDs (1.2.0)</summary>
 
 <a href="docs/screenshots/NAS-Front-LEDs-mobile.gif"><img src="docs/screenshots/NAS-Front-LEDs-mobile.gif" alt="Drives LEDs mobile scrolling preview" width="200"></a>
 
@@ -47,7 +41,7 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions fo
 | --- | --- |
 | NAS | UGREEN DXP4800 Pro |
 | Unraid | 7.3.2+ |
-| Kernel | `6.18.38-Unraid` (minimum; exact version required by this build) |
+| Kernel | `6.18.38-Unraid` (exact version required by this build) |
 
 The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with the exact kernel `6.18.38-Unraid`.
 
@@ -60,7 +54,8 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 
 - Native Unraid tabs: **Power LED**, **LAN LED**, **Drives LEDs**, and **Advanced Settings**.
 - Front-panel photo with the selected LEDs highlighted, alongside colour, brightness and behaviour controls.
-- Apply and restore defaults independently for each tab.
+- Apply and restore defaults independently for each tab, with native click-to-open help.
+- Percentage brightness in 10% steps, defaulting to 70%, or raw controller values.
 - Power status and shutdown blinking.
 - LAN activity indication with configurable connectivity checks.
 - Drive activity pulses, standby breathing and warning indications.
@@ -107,7 +102,7 @@ Use an absolute path: Unraid's PHP startup can change the working directory.
 
 ## Configuration
 
-Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a tab from the bar at the top. The Power, LAN and Drives tabs show a front-panel image with the relevant LEDs highlighted; on narrow screens, the image appears above the controls. **Advanced Settings** uses the full width without the NAS image and contains the optional ATA mapping guide. The installed plugin version appears on the right inside the tab bar.
+Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a tab from the bar at the top. The Power, LAN and Drives tabs show a front-panel image with the relevant LEDs highlighted; on narrow screens, the image appears above the controls. **Advanced Settings** centres its controls without a NAS image and groups brightness, connectivity, drive mapping and monitoring settings. Its optional mapping guide opens and closes from the same Show guide / Hide guide button. The installed plugin version appears on the right inside the tab bar.
 
 **Apply** saves only the selected tab. **Restore tab defaults** also affects only that tab.
 
@@ -154,6 +149,8 @@ The following indications use the default white and orange colours. Colours and 
 
 The default drive activity style is **Dark when idle**, with brief white pulses during I/O. **Solid when idle**, with brief off pulses during I/O, is also available.
 
+Standby breathing is restarted together whenever the set of sleeping drives changes. The MCU cycles are started in consecutive controller writes; exact visual alignment still requires hardware validation.
+
 Disk activity is sampled every **0.5 seconds** by default and reflects aggregated activity rather than every individual request. SMART checks use `-n standby,0` to avoid waking sleeping drives. A failed SMART query is not treated as a confirmed disk failure. Intentional removal of a drive can trigger the same warning as unexpected disappearance.
 
 The plugin does not infer general system faults or whole-system sleep. Stopping the Unraid array does not establish that the NAS is asleep. LED indications supplement Unraid diagnostics and notifications.
@@ -195,7 +192,7 @@ Hardware testing of earlier development builds on a DXP4800 Pro with Unraid 7.3.
 - Automatic startup after reboot and after a full shutdown followed by power-on.
 - Power blinking during shutdown and returning to solid white after startup.
 
-See [Validation](docs/validation.md) for automated checks, historical hardware results and remaining verification work. These earlier hardware results do not establish a complete hardware test of the current release.
+See [Validation](docs/validation.md) for automated checks, historical hardware results and remaining verification work. The owner also tested and approved the 1.2.0 settings interface on the NAS, including repeated native help animations in Safari. This does not establish complete hardware coverage of brightness or breathing alignment.
 
 ## License and acknowledgements
 
@@ -220,5 +217,3 @@ Sources, original licence notices, the module patch and `BUILD_INFO` are include
 [`build/package.py`](build/package.py) regenerates the offline package without changing the host. Rebuilding the kernel module requires Linux x86_64, the exact Unraid kernel source and the tools described in [`build/build-module.sh`](build/build-module.sh).
 
 </details>
-
-Standby breathing is restarted together whenever the set of sleeping drives changes. The MCU cycles are started in consecutive controller writes; exact visual alignment still requires hardware validation.
