@@ -27,7 +27,7 @@ $tabDescriptions = [
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test4">
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=1.2.0-test5">
 <span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
 <script>
 (() => {
@@ -129,4 +129,4 @@ $tabDescriptions = [
   </div>
 </div>
 
-<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test4"></script>
+<script src="/plugins/UGREEN-DXP4800Pro-LEDs/settings.js?v=1.2.0-test5"></script>

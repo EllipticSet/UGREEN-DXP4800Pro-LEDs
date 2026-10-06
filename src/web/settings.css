@@ -103,3 +103,8 @@
 .nas-front-settings dl.field dd { min-width: 0; }
 .nas-front-settings dl.field dt .nas-help-toggle { width: 100%; }
 .nas-front-settings .nas-front-form > .actions { justify-content: center; }
+
+/* Keep sibling margins from collapsing when native help enters/leaves the flow.
+   This avoids an immediate spacing jump before jQuery animates its dimensions. */
+.nas-front-settings .nas-front-form { display: flex; flex-direction: column; }
+.nas-front-settings .nas-front-form > dl.field { margin: 10px 0; }

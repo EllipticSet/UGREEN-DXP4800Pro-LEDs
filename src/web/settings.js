@@ -11,7 +11,7 @@
       const input = row.querySelector('input, select');
       const sync = () => {
         button.setAttribute('aria-controls', help.id);
-        button.setAttribute('aria-expanded', String(getComputedStyle(help).display !== 'none'));
+        button.setAttribute('aria-expanded', String(help.style.display !== 'none'));
         input.setAttribute('aria-describedby', help.id);
       };
       new MutationObserver(sync).observe(help, { attributes: true, attributeFilter: ['id', 'style'] });
