@@ -1,6 +1,10 @@
 # Validation
 
-## Current release: 1.2.0
+## Current release: 1.2.1
+
+The 1.2.1 fix uses content-based CSS and JavaScript cache keys. The stale-cache regression was reproduced in Safari after installing 1.2.0; a normal reload after the fix restored native help colours, label hover behaviour and centred actions. The settings rendering regression verifies that both resource URLs match their installed content.
+
+## Version 1.2.0
 
 Changes cover tab captions, click-to-open setting help, dismissible success/error feedback, percentage/raw brightness with a 70% default, advanced connectivity controls and coordinated standby breathing restarts. In percentage mode, existing brightness values are rounded to the nearest ten percent (halfway values upward); raw mode retains exact values; 0 disables activity and breathing as well as steady illumination.
 
