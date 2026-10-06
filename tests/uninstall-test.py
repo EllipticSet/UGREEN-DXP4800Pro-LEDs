@@ -1,9 +1,12 @@
 """Run removal against temporary paths and mocked kernel/package commands."""
 from pathlib import Path
 import os, subprocess, tempfile
+import xml.etree.ElementTree as ET
 
 project = Path(__file__).resolve().parent.parent
 bash = os.environ.get('BASH_TEST', 'bash')
+version = ET.parse(project/'UGREEN-DXP4800Pro-LEDs.plg').getroot().get('version')
+expected_package = f'ugreen-pro-leds-{version}-x86_64-1'
 for scenario in ['loaded', 'absent', 'failure', 'still-loaded']:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -45,7 +48,7 @@ export -f sed rmmod removepkg modprobe
         assert 'echo unrelated' in stop.read_text() and '# UGREEN-DXP4800Pro-LEDs' not in stop.read_text()
         if success:
             assert not module.exists()
-            assert removed.read_text().strip() == 'ugreen-pro-leds-1.2.0-x86_64-1'
+            assert removed.read_text().strip() == expected_package
         else:
             assert 'module' in result.stderr.lower()
 print('Removal unloads an unindexed module; failures stay visible and preserve retry/configuration.')
