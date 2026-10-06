@@ -1,6 +1,8 @@
 # Validation
 
-## Current release: 1.2.1
+## Current release: 1.2.2
+
+Version 1.2.2 corrects the mapping-guide link and clarifies automatic mapping migration in the README.
 
 The 1.2.1 fix uses content-based CSS and JavaScript cache keys. The stale-cache regression was reproduced in Safari after installing 1.2.0; a normal reload after the fix restored native help colours, label hover behaviour and centred actions. The settings rendering regression verifies that both resource URLs match their installed content.
 

@@ -114,7 +114,7 @@ Brightness defaults to 70% for each LED group. Percentage mode offers 0% (off) t
 
 The standard DXP4800 Pro mapping is `1 2 3 4`, corresponding to ATA ports 1–4 in physical bay order, regardless of how many drives are installed. Initially empty bays remain off. By default, the monitor checks the mapped ports every 15 seconds and detects newly added drives automatically. Manual detection is not required during installation.
 
-Updates migrate previous occupancy-based defaults, such as `1 2 0 0`, to `1 2 3 4`. Manually reordered ports are retained. Advanced Settings provides an optional mapping override for troubleshooting.
+When updating from an older version, automatically generated mappings that disabled empty bays (for example, `1 2 0 0`) are replaced with `1 2 3 4`, allowing drives added later to be detected. Custom mappings with manually reordered ATA ports are preserved. You can adjust the mapping in Advanced Settings if needed.
 
 The optional guide in Advanced Settings explains `/usr/local/sbin/ugreen-pro-leds detect`. Detection lists ATA ports and devices; verify a custom physical mapping one drive at a time by reading existing data and observing its LED.
 
