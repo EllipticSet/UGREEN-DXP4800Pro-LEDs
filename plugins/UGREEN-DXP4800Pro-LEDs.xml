@@ -6,7 +6,7 @@
   <PluginAuthor>EllipticSet</PluginAuthor>
   <Support>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues</Support>
   <Project>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs</Project>
-  <ReadMe>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/blob/main/README.md</ReadMe>
+  <ReadMe>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/refs/heads/main/README.md</ReadMe>
   <Screenshot>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/docs/screenshots/NAS-Front-LEDs-power.jpg</Screenshot>
   <Category>Tools:System</Category>
   <Beta>false</Beta>
