@@ -72,7 +72,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 
 ## Installation
 
-1. Remove any competing LED plugin or controller. If its module or I2C client remains loaded, reboot before installing this plugin. **ITE IT87 Driver and FanCtrl Plus do not need to be removed.**
+1. Remove any competing LED plugin or controller. If its module or I2C client remains loaded, reboot before installing this plugin.
 2. Open **Plugins → Install Plugin** in Unraid.
 3. Paste the following URL and install:
 
