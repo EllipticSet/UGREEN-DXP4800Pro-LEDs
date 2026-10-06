@@ -3,18 +3,19 @@
   document.querySelectorAll('.nas-front-settings').forEach(panel => {
     if (panel.dataset.initialized) return;
     panel.dataset.initialized = 'true';
-    panel.querySelectorAll('.nas-help-toggle').forEach(button => {
-      button.addEventListener('click', () => {
-        const help = document.getElementById(button.getAttribute('aria-controls'));
-        const expanded = button.getAttribute('aria-expanded') !== 'true';
-        button.setAttribute('aria-expanded', String(expanded));
-        if (window.jQuery) {
-          // Use the same jQuery animation as Unraid's inline setting help.
-          window.jQuery(help).stop(true, true).toggle('slow');
-        } else {
-          help.style.display = expanded ? 'block' : 'none';
-        }
-      });
+    // Unraid owns the inline_help click binding and animation. Its native
+    // initialization replaces help IDs; keep accessibility references in sync.
+    panel.querySelectorAll('blockquote.inline_help').forEach(help => {
+      const row = help.previousElementSibling;
+      const button = row.querySelector('.nas-help-toggle');
+      const input = row.querySelector('input, select');
+      const sync = () => {
+        button.setAttribute('aria-controls', help.id);
+        button.setAttribute('aria-expanded', String(getComputedStyle(help).display !== 'none'));
+        input.setAttribute('aria-describedby', help.id);
+      };
+      new MutationObserver(sync).observe(help, { attributes: true, attributeFilter: ['id', 'style'] });
+      sync();
     });
     panel.querySelectorAll('.nas-feedback.success').forEach(notice => {
       setTimeout(() => notice.remove(), 5000);

@@ -99,5 +99,7 @@
 }
 
 /* Let Unraid supply its native help colours, borders, padding and typography. */
-.nas-front-settings .nas-inline-help { grid-column: 1 / -1; }
+.nas-front-settings dl.field { padding: 0; }
+.nas-front-settings dl.field dd { min-width: 0; }
+.nas-front-settings dl.field dt .nas-help-toggle { width: 100%; }
 .nas-front-settings .nas-front-form > .actions { justify-content: center; }
