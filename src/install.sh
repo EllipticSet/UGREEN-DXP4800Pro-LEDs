@@ -2,7 +2,10 @@
 set -Eeuo pipefail
 root=$1
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
-package=ugreen-pro-leds-1.2.2-x86_64-1
+version=$(cat "$root/payload/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt")
+[[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid bundled plugin version.' >&2; exit 1; }
+package="ugreen-pro-leds-${version}-x86_64-1"
+[[ -f $root/$package.txz ]] || { echo "Missing bundled package: $package" >&2; exit 1; }
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
 "$root/preflight.sh"

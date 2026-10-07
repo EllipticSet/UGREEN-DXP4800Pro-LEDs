@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 plugin=/boot/config/plugins/UGREEN-DXP4800Pro-LEDs
+version=$(cat /usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt)
+[[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid installed plugin version.' >&2; exit 1; }
+package="ugreen-pro-leds-${version}-x86_64-1"
 /usr/local/sbin/ugreen-pro-leds stop
 if [[ -f /boot/config/stop ]]; then
   sed -i '\@^/usr/local/sbin/ugreen-pro-leds shutdown # UGREEN-DXP4800Pro-LEDs$@d' /boot/config/stop
@@ -30,5 +33,5 @@ if [[ -d /sys/module/led_ugreen ]]; then
   fi
 fi
 # Remove only our package; shared i2c-tools and all user settings are retained.
-removepkg ugreen-pro-leds-1.2.3-x86_64-1 >/dev/null
+removepkg "$package" >/dev/null
 printf 'Removed. Settings retained in %s.\n' "$plugin"

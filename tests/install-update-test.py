@@ -1,13 +1,19 @@
 from pathlib import Path
 import tempfile,subprocess,os
 project=Path(__file__).resolve().parent.parent
+import sys
+sys.path.insert(0, str(project/'build'))
+from package_manifest import VERSION, PKG
 bash=os.environ.get('BASH_TEST','bash')
 with tempfile.TemporaryDirectory() as t:
  base=Path(t); machine=base/'machine'; bundle=base/'bundle';bundle.mkdir()
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
  payload=bundle/'payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid';payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
- (bundle/'ugreen-pro-leds-1.2.2-x86_64-1.txz').touch()
+ (bundle/f'{PKG}.txz').touch()
+ version_file=bundle/'payload/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt'
+ version_file.parent.mkdir(parents=True,exist_ok=True)
+ version_file.write_text(VERSION+'\n')
  web='usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs'
  for asset in ['LED-Settings.page','NASFrontLEDsIcons.page','icon-themes.css','icons/icon-azure.png','icons/icon-black.png','icons/icon-gray.png','icons/icon-white.png']:
   source=bundle/'payload'/web/asset;source.parent.mkdir(parents=True,exist_ok=True);source.write_text('new icon page fixture')
@@ -18,6 +24,7 @@ with tempfile.TemporaryDirectory() as t:
  script=(project/'src/install.sh').read_text()
  # Replace path literals in the test copy only.
  for path in ['/usr/local/','/boot/','/var/log/','/tmp/ugreen-pro-transaction.']:script=script.replace(path,str(machine)+path)
+ script=script.replace('$root/payload'+str(machine)+'/usr/local/', '$root/payload/usr/local/')
  script=script.replace('[[ ! -e /$path ]]', f'[[ ! -e "{machine}/$path" ]]')
  script=script.replace('-C / ',f'-C "{machine}" ').replace('-C /\n',f'-C "{machine}"\n')
  script=script.replace('"/$web/$asset"', '"'+str(machine)+'/$web/$asset"')
@@ -29,7 +36,7 @@ with tempfile.TemporaryDirectory() as t:
   mocks=f'''modinfo() {{ echo '6.18.38-Unraid SMP'; }}
 i2cget() {{ return 0; }}
 php() {{ if [[ $(cat "$2") == CUSTOM* ]]; then echo 'DISK_ATA_PORTS=(4 3 2 1)'; else cat "$2"; fi; }}
-upgradepkg() {{ {update_web} printf '%s\\n' '#!/bin/bash' 'device_on_ata_port() {{ [[ " {occupied} " == *" $1 "* ]] || return 1; printf "sd%s\\n" "$1"; }}' '[[ ${{BASH_SOURCE[0]}} != $0 ]] || {{ [[ $1 != start ]] || exit {1 if fail else 0}; }}' > '{monitor}'; chmod +x '{monitor}'; }}
+upgradepkg() {{ [[ $3 == '{bundle}/{PKG}.txz' && -f $3 ]] || return 4; {update_web} printf '%s\\n' '#!/bin/bash' 'device_on_ata_port() {{ [[ " {occupied} " == *" $1 "* ]] || return 1; printf "sd%s\\n" "$1"; }}' '[[ ${{BASH_SOURCE[0]}} != $0 ]] || {{ [[ $1 != start ]] || exit {1 if fail else 0}; }}' > '{monitor}'; chmod +x '{monitor}'; }}
 removepkg() {{ return 0; }}
 export -f modinfo i2cget php upgradepkg removepkg
 '''

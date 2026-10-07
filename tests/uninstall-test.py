@@ -1,11 +1,13 @@
 """Run removal against temporary paths and mocked kernel/package commands."""
 from pathlib import Path
 import os, subprocess, tempfile
-import xml.etree.ElementTree as ET
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent/'build'))
+from package_manifest import VERSION
 
 project = Path(__file__).resolve().parent.parent
 bash = os.environ.get('BASH_TEST', 'bash')
-version = ET.parse(project/'UGREEN-DXP4800Pro-LEDs.plg').getroot().get('version')
+version = VERSION
 expected_package = f'ugreen-pro-leds-{version}-x86_64-1'
 for scenario in ['loaded', 'absent', 'failure', 'still-loaded']:
     with tempfile.TemporaryDirectory() as tmp:
@@ -13,6 +15,9 @@ for scenario in ['loaded', 'absent', 'failure', 'still-loaded']:
         for path in ['boot/config/plugins/UGREEN-DXP4800Pro-LEDs', 'usr/local/sbin',
                      'run', 'sys/module']:
             (root/path).mkdir(parents=True)
+        version_file = root/'usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt'
+        version_file.parent.mkdir(parents=True)
+        version_file.write_text(version+'\n')
         module = root/'sys/module/led_ugreen'
         if scenario != 'absent':
             module.mkdir()
