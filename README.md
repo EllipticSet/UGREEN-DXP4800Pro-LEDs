@@ -107,7 +107,7 @@ Use an absolute path: Unraid's PHP startup can change the working directory.
 
 ## Configuration
 
-Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a tab from the bar at the top. The Power, LAN and Drives tabs show a front-panel image with the relevant LEDs highlighted; on narrow screens, the image appears above the controls. **Advanced Settings** centres its controls without a NAS image and groups brightness, connectivity, drive mapping and monitoring settings. Its optional mapping guide opens and closes from the same Show guide / Hide guide button. The installed plugin version appears on the right inside the tab bar.
+Open **Settings → LED Settings**, or visit `/Settings/LED-Settings`. Select a tab from the bar at the top. The Power, LAN and Drives tabs show a front-panel image with the relevant LEDs highlighted; on narrow screens, the image appears above the controls. **Advanced Settings** centres its controls without a NAS image and groups brightness, connectivity, drive mapping and monitoring settings. Its optional mapping guide starts closed on every visit and opens and closes from the Show guide / Hide guide button. The installed plugin version appears on the right inside the tab bar; click it to open the corresponding GitHub release notes.
 
 **Apply** saves only the selected tab. **Restore tab defaults** also affects only that tab.
 

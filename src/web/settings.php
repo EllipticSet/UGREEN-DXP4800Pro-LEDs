@@ -28,7 +28,8 @@ $tabDescriptions = [
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
 <link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/settings.css?v=<?= substr(hash_file('sha256', __DIR__ . '/settings.css'), 0, 12) ?>">
-<span class="nas-plugin-version" id="nas-plugin-version" title="UGREEN DXP4800 Pro LEDs version">v<?= ugreen_pro_escape(trim((string)file_get_contents(__DIR__ . '/version.txt'))) ?></span>
+<?php $ugreenVersion = trim((string)file_get_contents(__DIR__ . '/version.txt')); ?>
+<a class="nas-plugin-version" id="nas-plugin-version" href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/tag/v<?= ugreen_pro_escape(rawurlencode($ugreenVersion)) ?>" title="View release notes on GitHub" target="_blank" rel="noopener noreferrer">v<?= ugreen_pro_escape($ugreenVersion) ?></a>
 <script>
 (() => {
   const badge = document.getElementById('nas-plugin-version');
@@ -68,9 +69,9 @@ $tabDescriptions = [
         <aside class="nas-mapping-guide" aria-label="Drive LED setup">
           <div class="nas-guide-header">
             <strong>Optional drive-bay mapping guide</strong>
-            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="true">Hide guide</button>
+            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="false">Show guide</button>
           </div>
-          <div id="nas-mapping-content">
+          <div id="nas-mapping-content" style="display:none">
           <p>The standard mapping is 1 2 3 4. Empty bays remain off; newly added drives are detected automatically within approximately 15 seconds. Change the mapping only for troubleshooting or to disable a bay.</p>
           <p>For troubleshooting or a custom mapping, open the Unraid terminal and run:</p>
           <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>

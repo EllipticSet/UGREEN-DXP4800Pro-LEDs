@@ -53,7 +53,7 @@ check(substr_count($html, 'class="nas-settings-category"') === 4, 'Advanced sett
 check(strpos($html, '>Drive mapping</h2>') < strpos($html, 'Optional drive-bay mapping guide'), 'Mapping guide must belong to its category.');
 
 check(!preg_match('/class="inline_help nas-inline-help"[^>]* hidden/', $html), 'Native animated help must not be blocked by hidden.');
-check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults()), 'Each native help panel must start collapsed.');
+check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults()) + 1, 'Each native help panel must start collapsed.');
 
 check(substr_count($html, '<dl class="field">') === count(ugreen_pro_defaults()), 'Each setting must use the native definition-list structure.');
 preg_match_all('/<\/dl>\s*<blockquote class="inline_help nas-inline-help"/', $html, $nativePairs);
@@ -64,3 +64,7 @@ foreach (['settings.css', 'settings.js'] as $asset) {
     $fingerprint = substr(hash_file('sha256', __DIR__ . '/../src/web/' . $asset), 0, 12);
     check(str_contains($html, $asset . '?v=' . $fingerprint), 'Stale cache key for ' . $asset);
 }
+
+check(str_contains($html, 'id="nas-mapping-content" style="display:none"'), 'Mapping guide must start collapsed before JavaScript runs.');
+$version = trim(file_get_contents(__DIR__ . '/../src/web/version.txt'));
+check(str_contains($html, 'href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/tag/v' . $version . '"'), 'Version must link to its exact release.');

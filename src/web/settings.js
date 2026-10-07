@@ -31,23 +31,23 @@
   guide.dataset.initialized = 'true';
   const content = guide.querySelector('#nas-mapping-content');
   const toggle = guide.querySelector('.nas-guide-open');
-  const key = 'nas-front-leds.mapping-guide.dismissed';
-  let expanded = true;
-  try { expanded = localStorage.getItem(key) !== 'true'; } catch (_) {}
+  let expanded = false;
   function updateButton() {
     toggle.textContent = expanded ? 'Hide guide' : 'Show guide';
     toggle.setAttribute('aria-expanded', String(expanded));
   }
-  content.style.display = expanded ? '' : 'none';
-  updateButton();
+  function collapseGuide() {
+    expanded = false;
+    $(content).stop(true, true).hide();
+    updateButton();
+  }
+  collapseGuide();
+  // Also reset when browser history restores this page from its cache.
+  window.addEventListener('pageshow', collapseGuide);
   toggle.addEventListener('click', () => {
     expanded = !expanded;
     updateButton();
     // Use the same jQuery animation as Unraid's native inline help.
     $(content).stop(true, true).toggle('slow');
-    try {
-      if (expanded) localStorage.removeItem(key);
-      else localStorage.setItem(key, 'true');
-    } catch (_) {}
   });
 })();

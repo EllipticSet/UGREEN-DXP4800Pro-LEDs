@@ -8,7 +8,7 @@
   <Project>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs</Project>
   <ReadMe>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/blob/main/docs/read-me-first.md</ReadMe>
   <Screenshot>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/docs/screenshots/NAS-Front-LEDs-power.jpg</Screenshot>
-  <Category>Tools:System</Category>
+  <Category>Tools:System Productivity: Drivers: Plugins:</Category>
   <Beta>false</Beta>
   <MinVer>7.3.2</MinVer>
   <Icon>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-white.png</Icon>
