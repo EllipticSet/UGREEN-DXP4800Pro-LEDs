@@ -67,15 +67,20 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 
 ## Installation
 
-1. Remove any competing LED plugin or controller. If its module or I2C client remains loaded, reboot before installing this plugin.
-2. Open **Plugins → Install Plugin** in Unraid.
-3. Paste the following URL and install:
+1. Uninstall other LED-control plugins and stop any LED-control services. Then reboot.
+2. Open **Apps** in Unraid and search for **UGREEN DXP4800 Pro LEDs**.
+3. Select **Install**.
+4. Open **Settings → LED Settings** to configure the plugin.
+
+### Direct installation
+
+Alternatively, open **Plugins → Install Plugin** and paste:
 
    ```text
    https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg
    ```
 
-4. Open **Settings → LED Settings** to configure the plugin.
+After installation, open **Settings → LED Settings**.
 
 Settings are stored persistently at:
 
@@ -85,7 +90,7 @@ Settings are stored persistently at:
 
 The public plugin name is **UGREEN DXP4800 Pro LEDs**; its Unraid Settings page is named **LED Settings**. The existing repository URL, `.plg` filename and internal plugin/configuration directories are retained so existing installations can update directly.
 
-The URL above supports direct installation without Community Applications. See [Community Applications maintenance](docs/community-apps.md) for submission and catalogue details.
+The plugin is available in **Community Applications** as of October 7, 2026. See [Community Applications maintenance](docs/community-apps.md) for catalogue and metadata details.
 
 <details>
 <summary>Manual installation from the terminal</summary>

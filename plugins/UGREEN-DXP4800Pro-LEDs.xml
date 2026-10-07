@@ -2,19 +2,19 @@
 <Plugin>
   <Name>UGREEN DXP4800 Pro LEDs</Name>
   <Overview>Controls the Power, LAN and four drive-bay LEDs on the UGREEN DXP4800 Pro. Configurable colours, disk activity pulses and standby breathing.</Overview>
-  <PluginURL>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/UGREEN-DXP4800Pro-LEDs.plg</PluginURL>
+  <PluginURL>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg</PluginURL>
   <PluginAuthor>EllipticSet</PluginAuthor>
   <Support>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues</Support>
   <Project>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs</Project>
-  <ReadMe>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/refs/heads/main/README.md</ReadMe>
-  <Screenshot>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/docs/screenshots/NAS-Front-LEDs-power.jpg</Screenshot>
+  <ReadMe>https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/blob/main/docs/read-me-first.md</ReadMe>
+  <Screenshot>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/docs/screenshots/NAS-Front-LEDs-power.jpg</Screenshot>
   <Category>Tools:System</Category>
   <Beta>false</Beta>
   <MinVer>7.3.2</MinVer>
-  <Icon>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/src/web/icons/icon-white.png</Icon>
-  <Icon-azure>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/src/web/icons/icon-azure.png</Icon-azure>
-  <Icon-black>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/src/web/icons/icon-black.png</Icon-black>
-  <Icon-gray>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/src/web/icons/icon-gray.png</Icon-gray>
-  <Icon-white>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/master/src/web/icons/icon-white.png</Icon-white>
+  <Icon>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-white.png</Icon>
+  <Icon-azure>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-azure.png</Icon-azure>
+  <Icon-black>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-black.png</Icon-black>
+  <Icon-gray>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-gray.png</Icon-gray>
+  <Icon-white>https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/src/web/icons/icon-white.png</Icon-white>
   <License>MIT</License>
 </Plugin>

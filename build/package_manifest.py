@@ -27,7 +27,7 @@ def payload_inputs(root):
             result[f'{web}/{path.relative_to(root/"src/web")}'] = (path, 0o644)
     for name in VENDOR_FILES:
         result[f'{share}/vendor/{name}'] = (root/'vendor'/name, 0o644)
-    for name in ('validation.md', 'validation-history.md', 'community-apps.md'):
+    for name in ('validation.md', 'validation-history.md', 'community-apps.md', 'read-me-first.md'):
         result[f'{share}/docs/{name}'] = (root/'docs'/name, 0o644)
     return result
 
