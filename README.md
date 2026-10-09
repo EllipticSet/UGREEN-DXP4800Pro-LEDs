@@ -43,7 +43,7 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions fo
 | Unraid | 7.3.2+ |
 | Kernel | `6.18.38-Unraid` (Unraid 7.3.2) or `6.18.54-Unraid` (Unraid 7.3.3) |
 
-The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. Hardware validation on Unraid 7.3.3 is pending.
+The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. I have not yet tested the plugin on my NAS with Unraid 7.3.3.
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**
@@ -187,7 +187,7 @@ The installer adds an identified shutdown-hook line to `/boot/config/stop`; remo
 
 ## Validation status
 
-Hardware testing of earlier development builds on a DXP4800 Pro with Unraid 7.3.2 and the supported kernel confirmed:
+I tested earlier development builds on my DXP4800 Pro running Unraid 7.3.2 with kernel `6.18.38-Unraid` and confirmed:
 
 - Installation and monitor startup.
 - Solid white Power and white LAN activity on `br0`.
@@ -197,7 +197,7 @@ Hardware testing of earlier development builds on a DXP4800 Pro with Unraid 7.3.
 - Automatic startup after reboot and after a full shutdown followed by power-on.
 - Power blinking during shutdown and returning to solid white after startup.
 
-See [Validation](docs/validation.md) for automated checks, historical hardware results and remaining verification work. The owner also tested and approved the 1.2.0 settings interface on the NAS, including repeated native help animations in Safari. This does not establish complete hardware coverage of brightness or breathing alignment.
+See [Validation](docs/validation.md) for automated checks, historical hardware results and remaining verification work. I also tested the 1.2.0 settings interface on the NAS, including repeated native help animations in Safari. This does not establish complete hardware coverage of brightness or breathing alignment.
 
 ## License and acknowledgements
 

@@ -1,6 +1,12 @@
 # Validation
 
-## Current release: 1.2.2
+## Prepared release: 1.3.0
+
+I am adding Unraid 7.3.3 support while retaining Unraid 7.3.2 support. The plugin selects a bundled module matching the running kernel and verifies its vermagic before installation or startup. The new module is built against the checksum-pinned `6.18.54-Unraid` archive with the retained hardening patch.
+
+I have not yet installed Unraid 7.3.3 on my NAS. Automated build and regression results are recorded in the [kernel compatibility workflow](../.github/workflows/kernel-compatibility.yml); they do not establish physical LED behavior.
+
+## Version 1.2.2
 
 Version 1.2.2 corrects the mapping-guide link and clarifies automatic mapping migration in the README.
 
@@ -20,13 +26,13 @@ The package tests verify the committed `.plg` and its checksum before rebuilding
 
 Run the checks in [the validation workflow](../.github/workflows/validate.yml). The [GitHub Actions results](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml) show the outcome for each commit; a successful older run is not proof that a newer commit has passed.
 
-The owner tested and approved the 1.2.0 settings interface on the NAS. Safari checks included repeated help opening and closing, centred action buttons, percentage brightness, and the mapping guide toggle. The Power LED screenshot was captured from the actual WebGUI; the Drives LEDs mobile preview was captured in Safari responsive mode. Automated and simulated checks do not certify hardware behaviour; the bundled module was inspected, not rebuilt locally.
+I tested the 1.2.0 settings interface on the NAS. Safari checks included repeated help opening and closing, centred action buttons, percentage brightness, and the mapping guide toggle. The Power LED screenshot was captured from the actual WebGUI; the Drives LEDs mobile preview was captured in Safari responsive mode. Automated and simulated checks do not certify hardware behaviour; the bundled module was inspected, not rebuilt locally.
 
 The four icon variants and the README animation are checked locally for dimensions, colours and transparency. Theme switching is exercised with the same icon stylesheet and paths used by Settings and Plugins; live verification on the NAS remains pending.
 
 ## Historical hardware results
 
-The owner confirmed the following on a DXP4800 Pro running Unraid 7.3.2 with kernel `6.18.38-Unraid` during earlier development builds:
+I confirmed the following on my DXP4800 Pro running Unraid 7.3.2 with kernel `6.18.38-Unraid` during earlier development builds:
 
 - Installation and monitor startup; Power and LAN activity on `br0`.
 - Apply saved settings and restarted the monitor.

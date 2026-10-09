@@ -21,7 +21,7 @@ Passed local checks:
 - Corresponding module sources, patch and licenses included; DesignWare modules excluded.
 - Compact English listing uses a bold title rather than a Markdown heading. Full English guide stored separately.
 
-User-confirmed hardware results for earlier builds and applied fixes: installation on DXP4800 Pro / Unraid 7.3.2 / 6.18.38-Unraid, Power, LAN on br0, Apply settings, four-bay mapping, read activity and standby breathing.
+I confirmed these hardware results while testing earlier builds and fixes on my NAS: installation on DXP4800 Pro / Unraid 7.3.2 / 6.18.38-Unraid, Power, LAN on br0, Apply settings, four-bay mapping, read activity and standby breathing.
 
 Not yet verified: this newly packaged release on the NAS, reboot startup, shutdown Power indication, fault indication and complete removal/recovery flow. Local checks do not establish these results.
 
@@ -31,7 +31,7 @@ The installer now supports upgrades using Slackware upgradepkg, with a runtime s
 
 ## Hardware lifecycle tests and removal fix — 2026.10.02.4
 
-User-confirmed on October 2: the 2026.10.02.3 update preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
+On October 2, I confirmed that the 2026.10.02.3 update preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
 
 Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands. The corrected removal/reinstallation flow still needs verification on the NAS; fault indications remain untested.
 
@@ -39,7 +39,7 @@ Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal 
 ## LED Settings interface — 2026.10.03.3
 
 - Public name changed in Settings, installer messages, plugin listing, README and CA metadata; internal identity and update URL retained.
-- Four ordered native Unraid tabs, with the supplied NAS photo and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
+- Four ordered native Unraid tabs, with my NAS photo and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
 - Per-tab candidate tests confirm saves and resets preserve fields belonging to other tabs, including ATA mapping. Missing fields and unknown tabs are rejected.
 - PHP syntax, settings validation/rendering and native CSRF regression passed. All four tabs render together without duplicate input IDs or repeated controller processing.
 - Simulated upgrade/rollback, removal and preflight tests passed. Monitor and network/disk regression passed using Bash 5.3.
