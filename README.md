@@ -22,7 +22,7 @@ This plugin controls the Power, LAN and four drive-bay LEDs on the UGREEN DXP480
 
 ## Versioning
 
-I use `MAJOR.MINOR.PATCH` for releases: patch versions contain fixes, minor versions add backward-compatible features, and major versions introduce breaking changes.
+Releases follow `MAJOR.MINOR.PATCH`: patch versions contain fixes, minor versions add backward-compatible features, and major versions introduce breaking changes.
 
 ## Settings preview
 
@@ -45,7 +45,7 @@ I use `MAJOR.MINOR.PATCH` for releases: patch versions contain fixes, minor vers
 
 The installer checks the NAS model through DMI and requires an exact match between the running kernel and a bundled LED module. Unraid 7.3.2 or later is required, but the only supported kernels are those listed above. Both modules are included; the installer selects the correct one automatically, including after an Unraid upgrade or rollback.
 
-I tested 1.3.0 on my NAS with Unraid 7.3.2, then verified 1.3.1 on Unraid 7.3.3. The results and remaining checks are recorded in [Validation](docs/validation.md).
+Hardware tests on the maintainer’s DXP4800 Pro covered version 1.3.0 on Unraid 7.3.2 and version 1.3.1 on Unraid 7.3.3. The results and remaining checks are recorded in [Validation](docs/validation.md).
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**
@@ -85,7 +85,7 @@ The plugin saves settings on the Unraid boot device at:
 /boot/config/plugins/UGREEN-DXP4800Pro-LEDs/settings.cfg
 ```
 
-The plugin appears as **UGREEN DXP4800 Pro LEDs** in Plugins and as **LED Settings** in Settings. I have kept the existing repository URL, `.plg` filename and internal directories so earlier installations can update directly.
+The plugin appears as **UGREEN DXP4800 Pro LEDs** in Plugins and as **LED Settings** in Settings. The existing repository URL, `.plg` filename and internal directories are retained so earlier installations can update directly.
 
 The plugin is available in **Community Applications** as of October 7, 2026. See [Community Applications maintenance](docs/community-apps.md) for catalogue and metadata details.
 
@@ -155,7 +155,7 @@ The table below describes the default white and orange indications. You can chan
 
 The default drive activity style is **Dark when idle**, with brief white pulses during I/O. **Solid when idle**, with brief off pulses during I/O, is also available.
 
-When the set of sleeping drives changes, the monitor restarts their breathing cycles together. The controller receives consecutive start commands, so I still need to verify how closely the LEDs remain aligned on the hardware.
+When the set of sleeping drives changes, the monitor restarts their breathing cycles together. The controller receives consecutive start commands; visual alignment of the LEDs still requires hardware verification.
 
 The monitor samples disk activity every **0.5 seconds** by default. LED pulses represent the activity collected during that interval. SMART checks use `-n standby,0` to avoid waking sleeping drives, and a failed query alone does not trigger a confirmed disk-failure indication. Removing a drive intentionally can produce the same warning as an unexpected disappearance.
 
@@ -188,9 +188,9 @@ During installation, the plugin adds its own shutdown-hook line to `/boot/config
 
 ## Validation status
 
-I verified version 1.3.1 on my DXP4800 Pro running Unraid 7.3.3 with kernel `6.18.54-Unraid` on October 9, 2026. The monitor starts, binds the controller on Intel SMBus I801, maps all four drives, and controls Power, LAN, disk activity and standby correctly. Apply saves settings and restarts the monitor.
+Version 1.3.1 was verified on the maintainer’s DXP4800 Pro running Unraid 7.3.3 with kernel `6.18.54-Unraid` on October 9, 2026. The monitor starts, binds the controller on Intel SMBus I801, maps all four drives, and controls Power, LAN, disk activity and standby correctly. Apply saves settings and restarts the monitor.
 
-I tested earlier development builds on my DXP4800 Pro running Unraid 7.3.2 with kernel `6.18.38-Unraid` and confirmed:
+Tests of earlier development builds on the same DXP4800 Pro, running Unraid 7.3.2 with kernel `6.18.38-Unraid`, confirmed:
 
 - Installation and monitor startup.
 - Solid white Power and white LAN activity on `br0`.
@@ -200,13 +200,13 @@ I tested earlier development builds on my DXP4800 Pro running Unraid 7.3.2 with 
 - Automatic startup after reboot and after a full shutdown followed by power-on.
 - Power blinking during shutdown and returning to solid white after startup.
 
-[Validation](docs/validation.md) records the automated checks, earlier hardware tests and work still to complete. I also tested the 1.2.0 settings interface on the NAS, including repeated help animations in Safari. The physical brightness response and breathing alignment still need further testing.
+[Validation](docs/validation.md) records the automated checks, earlier hardware tests and work still to complete. The 1.2.0 settings interface was also tested on the NAS, including repeated help animations in Safari. The physical brightness response and breathing alignment still need further testing.
 
 ## License and acknowledgements
 
 The monitor, WebGUI and packaging adaptations are licensed under the [MIT License](LICENSE). Bundled third-party components retain their own licences, including GPL-2.0-only for the LED kernel module and component-specific GPL/LGPL terms for `i2c-tools`. See [THIRD_PARTY.md](THIRD_PARTY.md) for details.
 
-I based this project on the following work:
+This project builds on the following work:
 
 - [flybrys/UGREEN-DXP4800GT-LED-Driver](https://github.com/flybrys/UGREEN-DXP4800GT-LED-Driver), commit `32c06cfd4a4d0fa27f5610f678391ed2c57edfd0`: adapted monitor and settings, and the prebuilt LED module.
 - [ich777/unraid-ugreenleds-driver](https://github.com/ich777/unraid-ugreenleds-driver), commit `3497eb5367dfdd8ab494eb481e16111216ba9f48`: Intel I801 setup, ATA mapping and packaging references.

@@ -18,4 +18,4 @@ This directory contains the binaries, corresponding sources, licences and build 
 
 `LICENSE`, `flybrys-LICENSE` and `ich777-LICENSE` retain the original MIT notices. They do not relicense the GPL kernel module or i2c-tools. See [THIRD_PARTY.md](../THIRD_PARTY.md) for the plugin's combined notices and the root README for upstream references.
 
-I have omitted the upstream CLI, standalone monitors, systemd services and Debian/TrueNAS/RPM packaging because this Unraid plugin does not use them. [package_manifest.py](../build/package_manifest.py) lists the dependency files included in the installed payload.
+The upstream CLI, standalone monitors, systemd services and Debian/TrueNAS/RPM packaging are omitted because this Unraid plugin does not use them. [package_manifest.py](../build/package_manifest.py) lists the dependency files included in the installed payload.
