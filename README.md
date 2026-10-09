@@ -16,7 +16,7 @@
 
 </div>
 
-I maintain this plugin for the UGREEN DXP4800 Pro running Unraid. It controls the Power, LAN and four drive-bay LEDs, with settings for colours, brightness, disk activity and standby breathing in the Unraid WebGUI.
+This plugin controls the Power, LAN and four drive-bay LEDs on the UGREEN DXP4800 Pro running Unraid. Colours, brightness, disk activity pulses and standby breathing can be configured directly in the Unraid WebGUI.
 
 > This is an independent project, not an official release from UGREEN, ich777 or flybrys.
 
