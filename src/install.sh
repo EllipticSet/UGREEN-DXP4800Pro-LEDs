@@ -8,8 +8,9 @@ package="ugreen-pro-leds-${version}-x86_64-1"
 [[ -f $root/$package.txz ]] || { echo "Missing bundled package: $package" >&2; exit 1; }
 marker='# UGREEN-DXP4800Pro-LEDs'
 echo 'Installing UGREEN DXP4800 Pro LEDs'
-"$root/preflight.sh"
-[[ $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid/led-ugreen.ko") == '6.18.38-Unraid '* ]] || { echo 'Wrong module release.' >&2; exit 1; }
+"$root/preflight.sh" "$root/payload/usr/local/lib/ugreen-pro-leds"
+kernel=$(uname -r)
+[[ -f $root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko && $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko") == "$kernel "* ]] || { echo 'Missing or incompatible bundled LED module.' >&2; exit 1; }
 mkdir -p "$plugin"
 transaction=$(mktemp -d /tmp/ugreen-pro-transaction.XXXXXX)
 trap 'rm -rf -- "$transaction"' EXIT

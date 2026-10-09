@@ -56,7 +56,12 @@ module_loaded() { grep -q "^${1}[[:space:]]" /proc/modules; }
 
 setup_hardware() {
   model_check
-  [[ $(uname -r) == 6.18.38-Unraid ]] || fail 'Exact kernel 6.18.38-Unraid required.'
+  local kernel module
+  kernel=$(uname -r)
+  module="/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko"
+  [[ -f $module ]] || fail "No packaged LED module for kernel $kernel. Update the plugin before using this kernel."
+  command -v modinfo >/dev/null || fail 'Missing dependency: modinfo'
+  [[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || fail "Wrong LED module release for kernel $kernel."
   for cmd in i2cget modprobe insmod flock jq smartctl timeout ip curl; do
     command -v "$cmd" >/dev/null || fail "Missing dependency: $cmd"
   done
@@ -69,7 +74,7 @@ setup_hardware() {
        $(cat /sys/module/led_ugreen/parameters/write_protocol) == legacy ]] ||
       fail 'Another LED module is loaded. Remove other LED plugins and reboot.'
   else
-    insmod /usr/local/lib/ugreen-pro-leds/6.18.38-Unraid/led-ugreen.ko write_protocol=legacy num_disk_leds=4
+    insmod "$module" write_protocol=legacy num_disk_leds=4
   fi
   local path name bus client found=''
   for path in /sys/class/i2c-dev/i2c-*; do

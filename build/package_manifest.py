@@ -1,7 +1,13 @@
 """Explicit source inputs for the installed plugin payload."""
 NAME = 'UGREEN-DXP4800Pro-LEDs'
-KERNEL = '6.18.38-Unraid'
-VERSION = '1.2.4'
+KERNELS = ('6.18.38-Unraid', '6.18.54-Unraid')
+
+def module_source(root, kernel):
+    return root/'vendor/led-ugreen.ko' if kernel == KERNELS[0] else root/'vendor/modules'/kernel/'led-ugreen.ko'
+
+def module_sha256(root, kernel):
+    return 'dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2' if kernel == KERNELS[0] else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
+VERSION = '1.3.0'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',
@@ -20,11 +26,15 @@ def payload_inputs(root):
         f'{share}/USER-GUIDE.md': (root/'README.md', 0o644),
         f'{share}/LICENSE': (root/'LICENSE', 0o644),
         f'{share}/THIRD_PARTY.md': (root/'THIRD_PARTY.md', 0o644),
-        f'usr/local/lib/ugreen-pro-leds/{KERNEL}/led-ugreen.ko': (root/'vendor/led-ugreen.ko', 0o644),
     }
+    for kernel in KERNELS:
+        result[f'usr/local/lib/ugreen-pro-leds/{kernel}/led-ugreen.ko'] = (module_source(root, kernel), 0o644)
     for path in sorted((root/'src/web').rglob('*')):
         if path.is_file():
             result[f'{web}/{path.relative_to(root/"src/web")}'] = (path, 0o644)
+    for kernel in KERNELS[1:]:
+        for name in ('BUILD_INFO', 'led-ugreen.ko.sha256'):
+            result[f'{share}/vendor/modules/{kernel}/{name}'] = (root/'vendor/modules'/kernel/name, 0o644)
     for name in VENDOR_FILES:
         result[f'{share}/vendor/{name}'] = (root/'vendor'/name, 0o644)
     for name in ('validation.md', 'validation-history.md', 'community-apps.md', 'read-me-first.md'):

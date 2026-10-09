@@ -41,9 +41,9 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions fo
 | --- | --- |
 | NAS | UGREEN DXP4800 Pro |
 | Unraid | 7.3.2+ |
-| Kernel | `6.18.38-Unraid` (exact version required by this build) |
+| Kernel | `6.18.38-Unraid` (Unraid 7.3.2) or `6.18.54-Unraid` (Unraid 7.3.3) |
 
-The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with the exact kernel `6.18.38-Unraid`.
+The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. Hardware validation on Unraid 7.3.3 is pending.
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**

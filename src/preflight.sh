@@ -1,7 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 [[ $EUID == 0 ]] || { echo 'Root required.' >&2; exit 1; }
-[[ $(uname -r) == 6.18.38-Unraid ]] || { echo 'Only kernel 6.18.38-Unraid is packaged.' >&2; exit 1; }
+kernel=$(uname -r)
+module_root=${1:-/usr/local/lib/ugreen-pro-leds}
+module="$module_root/$kernel/led-ugreen.ko"
+[[ -f $module ]] || { echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2; exit 1; }
+[[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || { echo "Wrong LED module release for kernel $kernel." >&2; exit 1; }
 [[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this build.' >&2; exit 1; }
 unraid_version=$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version)
 if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then

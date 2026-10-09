@@ -2,7 +2,7 @@ from pathlib import Path
 import base64, hashlib, io, re, struct, sys, tarfile, xml.etree.ElementTree as ET
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'build'))
-from package_manifest import NAME, VERSION, PKG, payload_inputs, SLACK_DESC
+from package_manifest import NAME, VERSION, PKG, KERNELS, module_sha256, payload_inputs, SLACK_DESC
 plg=Path(sys.argv[1]) if len(sys.argv)>1 else root/f'{NAME}.plg'
 checksum=Path(str(plg)+'.sha256').read_text().split()
 assert checksum == [hashlib.sha256(plg.read_bytes()).hexdigest(), plg.name], 'Committed checksum mismatch'
@@ -25,10 +25,11 @@ with tarfile.open(fileobj=io.BytesIO(blob),mode='r:xz') as tf:
  dependency=tf.extractfile('i2c-tools-4.3-x86_64-1.txz').read()
  assert dependency==(root/'vendor/i2c-tools-4.3-x86_64-1.txz').read_bytes()
  assert hashlib.sha256(dependency).hexdigest()=='9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c'
- module=tf.extractfile('payload/usr/local/lib/ugreen-pro-leds/6.18.38-Unraid/led-ugreen.ko').read()
- assert module[:4]==b'\x7fELF' and struct.unpack_from('<H',module,18)[0]==62
- assert b'vermagic=6.18.38-Unraid ' in module
- assert hashlib.sha256(module).hexdigest()=='dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2'
+ for kernel in KERNELS:
+  module=tf.extractfile(f'payload/usr/local/lib/ugreen-pro-leds/{kernel}/led-ugreen.ko').read()
+  assert module[:4]==b'\x7fELF' and struct.unpack_from('<H',module,18)[0]==62
+  assert ('vermagic='+kernel+' ').encode() in module
+  assert hashlib.sha256(module).hexdigest()==module_sha256(root,kernel)
  assert not any('designware' in m.name for m in tf.getmembers())
  pkg=tf.extractfile(PKG+'.txz').read()
  with tarfile.open(fileobj=io.BytesIO(pkg),mode='r:xz') as pt:

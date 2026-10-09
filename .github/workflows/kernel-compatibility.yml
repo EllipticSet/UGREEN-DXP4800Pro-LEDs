@@ -1,0 +1,57 @@
+name: Build and validate kernel compatibility
+on:
+  push:
+    branches: ['compatibility/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kernel build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14 g++-14 make bc bison flex libssl-dev libelf-dev kmod jq php-cli
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+      - name: Compile the new module against the pinned Unraid kernel
+        run: |
+          curl --fail --location --retry 3 https://github.com/ich777/unraid_kernel/releases/download/6.18.54-Unraid/linux-6.18.54-Unraid.tar.xz -o "$RUNNER_TEMP/kernel.tar.xz"
+          bash build/build-module.sh "$RUNNER_TEMP/kernel.tar.xz" 6.18.54-Unraid vendor/modules/6.18.54-Unraid
+      - name: Build and validate both modules and all plugin regressions
+        run: |
+          bash -n src/ugreen-pro-leds
+          for file in src/*.sh build/*.sh; do bash -n "$file"; done
+          for file in src/web/*.php; do php -l "$file"; done
+          php tests/settings-test.php
+          php tests/tab-settings-test.php
+          node tests/mapping-guide-test.js
+          php tests/settings-recovery-test.php
+          php tests/csrf-test.php
+          php tests/native-csrf-test.php
+          bash tests/monitor-test.sh
+          bash tests/network-disk-test.sh
+          python3 tests/preflight-test.py
+          python3 tests/install-update-test.py
+          python3 tests/uninstall-test.py
+          python3 build/package.py
+          python3 tests/package-test.py
+          python3 tests/ca-metadata-test.py
+          python3 tests/reproducible-package-test.py
+      - name: Save verified module and offline package on the preparation branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add vendor/modules src/web/version.txt UGREEN-DXP4800Pro-LEDs.plg UGREEN-DXP4800Pro-LEDs.plg.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build and verify Unraid 7.3.3 LED module and dual-kernel package'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dual-kernel-plugin
+          path: |
+            UGREEN-DXP4800Pro-LEDs.plg
+            UGREEN-DXP4800Pro-LEDs.plg.sha256

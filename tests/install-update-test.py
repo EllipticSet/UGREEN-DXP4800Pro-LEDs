@@ -33,12 +33,13 @@ with tempfile.TemporaryDirectory() as t:
  def run(fail=False, stale=False, occupied="1 2"):
   monitor.write_text(old);monitor.chmod(0o755)
   update_web='' if stale else f"cp -R '{bundle}/payload/{web}/.' '{machine}/{web}/';"
-  mocks=f'''modinfo() {{ echo '6.18.38-Unraid SMP'; }}
+  mocks=f'''uname() {{ echo '6.18.38-Unraid'; }}
+modinfo() {{ echo '6.18.38-Unraid SMP'; }}
 i2cget() {{ return 0; }}
 php() {{ if [[ $(cat "$2") == CUSTOM* ]]; then echo 'DISK_ATA_PORTS=(4 3 2 1)'; else cat "$2"; fi; }}
 upgradepkg() {{ [[ $3 == '{bundle}/{PKG}.txz' && -f $3 ]] || return 4; {update_web} printf '%s\\n' '#!/bin/bash' 'device_on_ata_port() {{ [[ " {occupied} " == *" $1 "* ]] || return 1; printf "sd%s\\n" "$1"; }}' '[[ ${{BASH_SOURCE[0]}} != $0 ]] || {{ [[ $1 != start ]] || exit {1 if fail else 0}; }}' > '{monitor}'; chmod +x '{monitor}'; }}
 removepkg() {{ return 0; }}
-export -f modinfo i2cget php upgradepkg removepkg
+export -f uname modinfo i2cget php upgradepkg removepkg
 '''
   return subprocess.run([bash,'-c',mocks+f'"{bash}" "{installer}" "{bundle}"'],capture_output=True,text=True)
  r=run();assert r.returncode==0,r.stderr+r.stdout
