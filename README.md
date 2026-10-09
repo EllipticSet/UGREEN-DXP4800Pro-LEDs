@@ -43,7 +43,7 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions fo
 | Unraid | 7.3.2+ |
 | Kernel | `6.18.38-Unraid` (Unraid 7.3.2) or `6.18.54-Unraid` (Unraid 7.3.3) |
 
-The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. I confirmed that 1.3.0 works on my NAS with Unraid 7.3.2. The initial 7.3.3 test exposed a driver registration bug, corrected in 1.3.1; hardware verification of the corrected module is pending.
+The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. I tested 1.3.0 on my NAS with Unraid 7.3.2 and confirmed that it worked as before. I then verified 1.3.1 on Unraid 7.3.3: monitor startup, Power and LAN LEDs, activity and standby on all four drives, and Apply work correctly.
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**
@@ -186,6 +186,8 @@ Remove the plugin from **Plugins** in Unraid. Saved settings and shared `i2c-too
 The installer adds an identified shutdown-hook line to `/boot/config/stop`; removal deletes that line while preserving unrelated changes. If removal is incomplete or an old LED module remains loaded, reboot before installing another LED controller.
 
 ## Validation status
+
+I verified version 1.3.1 on my DXP4800 Pro running Unraid 7.3.3 with kernel `6.18.54-Unraid` on October 9, 2026. The monitor starts, binds the controller on Intel SMBus I801, maps all four drives, and controls Power, LAN, disk activity and standby correctly. Apply saves settings and restarts the monitor.
 
 I tested earlier development builds on my DXP4800 Pro running Unraid 7.3.2 with kernel `6.18.38-Unraid` and confirmed:
 

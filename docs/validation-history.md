@@ -46,3 +46,12 @@ Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal 
 - Rebuilt package passed XML, checksum, path, module provenance, bundled asset and CA metadata checks.
 - Browser preview uses the native Unraid tab template with simulated surrounding theme. All four tabs switch correctly; at 390px the image stacks above controls and document width stays within the viewport.
 - This interface update has not yet been installed or visually verified on the NAS. The preview and local regression checks do not establish live hardware validation.
+
+
+## Unraid 7.3.3 support — October 9, 2026
+
+I installed 1.3.0 on Unraid 7.3.2 / `6.18.38-Unraid` and confirmed that it behaved as before. After updating Unraid to 7.3.3 / `6.18.54-Unraid`, the rebuilt module read all six LEDs, but an incorrect probe guard in the hardening patch skipped registration. Installation rolled back, unloaded the module and retained my settings.
+
+Version 1.3.1 corrects the probe guard, keeping the registration flag only for cleanup. A regression applies the actual patch and executes the probe eligibility guard: it rejects the defective patch and accepts all six valid, initially unregistered LEDs with the correction. Linux compilation and the full automated suite passed.
+
+I installed the corrected 1.3.1 package on Unraid 7.3.3 and confirmed monitor startup, Power and LAN behavior, activity and standby on all four drives, and Apply. The monitor log confirms controller binding on `i2c-0`, ATA ports 1–4 and LAN online on `br0`. A further reboot test on 7.3.3 is not recorded here.
