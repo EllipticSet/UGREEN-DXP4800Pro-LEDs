@@ -22,15 +22,6 @@
              (int)state.r, (int)state.g, (int)state.b,
              (int)state.t_on, (int)(state.t_cycle - state.t_on));
      mutex_unlock(&state.priv->mutex);
-@@ -628,7 +628,7 @@
-     for (int i = 0; i < probe_limit; ++i) {
- 
-         struct ugreen_led_state *state = priv->state + i;
--        if (state->status == UGREEN_LED_STATE_INVALID)
-+        if (!state->registered)
-             continue;
- 
-         if (i == 0) {
 @@ -652,7 +652,17 @@
              state->cdev.default_trigger = "oneshot";
          }

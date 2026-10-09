@@ -19,6 +19,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
       - name: Compile the new module against the pinned Unraid kernel
         run: |
+          python3 tests/module-source-test.py
           module_dir=vendor/modules/6.18.54-Unraid
           patch_sha=$(sha256sum vendor/led-ugreen-hardening.patch | cut -d ' ' -f1)
           if [ ! -f "$module_dir/led-ugreen.ko" ] || ! grep -qx "led_patch_sha256=$patch_sha" "$module_dir/BUILD_INFO"; then

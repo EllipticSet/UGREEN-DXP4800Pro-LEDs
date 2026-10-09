@@ -43,7 +43,7 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions for fixes, minor versions fo
 | Unraid | 7.3.2+ |
 | Kernel | `6.18.38-Unraid` (Unraid 7.3.2) or `6.18.54-Unraid` (Unraid 7.3.3) |
 
-The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. I have not yet tested the plugin on my NAS with Unraid 7.3.3.
+The installer checks the exact DMI model and kernel before loading the bundled LED module. The supported configuration requires Unraid 7.3.2 or later with a packaged module matching the running kernel: `6.18.38-Unraid` or `6.18.54-Unraid`. Both modules are bundled and selected automatically, so the plugin can be installed before upgrading Unraid or after rolling back. I confirmed that 1.3.0 works on my NAS with Unraid 7.3.2. The initial 7.3.3 test exposed a driver registration bug, corrected in 1.3.1; hardware verification of the corrected module is pending.
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**

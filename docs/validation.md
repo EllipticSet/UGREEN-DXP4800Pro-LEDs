@@ -1,10 +1,10 @@
 # Validation
 
-## Prepared release: 1.3.0
+## Prepared release: 1.3.1
 
 I am adding Unraid 7.3.3 support while retaining Unraid 7.3.2 support. The plugin selects a bundled module matching the running kernel and verifies its vermagic before installation or startup. The new module is built against the checksum-pinned `6.18.54-Unraid` archive with the retained hardening patch.
 
-I have not yet installed Unraid 7.3.3 on my NAS. The [Linux build and full regression suite passed](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/runs/37973691334). These checks verify compilation, module selection and packaging; they do not establish physical LED behavior.
+I tested 1.3.0 on my NAS with Unraid 7.3.2 and confirmed that it worked as before. After upgrading to Unraid 7.3.3, the rebuilt driver detected all six LEDs but failed to register them because the hardening patch incorrectly checked the registration flag during probe. The installer rolled back and retained my settings. Version 1.3.1 restores the valid-state check during probe and keeps the registration flag for cleanup only. A patched-source regression now checks this distinction before compilation. Hardware verification of the corrected module is pending.
 
 ## Version 1.2.2
 

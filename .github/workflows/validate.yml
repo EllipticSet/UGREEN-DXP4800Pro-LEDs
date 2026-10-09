@@ -27,6 +27,7 @@ jobs:
           php tests/native-csrf-test.php
       - name: Monitor and installer regression
         run: |
+          python3 tests/module-source-test.py
           bash tests/monitor-test.sh
           bash tests/network-disk-test.sh
           python3 tests/preflight-test.py
