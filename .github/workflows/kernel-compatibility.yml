@@ -7,6 +7,7 @@ permissions:
   contents: write
 jobs:
   build:
+    if: startsWith(github.ref, 'refs/heads/compatibility/')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -18,8 +19,14 @@ jobs:
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
       - name: Compile the new module against the pinned Unraid kernel
         run: |
-          curl --fail --location --retry 3 https://github.com/ich777/unraid_kernel/releases/download/6.18.54-Unraid/linux-6.18.54-Unraid.tar.xz -o "$RUNNER_TEMP/kernel.tar.xz"
-          bash build/build-module.sh "$RUNNER_TEMP/kernel.tar.xz" 6.18.54-Unraid vendor/modules/6.18.54-Unraid
+          module_dir=vendor/modules/6.18.54-Unraid
+          patch_sha=$(sha256sum vendor/led-ugreen-hardening.patch | cut -d ' ' -f1)
+          if [ ! -f "$module_dir/led-ugreen.ko" ] || ! grep -qx "led_patch_sha256=$patch_sha" "$module_dir/BUILD_INFO"; then
+            curl --fail --location --retry 3 https://github.com/ich777/unraid_kernel/releases/download/6.18.54-Unraid/linux-6.18.54-Unraid.tar.xz -o "$RUNNER_TEMP/kernel.tar.xz"
+            bash build/build-module.sh "$RUNNER_TEMP/kernel.tar.xz" 6.18.54-Unraid "$module_dir"
+          fi
+          (cd "$module_dir" && sha256sum -c led-ugreen.ko.sha256)
+          test "$(modinfo -F vermagic "$module_dir/led-ugreen.ko" | cut -d ' ' -f1)" = 6.18.54-Unraid
       - name: Build and validate both modules and all plugin regressions
         run: |
           bash -n src/ugreen-pro-leds

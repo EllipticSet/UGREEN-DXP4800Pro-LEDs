@@ -4,7 +4,7 @@
 
 I am adding Unraid 7.3.3 support while retaining Unraid 7.3.2 support. The plugin selects a bundled module matching the running kernel and verifies its vermagic before installation or startup. The new module is built against the checksum-pinned `6.18.54-Unraid` archive with the retained hardening patch.
 
-I have not yet installed Unraid 7.3.3 on my NAS. Automated build and regression results are recorded in the [kernel compatibility workflow](../.github/workflows/kernel-compatibility.yml); they do not establish physical LED behavior.
+I have not yet installed Unraid 7.3.3 on my NAS. The [Linux build and full regression suite passed](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/runs/37973691334). These checks verify compilation, module selection and packaging; they do not establish physical LED behavior.
 
 ## Version 1.2.2
 
