@@ -1,6 +1,6 @@
-# Bundled dependency provenance
+# Bundled dependencies
 
-This directory contains the dependency binaries, corresponding sources, licences and build records used by the Unraid plugin. It is not a second installation guide.
+This directory contains the binaries, corresponding sources, licences and build records for the dependencies bundled with the plugin. For installation instructions, see the [main README](../README.md).
 
 ## LED module
 
@@ -18,4 +18,4 @@ This directory contains the dependency binaries, corresponding sources, licences
 
 `LICENSE`, `flybrys-LICENSE` and `ich777-LICENSE` retain the original MIT notices. They do not relicense the GPL kernel module or i2c-tools. See [THIRD_PARTY.md](../THIRD_PARTY.md) for the plugin's combined notices and the root README for upstream references.
 
-The upstream CLI, standalone monitors, systemd services and Debian/TrueNAS/RPM packaging are not used by this Unraid plugin and are omitted. The installed payload includes only the dependency materials explicitly listed in [package_manifest.py](../build/package_manifest.py).
+I have omitted the upstream CLI, standalone monitors, systemd services and Debian/TrueNAS/RPM packaging because this Unraid plugin does not use them. [package_manifest.py](../build/package_manifest.py) lists the dependency files included in the installed payload.

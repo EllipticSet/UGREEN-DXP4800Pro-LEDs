@@ -2,11 +2,15 @@
 
 ## Current release: 1.3.1
 
-I added Unraid 7.3.3 support while retaining Unraid 7.3.2 support. The plugin selects a bundled module matching the running kernel and verifies its vermagic before installation or startup. The new module is built against the checksum-pinned `6.18.54-Unraid` archive with the retained hardening patch.
+Version 1.3.1 supports Unraid 7.3.3 and retains support for Unraid 7.3.2. The plugin selects the module for the running kernel and checks its vermagic before installation or startup. I built the new module against the checksum-pinned `6.18.54-Unraid` archive, using the existing hardening patch.
 
-I tested 1.3.0 on my NAS with Unraid 7.3.2 and confirmed that it worked as before. After upgrading to Unraid 7.3.3, the rebuilt driver detected all six LEDs but failed to register them because the hardening patch incorrectly checked the registration flag during probe. The installer rolled back and retained my settings. Version 1.3.1 restores the valid-state check during probe and keeps the registration flag for cleanup only. A patched-source regression now checks this distinction before compilation. I installed 1.3.1 on my NAS with Unraid 7.3.3 / `6.18.54-Unraid` on October 9, 2026 and confirmed monitor startup, Power and LAN behavior, activity and standby on all four drives, and Apply. The log confirms controller binding on `i2c-0`, ATA ports 1–4 and LAN online on `br0`.
+I first tested 1.3.0 on my NAS with Unraid 7.3.2 and confirmed that it worked as before. After upgrading to Unraid 7.3.3, the rebuilt driver detected all six LEDs but could not register them. The hardening patch checked the registration flag at the wrong point during probe. Installation rolled back and preserved my settings.
 
-Automatic startup after a further reboot on 7.3.3 remains to be checked; earlier reboot/shutdown results below apply to 7.3.2 development builds.
+In 1.3.1, probe checks the valid state, and the registration flag is used only for cleanup. A regression test applies the patch and checks this distinction before compilation.
+
+On October 9, 2026, I installed 1.3.1 on my NAS with Unraid 7.3.3 / `6.18.54-Unraid`. I confirmed monitor startup, Power and LAN operation, activity and standby on all four drives, and Apply. The log records the controller on `i2c-0`, ATA ports 1–4 and LAN online on `br0`.
+
+I still need to check automatic startup after another reboot on 7.3.3. The reboot and shutdown results below were recorded on 7.3.2 development builds.
 
 ## Version 1.2.2
 
@@ -16,9 +20,9 @@ The 1.2.1 fix uses content-based CSS and JavaScript cache keys. The stale-cache 
 
 ## Version 1.2.0
 
-Changes cover tab captions, click-to-open setting help, dismissible success/error feedback, percentage/raw brightness with a 70% default, advanced connectivity controls and coordinated standby breathing restarts. In percentage mode, existing brightness values are rounded to the nearest ten percent (halfway values upward); raw mode retains exact values; 0 disables activity and breathing as well as steady illumination.
+Version 1.2.0 adds tab captions, help opened by clicking setting names, dismissible save/error messages, percentage and raw brightness modes with a 70% default, advanced connectivity controls and coordinated restarts of standby breathing. In percentage mode, existing brightness values are rounded to the nearest ten percent (halfway values upward); raw mode retains exact values; 0 disables activity and breathing as well as steady illumination.
 
-Package structure, checksums and metadata were checked locally. The full PHP, monitor, installer and reproducibility suite runs in GitHub Actions. Hardware validation is still required for perceived brightness and breathing alignment: the MCU exposes individual start commands rather than a shared phase clock.
+I checked the package structure, checksums and metadata locally. GitHub Actions runs the full PHP, monitor, installer and reproducibility suite. The visible brightness response and breathing alignment still need hardware testing because the MCU provides individual start commands without a shared phase clock.
 
 ## Automated coverage
 
@@ -26,11 +30,11 @@ Automated checks cover shell/PHP syntax, settings validation and per-tab updates
 
 The package tests verify the committed `.plg` and its checksum before rebuilding. They inspect its embedded bundle, compare the installed files and installer inputs against the repository sources, and verify module provenance, dependency hashes, archive paths and permissions. A separate check rebuilds with restrictive directory permissions to test reproducibility in the same environment.
 
-Run the checks in [the validation workflow](../.github/workflows/validate.yml). The [GitHub Actions results](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml) show the outcome for each commit; a successful older run is not proof that a newer commit has passed.
+The commands are listed in [the validation workflow](../.github/workflows/validate.yml). Check the [GitHub Actions results](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/actions/workflows/validate.yml) for the commit you are reviewing; results from an earlier commit do not cover later changes.
 
-I tested the 1.2.0 settings interface on the NAS. Safari checks included repeated help opening and closing, centred action buttons, percentage brightness, and the mapping guide toggle. The Power LED screenshot was captured from the actual WebGUI; the Drives LEDs mobile preview was captured in Safari responsive mode. Automated and simulated checks do not certify hardware behaviour; the bundled module was inspected, not rebuilt locally.
+I tested the 1.2.0 settings interface on the NAS. Safari checks included repeated help opening and closing, centred action buttons, percentage brightness, and the mapping guide toggle. The Power LED screenshot was captured from the actual WebGUI; the Drives LEDs mobile preview was captured in Safari responsive mode. These automated and simulated checks cover software behaviour. At the time of the 1.2.0 tests, I inspected the bundled module without rebuilding it locally; the 1.3.1 module build is described above.
 
-The four icon variants and the README animation are checked locally for dimensions, colours and transparency. Theme switching is exercised with the same icon stylesheet and paths used by Settings and Plugins; live verification on the NAS remains pending.
+I checked the four icon variants and README animation locally for dimensions, colours and transparency. Theme-switching tests use the same stylesheet and icon paths as Settings and Plugins. I still need to complete theme verification on the NAS.
 
 ## Historical hardware results
 
@@ -44,7 +48,7 @@ I confirmed the following on my DXP4800 Pro running Unraid 7.3.2 with kernel `6.
 - Power blinking during shutdown and returning to white after startup.
 - Removal stopped the monitor, removed its I2C client and shutdown hook, and preserved settings. An earlier removal left the module loaded; manual `rmmod` succeeded and the uninstaller was subsequently corrected.
 
-These results apply to the builds tested at the time. The original, dated evidence remains in [historical validation notes](validation-history.md).
+These results refer to the builds tested at the time. See the [historical validation notes](validation-history.md) for the dated records.
 
 ## Remaining hardware verification
 
@@ -55,4 +59,4 @@ These results apply to the builds tested at the time. The original, dated eviden
 - Complete coverage of all four themes on the actual Unraid WebGUI; desktop and narrow Safari layouts have been exercised.
 - Verify empty bays and subsequent disk insertion/replacement using the standard four-port mapping.
 
-The current interface highlights Power, LAN or the four drive LEDs according to the selected tab. Advanced Settings has no NAS image. The historical interface notes describe an earlier layout.
+The current interface highlights the Power, LAN or drive LEDs for the selected tab. Advanced Settings has no NAS image; the interface notes in the historical record refer to an earlier layout.
