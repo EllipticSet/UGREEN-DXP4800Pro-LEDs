@@ -13,9 +13,9 @@ assert.equal(leds[0].style['--led-color'],'#65e879');assert.equal(leds[1].style[
 assert.equal(events.focusin,undefined);
 edit('DISK_COLOR_FAILED','#ce55ff');disks('#ffffff',false);
 edit('NETWORK_COLOR_OFFLINE','#ff3300');assert.equal(leds[1].style['--led-color'],'#59b8ff');
-buttons[1].click();disks('#ce55ff',true);assert.equal(buttons[1].textContent,'STOP TEST');assert.equal(buttons[1]['aria-pressed'],'true');
+buttons[1].click();disks('#ce55ff',true);assert.equal(buttons[1].textContent,'STOP PREVIEW');assert.equal(buttons[1]['aria-pressed'],'true');
 buttons[0].click();assert.equal(leds[1].style['--led-color'],'#ff3300');assert.equal(leds[1].classList['is-failure-test'],false);
-buttons[1].click();disks('#ffffff',false);assert.equal(buttons[1].textContent,'TEST (5s)');
+buttons[1].click();disks('#ffffff',false);assert.equal(buttons[1].textContent,'PREVIEW (5s)');
 buttons[1].click();edit('DISK_COLOR_FAILED','#ffaa22');disks('#ffffff',false);buttons[1].click();disks('#ffaa22',true);
 edit('DISK_COLOR','#11dd66');disks('#11dd66',false);
 buttons[0].click();assert.equal(leds[1].style['--led-color'],'#59b8ff');
@@ -27,10 +27,10 @@ buttons[1].click(); // Stop the current test and cancel its timeout.
 assert.equal(timers.size,0);
 buttons[1].click();assert.equal(timers.size,1);
 const expire=[...timers.values()][0];expire();
-disks('#11dd66',false);assert.equal(buttons[1].textContent,'TEST (5s)');assert.equal(timers.size,0);
+disks('#11dd66',false);assert.equal(buttons[1].textContent,'PREVIEW (5s)');assert.equal(timers.size,0);
 buttons[0].click();const lanExpire=[...timers.values()][0];lanExpire();
-assert.equal(leds[1].style['--led-color'],'#59b8ff');assert.equal(buttons[0].textContent,'TEST (5s)');assert.equal(timers.size,0);
+assert.equal(leds[1].style['--led-color'],'#59b8ff');assert.equal(buttons[0].textContent,'PREVIEW (5s)');assert.equal(timers.size,0);
 const oldClick=buttons[1].click;vm.runInNewContext(script,context);assert.equal(buttons[1].click,oldClick);
 const css=fs.readFileSync('src/web/settings.css','utf8');assert.match(css,/nas-smart-failure 1s steps\(1, end\) infinite/);assert.match(css,/50% \{ opacity: 0; \}/);
 assert.match(fs.readFileSync('src/ugreen-pro-leds','utf8'),/blink 500 500/);
-console.log('PASS: error edits remain hidden, explicit Test/Stop, SMART-only 500/500 blink, four bays, retest after editing, normal colour edits, brightness and repeated initialization.');
+console.log('PASS: error edits remain hidden, explicit Preview/Stop, SMART-only 500/500 blink, four bays, retest after editing, normal colour edits, brightness and repeated initialization.');

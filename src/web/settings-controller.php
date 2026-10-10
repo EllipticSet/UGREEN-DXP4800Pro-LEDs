@@ -108,15 +108,17 @@ function ugreen_pro_groups(): array
         ],
         'LAN LED' => [
             ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Used when linked and the connectivity check succeeds. Default: white; traffic flashes. Gateway checks local reachability only. Edits preview immediately; Apply updates the LED.'],
-            ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Used when link/checks fail; HTTPS requires both endpoints to fail. Default: orange. Test affects only the image for 5 seconds. Stop test or editing either LAN colour restores the normal preview. Apply saves settings.'],
+            ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Used when link/checks fail; HTTPS requires both endpoints to fail. Default: orange. Preview affects only the image for 5 seconds. Stop preview or editing either LAN colour restores the normal preview. Apply saves settings.'],
             ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
             ['NETWORK_INTERFACE', 'Network interface', 'text', 'Interface for traffic and connectivity checks. Default: auto selects the first default-route interface, usually br0. Enter an interface name to select explicitly. Apply restarts monitoring.'],
         ],
         'Drives LEDs' => [
-            ['DISK_COLOR', 'Healthy drive colour', 'color', 'Activity and standby colour. Default: white. Activity style controls idle lighting; sleeping drives breathe. Initially empty bays stay off. The image previews all four LEDs; Apply updates them.'],
-            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Test affects only the image; Stop test or editing either drive colour restores the healthy preview.'],
+            ['DISK_COLOR', 'Healthy drive colour', 'color', 'Activity and standby colour. Default: white. Activity style controls idle lighting; Standby breathing controls sleeping drives. Initially empty bays stay off. The image previews all four LEDs; Apply updates them.'],
+            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Preview affects only the image; Stop preview or editing either drive colour restores the healthy preview.'],
             ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
-            ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Dark when idle (default) pulses on for I/O; Solid when idle pulses off. Both use the healthy colour and Activity pulse duration. Standby breathing and failure flashing override this style.',
+            ['DISK_STANDBY_BREATHING', 'Standby breathing', 'select', 'Enabled (default): sleeping drives breathe in the healthy colour, with 1 s fade in/out. Disabled: follows Activity style, dark or solid when idle, with I/O pulses. Zero brightness turns LEDs off; failure warnings are unchanged. Apply activates changes.',
+                ['1' => 'Enabled', '0' => 'Disabled']],
+            ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Dark when idle (default) pulses on for I/O; Solid when idle pulses off. Both use the healthy colour and Activity pulse duration. Enabled standby breathing and failure flashing override this style.',
                 ['solid' => 'Solid when idle, brief off pulse for I/O', 'dark' => 'Dark when idle, brief on pulse for I/O']],
             ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'I/O pulse: 30–1000 ms; default: 80. Dark style pulses on; Solid pulses off. Longer pulses are more visible. Poll interval controls sampling; standby/failure timing is separate.', 30, 1000],
         ],
@@ -132,7 +134,7 @@ function ugreen_pro_groups(): array
 
             ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'I/O sampling: 0.1–5 s; default: 0.5. Shorter intervals improve responsiveness but increase monitoring work; longer intervals group I/O and delay pulses. Standby/failure timing is unchanged.', 0.1, 5, 0.1],
             ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Drive detection: 1–3600 s; default: 15. New drives are monitored automatically; initially empty bays stay off. Disappearance can trigger warnings, including intentional removal.', 1, 3600],
-            ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby/SMART rounds: 10–3600 s; default: 60. Standby breathes; explicit SMART failure flashes. Failed queries alone are not failures. Individual check durations can delay updates.', 10, 3600],
+            ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby/SMART rounds: 10–3600 s; default: 60. Standby follows its breathing setting; explicit SMART failure flashes. Failed queries alone are not failures. Individual check durations can delay updates.', 10, 3600],
         ],
     ];
     return $ugreenGroups;

@@ -1,5 +1,13 @@
 # Validation
 
+## Version 1.4.1
+
+Version 1.4.1 renames the five-second warning-colour controls to Preview / Stop preview and adds Standby breathing to Drives LEDs. It defaults to enabled, including when older settings omit the new key. Disabled breathing follows Activity style: dark or solid when idle, with I/O pulses; zero brightness remains off. SMART checks, activity and failure indications retain their existing behavior.
+
+Local checks on October 10, 2026 passed settings validation, persistence, legacy defaults and field ordering; per-tab updates, recovery and CSRF; preview regressions; simulated breathing enabled/disabled, both standby activity styles, activity, failure and zero-brightness transitions; shell/PHP syntax, driver source, preflight, installation/update/removal, package, metadata and reproducibility.
+
+Hardware verification of the new standby option on the NAS has not yet been performed.
+
 ## Version 1.4.0
 
 Version 1.4.0 adds front-panel colour previews (grey off base at brightness zero, full colour at every nonzero value), group outlines, explicit error-colour Test / Stop test controls and concise settings help. Help labels accept pointer clicks only on their text, while events still reach the native Unraid help handler. The driver and monitor are unchanged. The SMART preview follows the monitor timing of 500 ms on and 500 ms off.

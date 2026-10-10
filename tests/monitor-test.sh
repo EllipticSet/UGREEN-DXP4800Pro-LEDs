@@ -69,6 +69,34 @@ assert_file "$test_root/disk2/blink_type" 'breath 1000 1000'
 printf sentinel > "$test_root/disk1/blink_type"
 refresh_bay_health
 assert_file "$test_root/disk1/blink_type" sentinel
+# Disabled breathing retains standby health and follows both activity styles.
+DISK_STANDBY_BREATHING=0
+bay_mode[1]=''
+bay_mode[2]=''
+refresh_bay_health
+for bay in 1 2; do
+  [[ ${bay_mode[$bay]} == standby ]]
+  assert_file "$test_root/disk$bay/blink_type" none
+  assert_file "$test_root/disk$bay/brightness" 179
+  assert_file "$test_root/disk$bay/color" '255 255 255'
+done
+synchronize_standby_breathing
+assert_file "$test_root/disk1/blink_type" none
+DISK_ACTIVITY_STYLE=dark
+for bay in 1 2; do bay_mode[$bay]=''; done
+refresh_bay_health
+for bay in 1 2; do
+  [[ ${bay_mode[$bay]} == standby ]]
+  assert_file "$test_root/disk$bay/brightness" 0
+  assert_file "$test_root/disk$bay/trigger" oneshot
+  assert_file "$test_root/disk$bay/invert" 0
+  assert_file "$test_root/disk$bay/blink_type" none
+done
+set_bay_mode 1 failed
+assert_file "$test_root/disk1/blink_type" 'blink 500 500'
+set_bay_mode 1 active
+assert_file "$test_root/disk1/trigger" oneshot
+DISK_STANDBY_BREATHING=1
 DISK_BRIGHTNESS=0
 for mode in active standby failed; do
   set_bay_mode 1 "$mode"

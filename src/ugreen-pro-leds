@@ -24,6 +24,7 @@ CONNECTIVITY_INTERVAL=60
 DISK_COLOR='255 255 255'
 DISK_COLOR_FAILED='255 165 0'
 DISK_BRIGHTNESS=179
+DISK_STANDBY_BREATHING=1
 DISK_ACTIVITY_STYLE=dark
 DISK_PULSE_MS=80
 DISK_ATA_PORTS=(1 2 3 4)
@@ -198,12 +199,14 @@ device_on_ata_port() {
 declare -A bay_device bay_signature bay_mode
 
 set_bay_mode() {
-  local bay=$1 mode=$2 path
+  local bay=$1 mode=$2 path lighting_mode
   (( DISK_BRIGHTNESS > 0 )) || mode=off
   [[ ${bay_mode[$bay]:-} == "$mode" ]] && return 0
   path=$(led_path "disk$bay")
   printf 'none\n' > "$path/trigger"
-  case $mode in
+  lighting_mode=$mode
+  if [[ $mode == standby && $DISK_STANDBY_BREATHING == 0 ]]; then lighting_mode=active; fi
+  case $lighting_mode in
     off)
       printf 'none\n' > "$path/blink_type"
       printf '0\n' > "$path/brightness" ;;
@@ -276,6 +279,7 @@ standby_bays() {
 }
 
 synchronize_standby_breathing() {
+  [[ $DISK_STANDBY_BREATHING == 1 ]] || return 0
   local bay path
   # The MCU has no exposed shared phase. Reset all sleeping LEDs first; then
   # start their identical hardware cycles together when membership changes.

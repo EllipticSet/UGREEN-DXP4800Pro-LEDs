@@ -118,7 +118,7 @@ $tabDescriptions = [
               <span class="nas-color-feedback" role="status" hidden>Black and transparency are unsupported. Previous colour restored; use brightness 0 to turn the LED off.</span>
             <?php endif; ?>
             <?php if (in_array($key, ['NETWORK_COLOR_OFFLINE', 'DISK_COLOR_FAILED'], true)): ?>
-              <div class="nas-led-test-row"><button type="button" class="nas-led-test" data-test-color="<?= $key ?>" aria-pressed="false" aria-label="Test <?= ugreen_pro_escape($label) ?> in the front-panel preview for 5 seconds">TEST (5s)</button></div>
+              <div class="nas-led-test-row"><button type="button" class="nas-led-test" data-test-color="<?= $key ?>" aria-pressed="false" aria-label="Preview <?= ugreen_pro_escape($label) ?> in the front-panel preview for 5 seconds">PREVIEW (5s)</button></div>
             <?php endif; ?>
             <?php if (isset($ugreenErrors[$key])): ?><span class="field-error"><?= ugreen_pro_escape($ugreenErrors[$key]) ?></span><?php endif; ?>
             </dd>

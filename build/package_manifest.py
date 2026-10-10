@@ -7,7 +7,7 @@ def module_source(root, kernel):
 
 def module_sha256(root, kernel):
     return 'dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2' if kernel == KERNELS[0] else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
-VERSION = '1.4.0'
+VERSION = '1.4.1'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',

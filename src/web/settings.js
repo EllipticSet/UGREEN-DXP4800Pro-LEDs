@@ -41,7 +41,7 @@
       });
       testButtons.forEach(button => {
         const testing = tests.has(button.dataset.testColor);
-        button.textContent = testing ? 'STOP TEST' : 'TEST (5s)';
+        button.textContent = testing ? 'STOP PREVIEW' : 'PREVIEW (5s)';
         button.setAttribute('aria-pressed', String(testing));
       });
     }

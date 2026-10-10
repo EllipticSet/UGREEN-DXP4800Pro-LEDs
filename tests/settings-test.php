@@ -13,11 +13,22 @@ function check(bool $condition, string $message): void
 check($errors === [], 'Default settings must validate.');
 check($values['DISK_ACTIVITY_STYLE'] === 'dark', 'Default disk activity style must be dark.');
 
+check($values['DISK_STANDBY_BREATHING'] === '1', 'Standby breathing defaults to enabled.');
+$disabled = $values;
+$disabled['DISK_STANDBY_BREATHING'] = '0';
+[$disabled, $errors] = ugreen_pro_validate($disabled);
+check($errors === [], 'Disabled standby breathing must validate.');
+check(str_contains(ugreen_pro_render_settings($disabled), 'DISK_STANDBY_BREATHING=0'), 'Disabled breathing must persist.');
+$disabled['DISK_STANDBY_BREATHING'] = 'invalid';
+[, $errors] = ugreen_pro_validate($disabled);
+check(isset($errors['DISK_STANDBY_BREATHING']), 'Invalid breathing setting must be rejected.');
 $file = tempnam(__DIR__, 'ugreen-settings-test-');
 check($file !== false, 'A temporary settings file is required.');
 try {
     check(ugreen_pro_write_atomic($file, ugreen_pro_render_settings($values)), 'Settings must save.');
     check(ugreen_pro_read_settings($file) === $values, 'Saved settings must load without changes.');
+    file_put_contents($file, str_replace("DISK_STANDBY_BREATHING=1\n", '', ugreen_pro_render_settings($values)));
+    check(ugreen_pro_read_settings($file)['DISK_STANDBY_BREATHING'] === '1', 'Older settings retain enabled breathing.');
 
 } finally {
     @unlink($file);
@@ -79,6 +90,7 @@ foreach (array_keys(ugreen_pro_groups()) as $ugreenTab) require __DIR__ . '/../s
 $html = ob_get_clean();
 check(substr_count($html, 'type="color"') === 5, 'Five native colour pickers must render.');
 check(str_contains($html, 'name="DISK_ACTIVITY_STYLE"'), 'Activity style selector must render.');
+check(strpos($html, 'name="DISK_BRIGHTNESS"') < strpos($html, 'name="DISK_STANDBY_BREATHING"') && strpos($html, 'name="DISK_STANDBY_BREATHING"') < strpos($html, 'name="DISK_ACTIVITY_STYLE"'), 'Breathing selector must appear between brightness and activity style.');
 check(str_contains($html, 'value="test-token"'), 'Unraid CSRF token must be included.');
 
 echo "Settings validation, rendering, and reload passed.\n";

@@ -18,6 +18,7 @@ function ugreen_pro_defaults(): array
         'DISK_COLOR' => '#ffffff',
         'DISK_COLOR_FAILED' => '#ffa500',
         'DISK_BRIGHTNESS' => '179',
+        'DISK_STANDBY_BREATHING' => '1',
         'DISK_ACTIVITY_STYLE' => 'dark',
         'DISK_PULSE_MS' => '80',
         'DISK_ATA_PORTS' => '1 2 3 4',
@@ -136,6 +137,8 @@ function ugreen_pro_validate(array $input): array
             if (!in_array($value, ['https', 'gateway', 'none'], true)) {
                 $errors[$key] = 'Choose a connectivity method.';
             }
+        } elseif ($key === 'DISK_STANDBY_BREATHING') {
+            if (!in_array($value, ['0', '1'], true)) $errors[$key] = 'Choose whether standby breathing is enabled.';
         } elseif ($key === 'DISK_ACTIVITY_STYLE') {
             if (!in_array($value, ['solid', 'dark'], true)) {
                 $errors[$key] = 'Choose a disk activity style.';
