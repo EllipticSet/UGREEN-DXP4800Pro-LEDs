@@ -36,6 +36,8 @@ jobs:
           php tests/settings-test.php
           php tests/tab-settings-test.php
           node tests/mapping-guide-test.js
+          node tests/led-preview-test.js
+          node tests/color-picker-test.js
           php tests/settings-recovery-test.php
           php tests/csrf-test.php
           php tests/native-csrf-test.php

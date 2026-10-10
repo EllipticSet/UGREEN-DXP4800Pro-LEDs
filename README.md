@@ -35,6 +35,14 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions contain fixes, minor version
 
 </details>
 
+### Front-panel colour preview
+
+The image previews the configured colours and brightness for Power, LAN and all four drive LEDs. Orange outlines identify the selected LED group; Drives LEDs uses one rounded rectangle around all four drive LEDs. The preview is independent of actual drive occupancy, I/O, standby and connectivity.
+
+Only opaque RGB colours are supported; black and transparency are rejected. Use brightness 0 to turn a LED off. Unsupported saved black values display the default colour when settings are loaded. The image shows the grey off base at brightness zero and full colour at every nonzero brightness; physical LED brightness still follows the saved value. Normal colours update while editing. **Internet unavailable colour** and **SMART failure colour** are shown only after pressing their **Test** button. **TEST (5s)** runs the preview for five seconds, then restores the normal colour automatically. **STOP TEST** ends it early. Editing either colour in the same group ends its test; pressing Test again previews the new warning colour. The SMART test flashes all four illustrated drive LEDs for 500 ms on and 500 ms off. The unlit apertures retain an opaque grey base, darker than the surrounding front panel, in light and dark themes.
+
+Tests affect only the image and do not save settings or operate the physical LEDs. **Apply** saves the selected tab and restarts the LED monitor. Help is available by clicking each setting name.
+
 ## Compatibility
 
 | Requirement | Supported configuration |
@@ -53,7 +61,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 ## Features
 
 - Four native Unraid tabs: **Power LED**, **LAN LED**, **Drives LEDs**, and **Advanced Settings**. Each tab has its own Apply and restore-defaults controls, with help available by clicking a setting name.
-- A front-panel photo that highlights the LEDs controlled by the selected tab.
+- A front-panel photo that previews configured LED colours and brightness, with an orange outline around the selected LED group. Internet-unavailable and SMART-failure colours have Test / Stop test controls; the SMART preview reproduces the 500 ms on / 500 ms off flash.
 - Adjustable colours and brightness, shown as percentages in 10% steps or as raw controller values. The default brightness is 70%.
 - Power indication and blinking during shutdown; LAN activity with configurable connectivity checks; drive activity pulses, standby breathing and warning indications.
 - Adjustable drive-bay mapping and monitoring intervals. SMART checks run separately from activity sampling and do not wake sleeping drives.

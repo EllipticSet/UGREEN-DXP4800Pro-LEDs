@@ -7,14 +7,23 @@
 .nas-front-settings figcaption { text-align: center; margin-top: 20px; }
 .nas-front-settings figcaption strong { display: block; font-size: 1.15em; }
 .nas-front-settings figcaption span { display: block; opacity: .65; margin-top: 6px; }
-.nas-front-settings .nas-led-marker { position: absolute; top: 88.48%; width: 2.5%; height: 2.5%; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; }
-.nas-front-settings .nas-led-power { left: 15.1%; width: 6%; height: 3.6%; border-radius: 35%; }
-.nas-front-settings .nas-led-lan { left: 25.9%; }
-.nas-front-settings .nas-led-disk1 { left: 29.5%; }
-.nas-front-settings .nas-led-disk2 { left: 33.2%; }
-.nas-front-settings .nas-led-disk3 { left: 36.8%; }
-.nas-front-settings .nas-led-disk4 { left: 40.4%; }
-.nas-front-settings .nas-led-marker.is-highlighted { border: 2px solid #ff8c28; background: #ff8c2850; box-shadow: 0 0 0 5px #ff8c2830, 0 0 18px 6px #ff8c2850; }
+/* Colour sits behind the PNG; its alpha channel defines each LED aperture.
+   Opaque off colours are 25% darker than the adjacent front panel so unlit LEDs remain visible. */
+.nas-front-settings .nas-front-image { isolation: isolate; }
+.nas-front-settings .nas-front-image img { position: relative; z-index: 1; pointer-events: none; }
+.nas-front-settings .nas-led-marker { position: absolute; z-index: 0; top: 88.48%; width: 1.65%; height: 2.2%; transform: translate(-50%, -50%); pointer-events: none; background: var(--led-off-color, #4c4e5a); }
+.nas-front-settings .nas-led-marker::before { content: ""; position: absolute; inset: 0; background: var(--led-color, #ffffff); opacity: var(--led-brightness, 1); }
+.nas-front-settings .nas-led-power { --led-off-color: #575965; left: 15.14%; width: 3.6%; height: 1.65%; }
+.nas-front-settings .nas-led-lan { --led-off-color: #51535f; left: 25.82%; }
+.nas-front-settings .nas-led-disk1 { --led-off-color: #4f515c; left: 29.52%; }
+.nas-front-settings .nas-led-disk2 { --led-off-color: #4c4e5a; left: 33.08%; }
+.nas-front-settings .nas-led-disk3 { --led-off-color: #4a4d59; left: 36.78%; }
+.nas-front-settings .nas-led-disk4 { --led-off-color: #484b56; left: 40.34%; }
+/* Highlight the edited LED group above the image without tinting its light. */
+.nas-front-settings .nas-led-outline { position: absolute; z-index: 2; top: 88.48%; height: 4.2%; box-sizing: border-box; transform: translate(-50%, -50%); border: 2px solid #ff8c28; background: transparent; pointer-events: none; }
+.nas-front-settings .nas-led-outline-power { left: 15.14%; width: 6.6%; border-radius: 6px; }
+.nas-front-settings .nas-led-outline-lan { left: 25.82%; width: 3.8%; border-radius: 50%; }
+.nas-front-settings .nas-led-outline-drives { left: 34.93%; width: 14.8%; border-radius: 6px; }
 .nas-front-settings .nas-front-intro { margin: 8px 0 26px; opacity: .8; line-height: 1.5; }
 .nas-front-settings .field { display: grid; grid-template-columns: minmax(155px, 220px) minmax(0, 1fr); gap: 6px 20px; margin: 20px 0; align-items: center; }
 .nas-front-settings .field label { font-weight: 600; text-align: right; }
@@ -101,10 +110,25 @@
 /* Let Unraid supply its native help colours, borders, padding and typography. */
 .nas-front-settings dl.field { padding: 0; }
 .nas-front-settings dl.field dd { min-width: 0; }
-.nas-front-settings dl.field dt .nas-help-toggle { width: 100%; }
+/* Unraid binds help clicks to dt. Only its text button accepts pointer hits;
+   clicks still bubble to dt so native help animation and keyboard use work. */
+.nas-front-settings dl.field dt { text-align: right; pointer-events: none; }
+.nas-front-settings dl.field dt .nas-help-toggle { display: inline-block; width: auto; max-width: 100%; pointer-events: auto; }
+@media (max-width: 550px) { .nas-front-settings dl.field dt { text-align: left; } }
 .nas-front-settings .nas-front-form > .actions { justify-content: center; }
 
 /* Keep sibling margins from collapsing when native help enters/leaves the flow.
    This avoids an immediate spacing jump before jQuery animates its dimensions. */
 .nas-front-settings .nas-front-form { display: flex; flex-direction: column; }
 .nas-front-settings .nas-front-form > dl.field { margin: 10px 0; }
+
+.nas-front-settings .nas-led-test-row { margin-top: 8px; }
+.nas-front-settings .nas-led-test { margin: 0; text-transform: none; }
+/* The monitor uses blink 500 500 for an explicit SMART failure. */
+.nas-front-settings .nas-led-marker.is-failure-test::before { animation: nas-smart-failure 1s steps(1, end) infinite; }
+@keyframes nas-smart-failure {
+  0%, 100% { opacity: var(--led-brightness, 1); }
+  50% { opacity: 0; }
+}
+
+.nas-front-settings .nas-color-feedback { display: block; margin-top: 8px; font-size: .9em; line-height: 1.5; }

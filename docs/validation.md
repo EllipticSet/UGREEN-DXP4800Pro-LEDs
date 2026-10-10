@@ -1,6 +1,16 @@
 # Validation
 
-## Current release: 1.3.1
+## Version 1.4.0
+
+Version 1.4.0 adds front-panel colour previews (grey off base at brightness zero, full colour at every nonzero value), group outlines, explicit error-colour Test / Stop test controls and concise settings help. Help labels accept pointer clicks only on their text, while events still reach the native Unraid help handler. The driver and monitor are unchanged. The SMART preview follows the monitor timing of 500 ms on and 500 ms off.
+
+The preview regression covers initial colours, normal live edits, error edits that remain hidden until Test, Test / Stop transitions, automatic restoration after five seconds and cancellation of test timers, retesting after colour edits, all four illustrated drive LEDs, brightness including zero, and repeated script initialization. Rendering checks cover the two test buttons, one outline per illustrated tab, a single drive-group outline and content-based image/CSS/JavaScript cache keys.
+
+Local checks on October 10, 2026 passed PHP and shell syntax, settings validation/rendering and per-tab updates, settings recovery, native CSRF handling, preview and mapping-guide regressions, simulated monitor/network/disk transitions, preflight, install/update rollback, removal and the patched-module source regression. The package, metadata and reproducibility checks cover the generated 1.4.0 installer and checksum.
+
+On October 10, 2026, installation and WebGUI checks of 1.4.0 were confirmed on the NAS running Unraid 7.3.3. The front-panel preview, grouped highlights, shortened help and label-only click areas, rejection of black and transparent colours, five-second tests with early stop, zero/nonzero preview brightness and lowercase seconds suffix were confirmed working before publication. One installation after removal failed to detect the LED MCU; a retry without reboot succeeded. The cause of that transient failure was not established. Hardware results below refer to earlier versions.
+
+## Version 1.3.1
 
 Version 1.3.1 supports Unraid 7.3.3 and retains support for Unraid 7.3.2. The plugin selects the module for the running kernel and checks its vermagic before installation or startup. The new module was built against the checksum-pinned `6.18.54-Unraid` archive, using the existing hardening patch.
 

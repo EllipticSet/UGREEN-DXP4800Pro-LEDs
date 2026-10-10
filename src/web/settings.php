@@ -46,14 +46,18 @@ $tabDescriptions = [
     <?php if ($tabKey !== 'advanced'): ?>
     <figure class="nas-front-figure">
       <div class="nas-front-image">
-        <img src="/plugins/UGREEN-DXP4800Pro-LEDs/images/nas-front.png" alt="UGREEN DXP4800 Pro front panel with Power, LAN and four drive LEDs" width="730" height="729">
+        <img src="/plugins/UGREEN-DXP4800Pro-LEDs/images/nas-front.png?v=<?= substr(hash_file('sha256', __DIR__ . '/images/nas-front.png'), 0, 12) ?>" alt="UGREEN DXP4800 Pro front panel with Power, LAN and four drive LEDs" width="730" height="729">
         <?php foreach (['power', 'lan', 'disk1', 'disk2', 'disk3', 'disk4'] as $led):
-          $active = $led === $tabKey || ($tabKey === 'drives' && str_starts_with($led, 'disk'));
+          $colorKey = $led === 'power' ? 'POWER_COLOR' : ($led === 'lan' ? 'NETWORK_COLOR_ONLINE' : 'DISK_COLOR');
+          $brightnessKey = $led === 'power' ? 'POWER_BRIGHTNESS' : ($led === 'lan' ? 'NETWORK_BRIGHTNESS' : 'DISK_BRIGHTNESS');
+          $color = preg_match('/^#[0-9a-fA-F]{6}$/', $ugreenValues[$colorKey]) ? $ugreenValues[$colorKey] : '#ffffff';
+          $brightness = max(0, min(255, (int)$ugreenValues[$brightnessKey]));
         ?>
-          <span class="nas-led-marker nas-led-<?= $led ?> <?= $active ? 'is-highlighted' : '' ?>" aria-hidden="true"></span>
+          <span class="nas-led-marker nas-led-<?= $led ?>" data-color-key="<?= $colorKey ?>" data-brightness-key="<?= $brightnessKey ?>" data-brightness="<?= $brightness ?>" style="--led-color: <?= ugreen_pro_escape($color) ?>; --led-brightness: <?= $brightness > 0 ? 1 : 0 ?>" aria-hidden="true"></span>
         <?php endforeach; ?>
+        <span class="nas-led-outline nas-led-outline-<?= $tabKey ?>" aria-hidden="true"></span>
       </div>
-      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span></figcaption>
+      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span><span>Colour preview of settings; not live LED status.</span></figcaption>
     </figure>
     <?php endif; ?>
     <div class="nas-front-controls">
@@ -109,6 +113,12 @@ $tabDescriptions = [
               <input id="ugreen-<?= ugreen_pro_escape($key) ?>" name="<?= ugreen_pro_escape($key) ?>" aria-labelledby="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-describedby="ugreen-help-<?= ugreen_pro_escape($key) ?>"
                      type="<?= ugreen_pro_escape($type) ?>" value="<?= ugreen_pro_escape($value) ?>"
                      <?php if ($type === 'number'): ?>min="<?= ugreen_pro_escape((string)$field[4]) ?>" max="<?= ugreen_pro_escape((string)$field[5]) ?>" step="<?= ugreen_pro_escape((string)($field[6] ?? 1)) ?>"<?php endif; ?> required>
+            <?php endif; ?>
+            <?php if ($type === 'color'): ?>
+              <span class="nas-color-feedback" role="status" hidden>Black and transparency are unsupported. Previous colour restored; use brightness 0 to turn the LED off.</span>
+            <?php endif; ?>
+            <?php if (in_array($key, ['NETWORK_COLOR_OFFLINE', 'DISK_COLOR_FAILED'], true)): ?>
+              <div class="nas-led-test-row"><button type="button" class="nas-led-test" data-test-color="<?= $key ?>" aria-pressed="false" aria-label="Test <?= ugreen_pro_escape($label) ?> in the front-panel preview for 5 seconds">TEST (5s)</button></div>
             <?php endif; ?>
             <?php if (isset($ugreenErrors[$key])): ?><span class="field-error"><?= ugreen_pro_escape($ugreenErrors[$key]) ?></span><?php endif; ?>
             </dd>

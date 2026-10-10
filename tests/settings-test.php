@@ -54,6 +54,23 @@ $bad['CONNECTIVITY_METHOD'] = 'shell';
 [, $errors] = ugreen_pro_validate($bad);
 check(isset($errors['NETWORK_INTERFACE'], $errors['POWER_COLOR'], $errors['CONNECTIVITY_METHOD']),
     'Injected interface, colour and connectivity method must fail.');
+foreach (array_keys(ugreen_pro_defaults()) as $key) {
+    if (!str_contains($key, 'COLOR')) continue;
+    foreach (['#000000', 'transparent', '#ff000000', 'rgba(255,0,0,0)'] as $colour) {
+        $candidate = ugreen_pro_defaults(); $candidate[$key] = $colour;
+        [, $colourErrors] = ugreen_pro_validate($candidate);
+        check(isset($colourErrors[$key]), 'Unsupported colour accepted: ' . $key . ' / ' . $colour);
+    }
+    $candidate = ugreen_pro_defaults(); $candidate[$key] = '#000001';
+    [, $colourErrors] = ugreen_pro_validate($candidate);
+    check(!$colourErrors, 'Dark opaque colour must remain valid.');
+}
+$legacy = tempnam(__DIR__, 'legacy-black-');
+try {
+    file_put_contents($legacy, "POWER_COLOR='0 0 0'\nDISK_COLOR_FAILED='0 0 0'\n");
+    $loaded = ugreen_pro_read_settings($legacy);
+    check($loaded['POWER_COLOR'] === '#ffffff' && $loaded['DISK_COLOR_FAILED'] === '#ffa500', 'Legacy black colours must load usable defaults.');
+} finally { unlink($legacy); }
 $_SERVER['REQUEST_METHOD'] = 'GET';
 $var = ['csrf_token' => 'test-token'];
 ob_start();

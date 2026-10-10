@@ -103,36 +103,36 @@ function ugreen_pro_groups(): array
 {
     $ugreenGroups = [
         'Power LED' => [
-            ['POWER_COLOR', 'Running colour', 'color', 'Colour shown while Unraid is running and used for blinking during shutdown.'],
-            ['POWER_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
+            ['POWER_COLOR', 'Running colour', 'color', 'Running and shutdown colour (500 ms on/off). Default: white. Edits preview immediately; Apply updates the physical LED.'],
+            ['POWER_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
         ],
         'LAN LED' => [
-            ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Normally solid; flashes for network traffic.'],
-            ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Shown when the link or internet check fails.'],
-            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
-            ['NETWORK_INTERFACE', 'Network interface', 'text', 'auto uses the first default route, usually br0.'],
+            ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Used when linked and the connectivity check succeeds. Default: white; traffic flashes. Gateway checks local reachability only. Edits preview immediately; Apply updates the LED.'],
+            ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Used when link/checks fail; HTTPS requires both endpoints to fail. Default: orange. Test affects only the image for 5 seconds. Stop test or editing either LAN colour restores the normal preview. Apply saves settings.'],
+            ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
+            ['NETWORK_INTERFACE', 'Network interface', 'text', 'Interface for traffic and connectivity checks. Default: auto selects the first default-route interface, usually br0. Enter an interface name to select explicitly. Apply restarts monitoring.'],
         ],
         'Drives LEDs' => [
-            ['DISK_COLOR', 'Healthy drive colour', 'color', 'Used for active and sleeping drives.'],
-            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Slow flash when SMART explicitly reports failure.'],
-            ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Choose brightness from 0% to 100% in 10% steps (default: 70%). Select Raw in Advanced Settings to enter a controller value from 0 to 255 instead. 0% or raw 0 turns the LED off.', 0, 255],
-            ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Choose the idle indication; both styles flash for reads and writes.',
+            ['DISK_COLOR', 'Healthy drive colour', 'color', 'Activity and standby colour. Default: white. Activity style controls idle lighting; sleeping drives breathe. Initially empty bays stay off. The image previews all four LEDs; Apply updates them.'],
+            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Test affects only the image; Stop test or editing either drive colour restores the healthy preview.'],
+            ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
+            ['DISK_ACTIVITY_STYLE', 'Activity style', 'select', 'Dark when idle (default) pulses on for I/O; Solid when idle pulses off. Both use the healthy colour and Activity pulse duration. Standby breathing and failure flashing override this style.',
                 ['solid' => 'Solid when idle, brief off pulse for I/O', 'dark' => 'Dark when idle, brief on pulse for I/O']],
-            ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'Length of each activity pulse.', 30, 1000],
+            ['DISK_PULSE_MS', 'Activity pulse (milliseconds)', 'number', 'I/O pulse: 30–1000 ms; default: 80. Dark style pulses on; Solid pulses off. Longer pulses are more visible. Poll interval controls sampling; standby/failure timing is separate.', 30, 1000],
         ],
         'Advanced Settings' => [
-            ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Choose percentages in 10% steps or raw controller values from 0 to 255. Percentage mode rounds brightness to the nearest 10%; raw mode keeps the exact controller value. 0 turns the LED off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
-            ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS checks the two sites below; gateway checks only local routing.',
+            ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Percentage rounds to 10% steps; Raw preserves exact 0–255 values. Zero turns LEDs off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
+            ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS (default): either endpoint succeeding means available. Gateway ping checks local reachability only. Always online skips checks. No link means unavailable in every mode. Apply activates changes.',
                 ['https' => 'HTTPS', 'gateway' => 'Gateway ping', 'none' => 'Always online when linked']],
-            ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'HTTPS endpoint checked first.'],
-            ['CONNECTIVITY_FALLBACK_URL', 'Fallback check URL', 'url', 'Used if the primary endpoint fails.'],
-            ['CONNECTIVITY_INTERVAL', 'Check interval (seconds)', 'number', 'Time between internet checks.', 10, 3600],
+            ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'Primary HTTPS endpoint; default: https://unraid.net/. Must accept HEAD requests. Uses selected interface; timeouts: 2 s connection, 5 s total. Failure tries fallback. Other modes ignore it.'],
+            ['CONNECTIVITY_FALLBACK_URL', 'Fallback check URL', 'url', 'Backup HTTPS endpoint; default: https://ai.ugreen.com/. Tried only if primary fails. Either succeeding keeps the available colour. Same interface/timeouts; other modes ignore it.'],
+            ['CONNECTIVITY_INTERVAL', 'Check interval (seconds)', 'number', 'Check interval: 10–3600 s; default: 60. Shorter intervals detect changes sooner but send more requests; longer intervals delay colour updates. Link/traffic handling is separate.', 10, 3600],
 
-            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'Set ATA ports in physical bay order. 0 disables a bay. Use the optional mapping guide above to diagnose or change the mapping.'],
+            ['DISK_ATA_PORTS', 'ATA ports for bays 1–4', 'text', 'ATA ports in left-to-right bay order; default: 1 2 3 4. Zero disables a bay; other ports must be unique. Physical ports, not array disk numbers. See mapping guide; Apply activates changes.'],
 
-            ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'Disk activity sampling interval.', 0.1, 5, 0.1],
-            ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Checks for drives appearing or disappearing in the configured bays.', 1, 3600],
-            ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby and SMART check; failures of the check are not disk failures.', 10, 3600],
+            ['POLL_INTERVAL', 'Poll interval (seconds)', 'number', 'I/O sampling: 0.1–5 s; default: 0.5. Shorter intervals improve responsiveness but increase monitoring work; longer intervals group I/O and delay pulses. Standby/failure timing is unchanged.', 0.1, 5, 0.1],
+            ['REFRESH_INTERVAL', 'Drive detection refresh (seconds)', 'number', 'Drive detection: 1–3600 s; default: 15. New drives are monitored automatically; initially empty bays stay off. Disappearance can trigger warnings, including intentional removal.', 1, 3600],
+            ['DISK_STATUS_INTERVAL', 'SMART refresh (seconds)', 'number', 'Non-waking standby/SMART rounds: 10–3600 s; default: 60. Standby breathes; explicit SMART failure flashes. Failed queries alone are not failures. Individual check durations can delay updates.', 10, 3600],
         ],
     ];
     return $ugreenGroups;

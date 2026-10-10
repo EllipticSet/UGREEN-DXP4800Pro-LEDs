@@ -74,6 +74,7 @@ function ugreen_pro_read_settings(string $path): array
         }
         if (str_ends_with($key, '_COLOR') || str_starts_with($key, 'NETWORK_COLOR_') || $key === 'DISK_COLOR_FAILED') {
             $value = ugreen_pro_color_to_hex($value) ?? $values[$key];
+            if ($value === '#000000') $value = ugreen_pro_defaults()[$key];
         }
         $values[$key] = $value;
     }
@@ -112,7 +113,9 @@ function ugreen_pro_validate(array $input): array
         $values[$key] = $value;
         if (str_contains($key, 'COLOR')) {
             if (!preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
-                $errors[$key] = 'Choose a valid six-digit colour.';
+                $errors[$key] = 'Choose an opaque six-digit colour; transparency is unsupported.';
+            } elseif (strtolower($value) === '#000000') {
+                $errors[$key] = 'Black is unsupported. Use brightness 0 to turn the LED off.';
             } else {
                 $values[$key] = strtolower($value);
             }

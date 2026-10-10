@@ -29,8 +29,14 @@ ob_start();
 $var = ['csrf_token' => 'preview-token'];
 foreach (array_keys(ugreen_pro_groups()) as $ugreenTab) require __DIR__ . '/../src/web/settings.php';
 $html = ob_get_clean();
+check(substr_count($html, 'class="nas-led-test"') === 2, 'Only error colours must have Test buttons.');
+check(substr_count($html, 'data-test-color="NETWORK_COLOR_OFFLINE"') === 1, 'Missing Internet unavailable test.');
+check(substr_count($html, 'data-test-color="DISK_COLOR_FAILED"') === 1, 'Missing SMART failure test.');
 check(substr_count($html, '<form ') === 4, 'Native tab rendering failed.');
-check(substr_count($html, 'is-highlighted') === 6, 'Wrong highlight groups.');
+check(substr_count($html, 'data-color-key=') === 18, 'Each front panel must preview all six LEDs.');
+check(substr_count($html, 'class="nas-led-outline nas-led-outline-') === 3, 'Each illustrated tab must have one group outline.');
+check(substr_count($html, 'nas-led-outline-drives') === 1, 'Drive LEDs must share one outline.');
+check(!str_contains($html, 'is-highlighted'), 'Separate per-drive highlights remain.');
 check(substr_count($html, 'name="csrf_token"') === 4, 'Missing form tokens.');
 preg_match_all('/id="([^"]+)"/', $html, $matches);
 check(count($matches[1]) === count(array_unique($matches[1])), 'Duplicate input IDs.');
@@ -60,7 +66,7 @@ preg_match_all('/<\/dl>\s*<blockquote class="inline_help nas-inline-help"/', $ht
 check(count($nativePairs[0]) === count(ugreen_pro_defaults()), 'Native help must immediately follow its definition list.');
 
 // Resource URLs must follow content changes, even when a release version is reused.
-foreach (['settings.css', 'settings.js'] as $asset) {
+foreach (['settings.css', 'settings.js', 'images/nas-front.png'] as $asset) {
     $fingerprint = substr(hash_file('sha256', __DIR__ . '/../src/web/' . $asset), 0, 12);
     check(str_contains($html, $asset . '?v=' . $fingerprint), 'Stale cache key for ' . $asset);
 }
