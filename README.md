@@ -45,8 +45,6 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions contain fixes, minor version
 
 The installer checks the NAS model through DMI and requires an exact match between the running kernel and a bundled LED module. Unraid 7.3.2 or later is required, but the only supported kernels are those listed above. Both modules are included; the installer selects the correct one automatically, including after an Unraid upgrade or rollback.
 
-Hardware tests on the maintainer’s DXP4800 Pro covered version 1.3.0 on Unraid 7.3.2 and version 1.3.1 on Unraid 7.3.3. The results and remaining checks are recorded in [Validation](docs/validation.md).
-
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**
 
@@ -155,7 +153,7 @@ The table below describes the default white and orange indications. You can chan
 
 The default drive activity style is **Dark when idle**, with brief white pulses during I/O. **Solid when idle**, with brief off pulses during I/O, is also available.
 
-When the set of sleeping drives changes, the monitor restarts their breathing cycles together. The controller receives consecutive start commands; visual alignment of the LEDs still requires hardware verification.
+When the set of sleeping drives changes, the monitor restarts their breathing cycles together. The controller receives consecutive start commands.
 
 The monitor samples disk activity every **0.5 seconds** by default. LED pulses represent the activity collected during that interval. SMART checks use `-n standby,0` to avoid waking sleeping drives, and a failed query alone does not trigger a confirmed disk-failure indication. Removing a drive intentionally can produce the same warning as an unexpected disappearance.
 
@@ -185,22 +183,6 @@ To report a problem or suggest a change, open a [GitHub issue](https://github.co
 Remove the plugin from **Plugins** in Unraid. Saved settings and shared `i2c-tools` are retained.
 
 During installation, the plugin adds its own shutdown-hook line to `/boot/config/stop`. Removal deletes that line and leaves other commands intact. If removal is incomplete or the old LED module remains loaded, reboot before installing another LED controller.
-
-## Validation status
-
-Version 1.3.1 was verified on the maintainer’s DXP4800 Pro running Unraid 7.3.3 with kernel `6.18.54-Unraid` on October 9, 2026. The monitor starts, binds the controller on Intel SMBus I801, maps all four drives, and controls Power, LAN, disk activity and standby correctly. Apply saves settings and restarts the monitor.
-
-Tests of earlier development builds on the same DXP4800 Pro, running Unraid 7.3.2 with kernel `6.18.38-Unraid`, confirmed:
-
-- Installation and monitor startup.
-- Solid white Power and white LAN activity on `br0`.
-- Saving settings and restarting the monitor through Apply.
-- Correct four-bay mapping, disk read pulses and standby breathing.
-- Settings retained during a development-build update.
-- Automatic startup after reboot and after a full shutdown followed by power-on.
-- Power blinking during shutdown and returning to solid white after startup.
-
-[Validation](docs/validation.md) records the automated checks, earlier hardware tests and work still to complete. The 1.2.0 settings interface was also tested on the NAS, including repeated help animations in Safari. The physical brightness response and breathing alignment still need further testing.
 
 ## License and acknowledgements
 

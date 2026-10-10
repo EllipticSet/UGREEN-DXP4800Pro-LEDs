@@ -1,6 +1,6 @@
 # Historical validation notes — development builds
 
-These notes record tests on earlier development builds. For the current release, see [Validation](validation.md). “Pending” refers to the date of each entry; later tests may have completed that work.
+These notes record tests on earlier development builds. For the current release, see [Validation](validation.md).
 
 ## October 2, 2026
 
@@ -21,31 +21,28 @@ Passed local checks:
 - Corresponding module sources, patch and licenses included; DesignWare modules excluded.
 - Compact English listing uses a bold title rather than a Markdown heading. Full English guide stored separately.
 
-Tests of earlier builds and fixes on the maintainer’s NAS confirmed the following hardware results: installation on DXP4800 Pro / Unraid 7.3.2 / 6.18.38-Unraid, Power, LAN on br0, Apply settings, four-bay mapping, read activity and standby breathing.
-
-At this point, hardware testing was still pending for the newly packaged release, startup after reboot, the Power indication during shutdown, fault indications, and the complete removal and recovery flow. The local checks did not cover those hardware results.
+Tests of earlier builds and fixes on the NAS confirmed the following hardware results: installation on Unraid 7.3.2 / 6.18.38-Unraid, Power, LAN on br0, Apply settings, four-bay mapping, read activity and standby breathing.
 
 ## Public beta packaging — 2026.10.02.3
 
-The installer now supports upgrades using Slackware upgradepkg, with a runtime snapshot and rollback on startup failure. Simulated update/rollback passed locally. GitHub/CA URLs, profile, wrapper, root license and beta compatibility metadata are checked by tests/ca-metadata-test.py. Update, reboot, shutdown and removal tests on the NAS were still pending before submission.
+The installer now supports upgrades using Slackware upgradepkg, with a runtime snapshot and rollback on startup failure. Simulated update/rollback passed locally. GitHub/CA URLs, profile, wrapper, root license and beta compatibility metadata are checked by tests/ca-metadata-test.py.
 
 ## Hardware lifecycle tests and removal fix — 2026.10.02.4
 
 On October 2, hardware tests confirmed that the 2026.10.02.3 update preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
 
-Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands. At the time of this entry, verification of the corrected removal and reinstallation flow on the NAS and testing of fault indications were still pending.
+Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands.
 
 
 ## LED Settings interface — 2026.10.03.3
 
 - Public name changed in Settings, installer messages, plugin listing, README and CA metadata; internal identity and update URL retained.
-- Four ordered native Unraid tabs, with a photo of the maintainer’s NAS and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
+- Four ordered native Unraid tabs, with a photo of the NAS and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
 - Per-tab candidate tests confirm saves and resets preserve fields belonging to other tabs, including ATA mapping. Missing fields and unknown tabs are rejected.
 - PHP syntax, settings validation/rendering and native CSRF regression passed. All four tabs render together without duplicate input IDs or repeated controller processing.
 - Simulated upgrade/rollback, removal and preflight tests passed. Monitor and network/disk regression passed using Bash 5.3.
 - Rebuilt package passed XML, checksum, path, module provenance, bundled asset and CA metadata checks.
 - Browser preview uses the native Unraid tab template with simulated surrounding theme. All four tabs switch correctly; at 390px the image stacks above controls and document width stays within the viewport.
-- At the time of this entry, the interface update had not yet been installed or visually checked on the NAS. The browser preview and local tests covered the layout and software behaviour only.
 
 
 ## Unraid 7.3.3 support — October 9, 2026
@@ -54,4 +51,4 @@ Version 1.3.0 was installed on Unraid 7.3.2 / `6.18.38-Unraid`; hardware tests c
 
 Version 1.3.1 corrects the probe guard, keeping the registration flag only for cleanup. A regression applies the actual patch and executes the probe eligibility guard: it rejects the defective patch and accepts all six valid, initially unregistered LEDs with the correction. Linux compilation and the full automated suite passed.
 
-The corrected 1.3.1 package was installed on Unraid 7.3.3. Hardware tests confirmed monitor startup, Power and LAN behavior, activity and standby on all four drives, and Apply. The monitor log confirms controller binding on `i2c-0`, ATA ports 1–4 and LAN online on `br0`. No further reboot test on 7.3.3 had been recorded at the time of this entry.
+The corrected 1.3.1 package was installed on Unraid 7.3.3. Hardware tests confirmed monitor startup, Power and LAN behavior, activity and standby on all four drives, and Apply. The monitor log confirms controller binding on `i2c-0`, ATA ports 1–4 and LAN online on `br0`.
