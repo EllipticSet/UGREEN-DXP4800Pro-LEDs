@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a problem with the plugin.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the README and existing issues first. For vulnerabilities, use the private reporting channel linked in SECURITY.md.
+        Remove credentials, serial numbers and other private information from logs and screenshots.
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin version
+      placeholder: "1.3.1"
+    validations:
+      required: true
+  - type: input
+    id: unraid_version
+    attributes:
+      label: Unraid version
+      placeholder: "7.3.3"
+    validations:
+      required: true
+  - type: input
+    id: kernel_version
+    attributes:
+      label: Kernel version
+      description: Shown in Unraid system information.
+      placeholder: "6.18.54-Unraid"
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Describe what you expected and what happened, including the affected LEDs or settings.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include whether this followed installation, an update, reboot or a settings change.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Relevant status output and logs
+      description: "If available, include output from /usr/local/sbin/ugreen-pro-leds status and relevant lines from /var/log/ugreen-pro-leds.log. If unavailable, explain why. Review and redact before posting."
+      render: text
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include installation method, other LED controllers, drive-bay mapping, and browser/version for WebGUI issues when relevant.

@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement to the plugin.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Explain the need that the current plugin does not address.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the desired behavior and any alternatives you considered.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant environment or examples
+      description: Include plugin, Unraid and kernel versions if relevant. New model or kernel support requires discussion and validation.
