@@ -1,8 +1,0 @@
-Menu="OtherSettings"
-Type="xmenu"
-Title="LED Settings"
-Icon="icons/icon-azure.png"
-Tag="icon-azure.png"
-Tabs="true"
-Markdown="false"
----

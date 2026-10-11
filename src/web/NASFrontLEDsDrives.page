@@ -1,6 +1,0 @@
-Menu="LED-Settings:3"
-Title="Drives LEDs"
-Tag="hdd-o"
-Markdown="false"
----
-<?php $ugreenTab = 'Drives LEDs'; require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings.php'; ?>
