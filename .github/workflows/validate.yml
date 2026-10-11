@@ -3,6 +3,7 @@ on:
   push:
     branches-ignore:
       - "release-build/**"
+      - "badges"
   pull_request:
   workflow_dispatch:
 permissions:
@@ -44,3 +45,46 @@ jobs:
           python3 build/package.py --no-publish
           python3 tests/package-test.py dist/UGREEN-DXP4800Pro-LEDs.plg
           python3 tests/reproducible-package-test.py
+
+  update-badge:
+    needs: validate
+    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: validation-badge
+      cancel-in-progress: false
+    steps:
+      - name: Publish validation badge
+        uses: actions/github-script@v7
+        env:
+          VALIDATION_RESULT: ${{ needs.validate.result }}
+        with:
+          script: |
+            const result = process.env.VALIDATION_RESULT;
+            const states = {
+              success: { message: 'passed', color: 'brightgreen' },
+              failure: { message: 'failed', color: 'red' },
+              cancelled: { message: 'cancelled', color: 'lightgrey' },
+              skipped: { message: 'skipped', color: 'lightgrey' }
+            };
+            const badge = { schemaVersion: 1, label: 'tests', ...states[result] };
+            if (!badge.message) throw new Error('Unknown validation result: ' + result);
+            const { owner, repo } = context.repo;
+            const branch = 'badges';
+            const path = 'tests.json';
+            // An older run must not overwrite the badge for the current main commit.
+            const { data: main } = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            if (main.commit.sha !== context.sha) {
+              core.info('A newer main commit exists; leaving its badge unchanged.');
+              return;
+            }
+            const { data: file } = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
+            const content = JSON.stringify(badge) + '\n';
+            if (Buffer.from(file.content, 'base64').toString('utf8') === content) return;
+            await github.rest.repos.createOrUpdateFileContents({
+              owner, repo, branch, path, sha: file.sha,
+              message: 'docs: update validation badge',
+              content: Buffer.from(content).toString('base64')
+            });
