@@ -102,6 +102,8 @@ def build(output, vm_uuid):
         install = install[:start] + install[end:]
         install = replace_once(install, 'if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi', '# Lab package requires no i2c-tools.')
         install = replace_once(install, 'paths=()', 'paths=()\n[[ ! -e /usr/local/sbin/ugreen-led-lab ]] || paths+=(usr/local/sbin/ugreen-led-lab)')
+        install = replace_once(install, '\n/usr/local/sbin/ugreen-pro-leds start\nif [[ ! -f /boot/config/stop', '\n"$root/lab-migrate-settings.sh" "$plugin/settings.cfg"\n/usr/local/sbin/ugreen-pro-leds start\nif [[ ! -f /boot/config/stop')
+        write(outer / 'lab-migrate-settings.sh', (ROOT / 'lab/migrate-settings.sh').read_text(), True)
         write(outer / 'install.sh', install, True)
         preflight = '#!/bin/bash\nset -euo pipefail\n' + guard + '''
 [[ $EUID == 0 ]] || { echo 'Root required.' >&2; exit 1; }
@@ -118,7 +120,7 @@ echo 'LAB ONLY: VM checks passed; hardware and module ABI checks intentionally n
         # Keep persisted production-format settings; accelerate lab scenario polling.
         settings = (ROOT / 'src/settings.example.cfg').read_text()
         for key in ('REFRESH_INTERVAL', 'DISK_STATUS_INTERVAL', 'CONNECTIVITY_INTERVAL'):
-            settings = re.sub(r'^' + key + r'=.*$', key + '=5', settings, flags=re.M)
+            settings = re.sub(r'^' + key + r'=.*$', key + '=10', settings, flags=re.M)
         write(outer / 'settings.example.cfg', settings)
         archive(stage, outer / (PKG + '.txz'))
         bundle = output / 'lab-bundle.tar.xz'

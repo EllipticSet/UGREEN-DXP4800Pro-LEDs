@@ -5,6 +5,7 @@ import importlib.util
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -96,6 +97,25 @@ echo "${TEST_EXTRA_DISK:-}"
                          {'TEST_EXTRA_DISK': 'NAME="sdd" TYPE="disk" SERIAL="" TRAN="sata"'},
                          {'TEST_EXTRA_DISK': 'NAME="sdd" TYPE="disk" SERIAL="LABBOOT001" TRAN="sata"'}):
             self.assertNotEqual(subprocess.run(['bash', str(script)], env=dict(env, **override)).returncode, 0)
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'Runtime requires Linux Bash 4+, flock and /proc')
+    def test_generated_settings_and_legacy_migration(self):
+        config = self.stage / 'settings.example.cfg'
+        php = shutil.which('php')
+        self.assertIsNotNone(php, 'PHP is required to verify production settings validation')
+        cli = ROOT / 'src/web/settings-cli.php'
+        subprocess.run([php, str(cli), str(config)], check=True, capture_output=True)
+        legacy = self.root / 'legacy.cfg'
+        legacy.write_text(config.read_text().replace('CONNECTIVITY_INTERVAL=10', 'CONNECTIVITY_INTERVAL=5')
+                          .replace('DISK_STATUS_INTERVAL=10', 'DISK_STATUS_INTERVAL=5')
+                          .replace('REFRESH_INTERVAL=10', 'REFRESH_INTERVAL=5'))
+        migrator = self.stage / 'lab-migrate-settings.sh'
+        subprocess.run(['bash', str(migrator), str(legacy)], check=True)
+        subprocess.run([php, str(cli), str(legacy)], check=True, capture_output=True)
+        self.assertIn('REFRESH_INTERVAL=5', legacy.read_text())
+        saved = legacy.read_bytes()
+        subprocess.run(['bash', str(migrator), str(legacy)], check=True)
+        self.assertEqual(legacy.read_bytes(), saved)
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'Runtime requires Linux Bash 4+, flock and /proc')
     def test_running_monitor_scenarios(self):

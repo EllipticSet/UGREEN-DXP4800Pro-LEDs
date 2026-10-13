@@ -82,7 +82,9 @@ ugreen-led-lab status
 ```
 
 Wait for the configured refresh and health/connectivity intervals. Fresh lab
-settings use five-second intervals. Existing settings retain their intervals.
+settings use ten-second intervals. Existing valid settings retain their intervals;
+the invalid five-second connectivity/health defaults from early LAB builds are
+automatically repaired to ten seconds during installation.
 An initially empty bay remains dark; removing an already detected simulated disk
 shows the production disappearance warning. To test an initially empty bay,
 select `empty` and restart the monitor before inspecting output. Disk counters,
