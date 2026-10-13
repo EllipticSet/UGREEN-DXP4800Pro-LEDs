@@ -72,9 +72,13 @@ case "$1" in
 esac
 ''', True)
         builder.write(bin_dir / 'lsblk', '''#!/bin/bash
-echo 'disk LABBOOT001 sata'
-echo 'disk LABARRAY001 sata'
-echo "${TEST_EXTRA_DISK:-disk Kingston usb}"
+echo 'NAME="sdb" TYPE="disk" SERIAL="LABBOOT001" TRAN="sata"'
+echo 'NAME="sdc" TYPE="disk" SERIAL="LABARRAY001" TRAN="sata"'
+echo 'NAME="sda" TYPE="disk" SERIAL="" TRAN="usb"'
+echo 'NAME="loop0" TYPE="loop" SERIAL="" TRAN=""'
+echo 'NAME="md1p1" TYPE="md" SERIAL="" TRAN=""'
+echo 'NAME="zram0" TYPE="disk" SERIAL="" TRAN=""'
+echo "${TEST_EXTRA_DISK:-}"
 ''', True)
         return dict(os.environ, PATH=str(bin_dir) + ':' + os.environ['PATH'])
 
@@ -87,7 +91,10 @@ echo "${TEST_EXTRA_DISK:-disk Kingston usb}"
         builder.write(script, guard + '\nlab_guard\n', True)
         self.assertEqual(subprocess.run(['bash', str(script)], env=env).returncode, 0)
         for override in ({'TEST_UUID': '00000000-0000-0000-0000-000000000000'},
-                         {'TEST_MODEL': 'DXP4800 Pro'}, {'TEST_EXTRA_DISK': 'disk REALHOST sata'}):
+                         {'TEST_MODEL': 'DXP4800 Pro'},
+                         {'TEST_EXTRA_DISK': 'NAME="sdd" TYPE="disk" SERIAL="REALHOST" TRAN="sata"'},
+                         {'TEST_EXTRA_DISK': 'NAME="sdd" TYPE="disk" SERIAL="" TRAN="sata"'},
+                         {'TEST_EXTRA_DISK': 'NAME="sdd" TYPE="disk" SERIAL="LABBOOT001" TRAN="sata"'}):
             self.assertNotEqual(subprocess.run(['bash', str(script)], env=dict(env, **override)).returncode, 0)
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'Runtime requires Linux Bash 4+, flock and /proc')
