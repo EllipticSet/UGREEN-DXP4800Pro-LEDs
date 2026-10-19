@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.4.2
+
+Version 1.4.2 records the disk I/O counters at the start of each SMART round and discards a standby result when I/O occurred after that point, so a drive woken during the check no longer breathes as if asleep. Stopping the monitor now turns off the LAN LED as well as the drive LEDs; the Power LED is unchanged. The detect command reads the configured network interface. The installer extracts the bundled package once instead of carrying a second uncompressed copy, which reduces the plugin download from about 1.3 MB to about 1.0 MB. Theme icons use content-based cache keys.
+
+Local checks on October 19, 2026 passed the full automated suite, including new regressions for stale standby results, unchanged standby results, LAN and drive LEDs turned off on stop with Power retained, theme-icon cache keys and the single embedded payload. The changelog check rejects headings that are not semantic versions, and the metadata check confirms that every supported kernel is listed in the published descriptions.
+
 ## Version 1.4.1
 
 Version 1.4.1 renames the five-second warning-colour controls to Preview / Stop preview and adds Standby breathing to Drives LEDs. It defaults to enabled, including when older settings omit the new key. Disabled breathing follows Activity style: dark or solid when idle, with I/O pulses; zero brightness remains off. SMART checks, activity and failure indications retain their existing behavior.

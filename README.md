@@ -162,7 +162,7 @@ The default drive activity style is **Dark when idle**, with brief white pulses 
 
 When the set of sleeping drives changes, the monitor restarts their breathing cycles together. The controller receives consecutive start commands.
 
-The monitor samples disk activity every **0.5 seconds** by default. LED pulses represent the activity collected during that interval. SMART checks use `-n standby,0` to avoid waking sleeping drives, and a failed query alone does not trigger a confirmed disk-failure indication. Removing a drive intentionally can produce the same warning as an unexpected disappearance.
+The monitor samples disk activity every **0.5 seconds** by default. LED pulses represent the activity collected during that interval. SMART checks use `-n standby,0` to avoid waking sleeping drives, and a failed query alone does not trigger a confirmed disk-failure indication. Removing a drive intentionally can produce the same warning as an unexpected disappearance; select **Apply** in LED Settings to clear it.
 
 The LEDs report the states described above; they do not detect general system faults or whole-system sleep. Stopping the Unraid array does not mean the NAS is asleep. Use Unraid diagnostics and notifications to investigate problems.
 

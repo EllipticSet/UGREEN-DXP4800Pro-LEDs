@@ -114,7 +114,7 @@ function ugreen_pro_groups(): array
         ],
         'Drives LEDs' => [
             ['DISK_COLOR', 'Healthy drive colour', 'color', 'Activity and standby colour. Default: white. Activity style controls idle lighting; Standby breathing controls sleeping drives. Initially empty bays stay off. The image previews all four LEDs; Apply updates them.'],
-            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Preview affects only the image; Stop preview or editing either drive colour restores the healthy preview.'],
+            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal; Apply clears a removal warning. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Preview affects only the image; Stop preview or editing either drive colour restores the healthy preview.'],
             ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
             ['DISK_STANDBY_BREATHING', 'Standby breathing', 'select', 'Enabled (default): sleeping drives breathe in the healthy colour, with 1 s fade in/out. Disabled: follows Activity style, dark or solid when idle, with I/O pulses. Zero brightness turns LEDs off; failure warnings are unchanged. Apply activates changes.',
                 ['1' => 'Enabled', '0' => 'Disabled']],
@@ -152,7 +152,7 @@ function ugreen_pro_tab_candidate(array $current, array $posted, string $group, 
 
 // Percentage mode has exactly eleven choices. Legacy values are rounded when
 // read in percentage mode; raw mode retains their exact controller values.
-function ugreen_pro_brightness_options(string $current): array
+function ugreen_pro_brightness_options(): array
 {
     $options = [];
     for ($percent = 0; $percent <= 100; $percent += 10) {

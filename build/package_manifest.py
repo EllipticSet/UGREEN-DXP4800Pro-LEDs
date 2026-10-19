@@ -1,13 +1,22 @@
 """Explicit source inputs for the installed plugin payload."""
 NAME = 'UGREEN-DXP4800Pro-LEDs'
-KERNELS = ('6.18.38-Unraid', '6.18.54-Unraid')
+# Single source for supported kernels. Every kernel except PREBUILT_KERNEL is
+# rebuilt from vendor/kmod with the hardening patch by build/build-module.sh.
+KERNEL_ARCHIVE_SHA256 = {
+    '6.18.38-Unraid': 'b336c66bf1d7ee2cedba88e8be2124b2256c94476b1d1c944518ce8d6bcf37da',
+    '6.18.54-Unraid': '5c8795f9c7a60a01f7135018d0339466f180c7d2bef6f2b35bae8711783c6e00',
+}
+KERNELS = tuple(KERNEL_ARCHIVE_SHA256)
+PREBUILT_KERNEL = '6.18.38-Unraid'
+PREBUILT_SHA256 = 'dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2'
+REBUILT_KERNELS = tuple(k for k in KERNELS if k != PREBUILT_KERNEL)
 
 def module_source(root, kernel):
-    return root/'vendor/led-ugreen.ko' if kernel == KERNELS[0] else root/'vendor/modules'/kernel/'led-ugreen.ko'
+    return root/'vendor/led-ugreen.ko' if kernel == PREBUILT_KERNEL else root/'vendor/modules'/kernel/'led-ugreen.ko'
 
 def module_sha256(root, kernel):
-    return 'dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2' if kernel == KERNELS[0] else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
-VERSION = '1.4.1'
+    return PREBUILT_SHA256 if kernel == PREBUILT_KERNEL else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
+VERSION = '1.4.2'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',
@@ -32,7 +41,7 @@ def payload_inputs(root):
     for path in sorted((root/'src/web').rglob('*')):
         if path.is_file():
             result[f'{web}/{path.relative_to(root/"src/web")}'] = (path, 0o644)
-    for kernel in KERNELS[1:]:
+    for kernel in REBUILT_KERNELS:
         for name in ('BUILD_INFO', 'led-ugreen.ko.sha256'):
             result[f'{share}/vendor/modules/{kernel}/{name}'] = (root/'vendor/modules'/kernel/name, 0o644)
     for name in VENDOR_FILES:

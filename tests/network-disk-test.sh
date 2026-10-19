@@ -54,6 +54,17 @@ rm "$sim/sys/class/leds/disk1/shot"
 printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
 [[ ! -f $sim/sys/class/leds/disk1/shot ]]
+# A standby result recorded before later I/O is discarded; an unchanged one applies.
+DISK_ATA_PORTS=(1 0 0 0)
+bay_mode[1]=active
+printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
+printf 'standby 13:20\n' > "$state_dir/sda"
+refresh_bay_health
+[[ ${bay_mode[1]} == standby ]]
+bay_mode[1]=active
+printf '5 0 14 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
+refresh_bay_health
+[[ ${bay_mode[1]} == active ]]
 echo 'Network online/offline/down/reconnect and disk activity/standby/failure transitions passed.'
 
 NETWORK_BRIGHTNESS=0
@@ -61,3 +72,14 @@ configure_network
 check "$sim/sys/class/leds/netdev/trigger" none
 check "$sim/sys/class/leds/netdev/blink_type" none
 check "$sim/sys/class/leds/netdev/brightness" 0
+
+# Stopping the monitor turns the LAN LED off and leaves the Power LED untouched.
+mkdir -p "$sim/sys/class/leds/power"
+printf '179\n' > "$sim/sys/class/leds/netdev/brightness"
+printf '179\n' > "$sim/sys/class/leds/power/brightness"
+pid_file=$sim/pid ready_file=$sim/ready hardware_ready=1 network_pid='' health_pid=''
+cleanup
+check "$sim/sys/class/leds/netdev/brightness" 0
+check "$sim/sys/class/leds/power/brightness" 179
+check "$sim/sys/class/leds/disk1/brightness" 0
+echo 'Monitor stop turns off LAN and drive LEDs and retains Power.'
