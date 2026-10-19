@@ -189,6 +189,8 @@ To report a problem or suggest a change, open a [GitHub issue](https://github.co
 
 Remove the plugin from **Plugins** in Unraid. Saved settings and shared `i2c-tools` are retained.
 
+Removal turns off all front-panel LEDs, including Power. The monitor stops first, then the LED controller is unregistered and the kernel turns off every LED it releases. This is expected behavior.
+
 During installation, the plugin adds its own shutdown-hook line to `/boot/config/stop`. Removal deletes that line and leaves other commands intact. If removal is incomplete or the old LED module remains loaded, reboot before installing another LED controller.
 
 ## License and acknowledgements
