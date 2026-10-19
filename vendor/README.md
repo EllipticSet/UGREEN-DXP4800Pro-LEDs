@@ -8,7 +8,7 @@ This directory contains the binaries, corresponding sources, licences and build 
 - Sources: `kmod/led-ugreen.c`, `kmod/led-ugreen.h`, `kmod/Makefile`; apply `led-ugreen-hardening.patch` when rebuilding.
 - Licence: GPL-2.0-only; see source headers and `GPL-2.0.txt`.
 - Prebuilt `led-ugreen.ko` from flybrys, SHA-256 `dc99a062861bb1fb21688e3d13048bd77863e353da1a1577b88338c47b07e2a2`.
-- The original module targets `6.18.38-Unraid`; `modules/6.18.54-Unraid/led-ugreen.ko` is built from the retained sources with the hardening patch for Unraid 7.3.3. Its adjacent checksum pins the binary. Both target Linux x86_64. `BUILD_INFO` records source and patch provenance; [build-module.sh](../build/build-module.sh) identifies the exact kernel archive and rebuild procedure.
+- The original module targets `6.18.38-Unraid`; `modules/6.18.54-Unraid/led-ugreen.ko` is built from the retained sources with the hardening patch for Unraid 7.3.3. Its adjacent checksum pins the binary. The prebuilt `6.18.38-Unraid` module does not include the hardening patch; it remains unchanged because it is the binary validated on Unraid 7.3.2 hardware. Both target Linux x86_64. `BUILD_INFO` records source and patch provenance; [package_manifest.py](../build/package_manifest.py) pins the supported kernel archives and [build-module.sh](../build/build-module.sh) contains the rebuild procedure.
 
 ## i2c-tools
 

@@ -32,15 +32,17 @@ POLL_INTERVAL=0.5
 REFRESH_INTERVAL=15
 DISK_STATUS_INTERVAL=60
 
-if [[ -f $config_file && ( ${1:-} == run || ${1:-} == shutdown ) ]]; then
+if [[ -f $config_file && ( ${1:-} == run || ${1:-} == shutdown || ${1:-} == detect ) ]]; then
   # Parse known settings and validate before sourcing canonical shell output.
   # Stop/status must remain usable even if an administrator damaged the config.
   if canonical=$(php /usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings-cli.php "$config_file"); then
     source /dev/stdin <<< "$canonical"
   elif [[ ${1:-} == run ]]; then
     echo 'Invalid settings; refusing to start.' >&2; exit 1
-  else
+  elif [[ ${1:-} == shutdown ]]; then
     echo 'Invalid settings; using default power colour for shutdown.' >&2
+  else
+    echo 'Invalid settings; using default network interface selection.' >&2
   fi
 fi
 
@@ -198,6 +200,15 @@ device_on_ata_port() {
 
 declare -A bay_device bay_signature bay_mode
 
+# Sectors read and written; SMART commands do not change these counters.
+disk_signature() {
+  local -a counters
+  [[ -r /sys/class/block/$1/stat ]] || return 1
+  read -r -a counters < "/sys/class/block/$1/stat" || return 1
+  (( ${#counters[@]} >= 7 )) || return 1
+  printf '%s:%s\n' "${counters[2]}" "${counters[6]}"
+}
+
 set_bay_mode() {
   local bay=$1 mode=$2 path lighting_mode
   (( DISK_BRIGHTNESS > 0 )) || mode=off
@@ -256,14 +267,19 @@ disk_health_mode() {
 }
 
 refresh_bay_health() {
-  local bay device mode before after
+  local bay device mode recorded before after
   before=$(standby_bays)
   for bay in 1 2 3 4; do
     device=${bay_device[$bay]:-}
     [[ -n $device ]] || continue
     mode=active
-    if [[ -r $state_dir/"$device" ]]; then read -r mode < "$state_dir/$device" || mode=active; fi
+    recorded=''
+    if [[ -r $state_dir/"$device" ]]; then read -r mode recorded < "$state_dir/$device" || mode=active; fi
     [[ $mode == active || $mode == standby || $mode == failed ]] || mode=active
+    # A standby result is stale if I/O occurred after the SMART check started.
+    if [[ $mode == standby && -n $recorded && $(disk_signature "$device" || true) != "$recorded" ]]; then
+      mode=active
+    fi
     set_bay_mode "$bay" "$mode"
   done
   after=$(standby_bays)
@@ -337,13 +353,10 @@ configure_bay() {
 
 poll_disk_activity() {
   local bay device path signature
-  local -a counters
   for bay in 1 2 3 4; do
     device=${bay_device[$bay]:-}
-    [[ -n $device && -r /sys/class/block/$device/stat ]] || continue
-    read -r -a counters < "/sys/class/block/$device/stat" || continue
-    (( ${#counters[@]} >= 7 )) || continue
-    signature="${counters[2]}:${counters[6]}"
+    [[ -n $device ]] || continue
+    signature=$(disk_signature "$device") || continue
     path=$(led_path "disk$bay")
     if [[ -n ${bay_signature[$bay]:-} && ${bay_signature[$bay]} != "$signature" ]]; then
       if [[ ${bay_mode[$bay]:-} == standby ]]; then
@@ -360,15 +373,16 @@ poll_disk_activity() {
 }
 
 health_worker() {
-  local port device mode pause
+  local port device mode signature pause
   trap - EXIT
   trap 'exit 0' TERM INT
   while :; do
     for port in "${DISK_ATA_PORTS[@]}"; do
       device=$(device_on_ata_port "$port" || true)
       [[ -n $device ]] || continue
+      signature=$(disk_signature "$device" || true)
       mode=$(disk_health_mode "$device")
-      printf '%s\n' "$mode" > "$state_dir/$device.tmp"
+      printf '%s %s\n' "$mode" "$signature" > "$state_dir/$device.tmp"
       mv -f "$state_dir/$device.tmp" "$state_dir/$device"
     done
     for ((pause=0; pause<DISK_STATUS_INTERVAL; pause++)); do sleep 1; done
@@ -384,10 +398,11 @@ cleanup() {
   for child in "${network_pid:-}" "${health_pid:-}"; do
     [[ -z $child ]] || wait "$child" 2>/dev/null || true
   done
-  # Release only LED triggers managed by this monitor. Leave power solid white.
+  # Release LEDs managed by this monitor and turn them off. Leave power on.
   if [[ ${hardware_ready:-0} == 1 ]]; then
     printf 'none\n' > /sys/class/leds/netdev/trigger || true
     printf 'none\n' > /sys/class/leds/netdev/blink_type || true
+    printf '0\n' > /sys/class/leds/netdev/brightness || true
     for bay in 1 2 3 4; do
       [[ ${DISK_ATA_PORTS[bay-1]} != 0 ]] || continue
       printf 'none\n' > "/sys/class/leds/disk$bay/trigger" || true
@@ -465,7 +480,7 @@ case ${1:-} in
     if running_pid >/dev/null; then fail 'Monitor is still initializing; check status before restarting.'; fi
     nohup "$0" run >> "$log_file" 2>&1 < /dev/null &
     started_pid=$!
-    for attempt in {1..12}; do
+    for _ in {1..12}; do
       sleep 1
       kill -0 "$started_pid" 2>/dev/null || fail "Monitor exited; see $log_file."
       if running_pid >/dev/null && [[ -f $ready_file ]]; then

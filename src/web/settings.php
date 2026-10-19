@@ -93,7 +93,7 @@ $tabDescriptions = [
             if (str_ends_with($key, '_BRIGHTNESS') && $ugreenValues['BRIGHTNESS_MODE'] === 'percent') {
                 $type = 'select';
                 $value = ugreen_pro_round_brightness($value);
-                $field[4] = ugreen_pro_brightness_options($value);
+                $field[4] = ugreen_pro_brightness_options();
             }
         ?>
           <?php if ($tabKey === 'advanced' && isset($categoryStarts[$key])): ?>

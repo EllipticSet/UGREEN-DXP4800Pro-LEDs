@@ -1,4 +1,6 @@
 Menu="Buttons:999"
 Link="nas-front-leds-icon-assets"
+Markdown="false"
 ---
-<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/icon-themes.css?v=1.1.0">
+<?php $ugreenIconCss = '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/icon-themes.css'; ?>
+<link rel="stylesheet" href="/plugins/UGREEN-DXP4800Pro-LEDs/icon-themes.css?v=<?= substr((string)@hash_file('sha256', $ugreenIconCss), 0, 12) ?>">

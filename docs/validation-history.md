@@ -4,7 +4,7 @@ These notes record tests on earlier development builds. For the current release,
 
 ## October 2, 2026
 
-The 2026.10.02.3 public GitHub Actions run passed syntax, PHP configuration/CSRF, monitor, update/rollback, package and CA metadata tests. Version 2026.10.02.4 changes module removal; its targeted regression and package checks are described below.
+The GitHub Actions run for the initial public beta passed syntax, PHP configuration/CSRF, monitor, update/rollback, package and CA metadata tests. A subsequent build changed module removal; its targeted regression and package checks are described below.
 
 Local checks ran on macOS arm64 with Bash 5.2 and PHP-WASM CLI 3.1.56. The Linux x86_64 module was inspected but could not be loaded in that environment.
 
@@ -23,18 +23,17 @@ Passed local checks:
 
 Tests of earlier builds and fixes on the NAS confirmed the following hardware results: installation on Unraid 7.3.2 / 6.18.38-Unraid, Power, LAN on br0, Apply settings, four-bay mapping, read activity and standby breathing.
 
-## Public beta packaging — 2026.10.02.3
+## Public beta packaging — October 2, 2026
 
 The installer now supports upgrades using Slackware upgradepkg, with a runtime snapshot and rollback on startup failure. Simulated update/rollback passed locally. GitHub/CA URLs, profile, wrapper, root license and beta compatibility metadata are checked by tests/ca-metadata-test.py.
 
-## Hardware lifecycle tests and removal fix — 2026.10.02.4
+## Hardware lifecycle tests and removal fix — October 2, 2026
 
-On October 2, hardware tests confirmed that the 2026.10.02.3 update preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
+Hardware tests confirmed that updating the public beta preserved settings exactly; Apply restarted the monitor; reboot and full shutdown/power-on started the monitor automatically with four bays and LAN on br0. Power blinked during shutdown and returned to solid white. Removal stopped the monitor, removed the owned I2C client and plugin-created shutdown hook, and retained settings. The module remained loaded: modprobe reported module not found; manual rmmod succeeded.
 
-Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands.
+The subsequent build uses rmmod for this insmod-loaded module and stops removal with a visible error if unloading fails or the module remains present. Targeted simulated tests cover successful unloading, an already absent module, unload failure and a falsely successful unload. They also verify preserved settings and unrelated shutdown-hook commands.
 
-
-## LED Settings interface — 2026.10.03.3
+## LED Settings interface — October 3, 2026
 
 - Public name changed in Settings, installer messages, plugin listing, README and CA metadata; internal identity and update URL retained.
 - Four ordered native Unraid tabs, with a photo of the NAS and Power/LAN/drive highlights; all six LEDs highlighted in Advanced Settings.
@@ -43,7 +42,6 @@ Version 2026.10.02.4 uses rmmod for this insmod-loaded module and stops removal 
 - Simulated upgrade/rollback, removal and preflight tests passed. Monitor and network/disk regression passed using Bash 5.3.
 - Rebuilt package passed XML, checksum, path, module provenance, bundled asset and CA metadata checks.
 - Browser preview uses the native Unraid tab template with simulated surrounding theme. All four tabs switch correctly; at 390px the image stacks above controls and document width stays within the viewport.
-
 
 ## Unraid 7.3.3 support — October 9, 2026
 
