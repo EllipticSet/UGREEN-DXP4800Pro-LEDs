@@ -4,7 +4,7 @@
 
 Version 1.4.3 supports Unraid 7.3.4 and retains support for Unraid 7.3.2 and 7.3.3. The new module was built against the checksum-pinned `6.18.58-Unraid` archive, using the existing hardening patch. Compared with `6.18.54-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver and LED class sources are identical. The settings interface and LED monitor are unchanged.
 
-Hardware verification on Unraid 7.3.4 is pending.
+On October 22, 2026, version 1.4.3 was installed with Unraid 7.3.4 / `6.18.58-Unraid`. Tests confirmed monitor startup, Power and LAN operation, activity and standby on all four drives, and Apply. The log records the controller on `i2c-0`, ATA ports 1–4 and LAN online on `br0`.
 
 ## Version 1.4.2
 
