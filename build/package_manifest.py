@@ -5,6 +5,7 @@ NAME = 'UGREEN-DXP4800Pro-LEDs'
 KERNEL_ARCHIVE_SHA256 = {
     '6.18.38-Unraid': 'b336c66bf1d7ee2cedba88e8be2124b2256c94476b1d1c944518ce8d6bcf37da',
     '6.18.54-Unraid': '5c8795f9c7a60a01f7135018d0339466f180c7d2bef6f2b35bae8711783c6e00',
+    '6.18.58-Unraid': 'da2ae45037a7f8049bbc9eeb306cf5385f59216c8c055c6ee827d243b016e962',
 }
 KERNELS = tuple(KERNEL_ARCHIVE_SHA256)
 PREBUILT_KERNEL = '6.18.38-Unraid'
@@ -16,7 +17,7 @@ def module_source(root, kernel):
 
 def module_sha256(root, kernel):
     return PREBUILT_SHA256 if kernel == PREBUILT_KERNEL else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
-VERSION = '1.4.2'
+VERSION = '1.4.3'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',

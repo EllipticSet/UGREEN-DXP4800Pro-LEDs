@@ -1,0 +1,4 @@
+kernel=6.18.58-Unraid
+kernel_archive_sha256=da2ae45037a7f8049bbc9eeb306cf5385f59216c8c055c6ee827d243b016e962
+compiler=14.2.0
+led_patch_sha256=c485d068902d9e7d7a81f5199cebc6ec31fa48d3d686bca89f4f77fe40faf3ee

@@ -1,3 +1,7 @@
+###1.4.3
+- Add Unraid 7.3.4 support with a rebuilt driver for 6.18.58-Unraid.
+- Retain support for Unraid 7.3.2 and 7.3.3.
+
 ###1.4.2
 - Prevent a woken drive from briefly showing standby breathing after a SMART check.
 - Turn off the LAN LED when the LED monitor stops or the plugin is removed.

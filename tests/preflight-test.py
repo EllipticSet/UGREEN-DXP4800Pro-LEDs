@@ -18,19 +18,24 @@ pgrep() { return 1; }
 export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo modprobe php timeout ip pgrep
 '''
  modules=p/'modules'
- for kernel in ['6.18.38-Unraid','6.18.54-Unraid']:
+ for kernel in ['6.18.38-Unraid','6.18.54-Unraid','6.18.58-Unraid']:
   (modules/kernel).mkdir(parents=True)
   (modules/kernel/'led-ugreen.ko').touch()
  def run(kernel='6.18.38-Unraid', vermagic=None):
   return subprocess.run([bash,'-c',mocks+f'source "{script}" "{modules}"'],env={**os.environ,'TEST_KERNEL':kernel, 'TEST_VERMAGIC':vermagic or kernel+' SMP'},capture_output=True,text=True)
  assert run().returncode==0,run().stderr
- for version in ['7.3.2', '7.3.3', '7.4', '7.4.0', '8.0.0']:
+ for version in ['7.3.2', '7.3.3', '7.3.4', '7.4', '7.4.0', '8.0.0']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run().returncode==0, (version, run().stderr)
  for version in ['6.12.0', '7.2.9', '7.3', '7.3.0', '7.3.1', 'invalid', '']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run().returncode!=0, version
  (p/'etc/unraid-version').write_text('version="7.3.2"\n')
+ (p/'etc/unraid-version').write_text('version="7.3.3"\n')
+ for version in ['7.3.4']:
+  (p/'etc/unraid-version').write_text(f'version="{version}"\n')
+  assert run('6.18.58-Unraid').returncode==0,run('6.18.58-Unraid').stderr
+  assert run('6.18.58-Unraid', '6.18.54-Unraid SMP').returncode!=0
  (p/'etc/unraid-version').write_text('version="7.3.3"\n')
  assert run('6.18.54-Unraid').returncode==0,run('6.18.54-Unraid').stderr
  assert run('6.18.54-Unraid', '6.18.38-Unraid SMP').returncode!=0
