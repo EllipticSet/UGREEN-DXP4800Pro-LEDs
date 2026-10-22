@@ -9,7 +9,7 @@ with tempfile.TemporaryDirectory() as t:
  base=Path(t); machine=base/'machine'; bundle=base/'bundle';bundle.mkdir()
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
- for kernel in ['6.18.38-Unraid', '6.18.54-Unraid']:
+ for kernel in ['6.18.38-Unraid', '6.18.54-Unraid', '6.18.58-Unraid']:
   payload=bundle/'payload/usr/local/lib/ugreen-pro-leds'/kernel;payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
  (bundle/f'{PKG}.txz').touch()
  version_file=bundle/'payload/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt'
@@ -47,9 +47,10 @@ export -f uname modinfo i2cget php upgradepkg removepkg
  assert config.read_text()=='CUSTOM=preserved\n'
  assert stop.read_text().count('# UGREEN-DXP4800Pro-LEDs')==1, repr(stop.read_text())+r.stdout+r.stderr
  prior_stop=stop.read_text()
- r=run(kernel='6.18.54-Unraid');assert r.returncode==0,r.stderr+r.stdout
+ for kernel in ['6.18.54-Unraid','6.18.58-Unraid']:
+  r=run(kernel=kernel);assert r.returncode==0,r.stderr+r.stdout
  assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
- for kernel,module_kernel in [('6.18.55-Unraid',None),('6.18.54-Unraid','6.18.38-Unraid')]:
+ for kernel,module_kernel in [('6.18.55-Unraid',None),('6.18.59-Unraid',None),('6.18.58-Unraid','6.18.54-Unraid'),('6.18.54-Unraid','6.18.38-Unraid')]:
   r=run(kernel=kernel,module_kernel=module_kernel);assert r.returncode!=0
   assert monitor.read_text()==old
   assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop

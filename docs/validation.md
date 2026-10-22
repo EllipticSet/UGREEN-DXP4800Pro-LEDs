@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.4.3
+
+Version 1.4.3 supports Unraid 7.3.4 and retains support for Unraid 7.3.2 and 7.3.3. The new module was built against the checksum-pinned `6.18.58-Unraid` archive, using the existing hardening patch. Compared with `6.18.54-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver and LED class sources are identical. The settings interface and LED monitor are unchanged.
+
+Hardware verification on Unraid 7.3.4 is pending.
+
 ## Version 1.4.2
 
 Version 1.4.2 records the disk I/O counters at the start of each SMART round and discards a standby result when I/O occurred after that point, so a drive woken during the check no longer breathes as if asleep. Stopping the monitor now turns off the LAN LED as well as the drive LEDs; the Power LED is unchanged. The detect command reads the configured network interface. The installer extracts the bundled package once instead of carrying a second uncompressed copy, which reduces the plugin download from about 1.3 MB to about 1.0 MB. Theme icons use content-based cache keys.

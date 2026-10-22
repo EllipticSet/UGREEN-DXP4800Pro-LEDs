@@ -17,6 +17,6 @@ https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN
 - [`read-me-first.md`](read-me-first.md): short pre-installation warning linked by **Read Me First**. The stable Community Applications UI opens this link in a new browser window or tab.
 - Support: [GitHub Issues](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues).
 
-When updating the listing, keep the requirements aligned with the plugin: DXP4800 Pro only, Unraid 7.3.2 or later, and a matching bundled module for kernel `6.18.38-Unraid` or `6.18.54-Unraid`. Check that the linked assets are publicly accessible, then run the metadata and package checks. These checks validate the repository files; catalogue availability must also be checked in Community Applications.
+When updating the listing, keep the requirements aligned with the plugin: DXP4800 Pro only, Unraid 7.3.2 or later, and a matching bundled module for kernel `6.18.38-Unraid`, `6.18.54-Unraid` or `6.18.58-Unraid`. Check that the linked assets are publicly accessible, then run the metadata and package checks. These checks validate the repository files; catalogue availability must also be checked in Community Applications.
 
 Reference layout: [official plugin starter](https://github.com/unraid/unraid-community-apps-starter). Maintainer help: [Community Applications submission help](https://ca.unraid.net/submit/help).
