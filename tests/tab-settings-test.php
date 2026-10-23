@@ -105,12 +105,15 @@ try {
     file_put_contents("$run/ugreen-pro-leds.ready", 'ready');
     file_put_contents("$run/status/controller", "i2c-0\n");
     file_put_contents("$run/status/network", "mode=offline\ninterface=eth5\nproblem=Network interface eth5 not found; the LAN LED shows Internet unavailable.\n");
-    file_put_contents("$run/status/bays", "bay=1 port=1 device=sda mode=active\nbay=2 port=2 device=sdb mode=standby\nbay=3 port=3 device= mode=empty\nbay=9 port=1 device=<x> mode=active\n");
+    file_put_contents("$run/status/bays", "bay=1 port=1 device=sda mode=active\nbay=2 port=2 device=sdb mode=standby\nbay=3 port=3 device= mode=empty\nbay=4 port=0 device= mode=disabled\nbay=9 port=1 device=<x> mode=active\n");
     $live = ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run));
+    file_put_contents("$run/status/bays", "bay=1 port=4 device=sdd mode=standby\n");
+    check(ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run))['bay1'] === 'ATA 4 · sdd · standby', 'Custom mapping must show the mapped ATA port.');
+    check(ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run))['bay2'] === 'starting', 'Missing bay state must show starting.');
     check($live === [
         'monitor' => 'LED monitor running, controller i2c-0',
         'lan' => 'Internet unavailable on eth5. Network interface eth5 not found; the LAN LED shows Internet unavailable',
-        'bay1' => 'sda · active', 'bay2' => 'sdb · standby', 'bay3' => 'empty', 'bay4' => 'starting',
+        'bay1' => 'ATA 1 · sda · active', 'bay2' => 'ATA 2 · sdb · standby', 'bay3' => 'ATA 3 · empty', 'bay4' => 'disabled',
     ], 'Unexpected live labels: ' . json_encode($live));
 } finally {
     exec('rm -rf ' . escapeshellarg($run));

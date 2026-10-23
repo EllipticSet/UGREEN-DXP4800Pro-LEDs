@@ -1,6 +1,6 @@
 ###1.5.0
 - Select the LAN LED network interface from a menu: Auto, which shows the interface currently selected through the default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state.
-- Show the current state of the LED monitor, LAN LED and each drive bay in the corresponding tab, refreshed every five seconds.
+- Show the current state of the LED monitor, LAN LED and each drive bay, including its mapped ATA port, in the corresponding tab, refreshed every five seconds.
 - Add an Identify button for each drive bay that flashes its LED for 30 seconds to locate the drive.
 - Remove the redundant introduction from Advanced Settings; its category headings describe the content.
 - Send an Unraid notification when no bundled LED driver matches the running kernel.

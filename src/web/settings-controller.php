@@ -84,8 +84,14 @@ function ugreen_pro_live_labels(array $status): array
         'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
     for ($bay = 1; $bay <= 4; ++$bay) {
         $info = $status['bays'][$bay] ?? null;
-        $labels["bay$bay"] = $info === null ? 'starting' :
-            ($info['device'] !== '' ? "{$info['device']} · " : '') . ($modes[$info['mode']] ?? $info['mode']);
+        if ($info === null) {
+            $labels["bay$bay"] = 'starting';
+            continue;
+        }
+        $parts = $info['port'] !== '0' ? ["ATA {$info['port']}"] : [];
+        if ($info['device'] !== '') $parts[] = $info['device'];
+        $parts[] = $modes[$info['mode']] ?? $info['mode'];
+        $labels["bay$bay"] = implode(' · ', $parts);
     }
     return $labels;
 }

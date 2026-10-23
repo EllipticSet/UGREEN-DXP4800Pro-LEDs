@@ -44,7 +44,7 @@ Previews affect only the image and do not save settings or operate the physical 
 
 ### Current state
 
-Below the settings, the **Power LED** tab shows whether the LED monitor is running and which SMBus controller it uses, and the **LAN LED** tab shows the LAN LED state and interface, including a missing interface or default route. The **Drives LEDs** tab lists each drive bay with its drive and state (active, standby, warning, empty, disabled or identifying). These values come from the running monitor and refresh every five seconds. When the monitor is stopped, the tabs report it; **Apply** restarts the monitor.
+Below the settings, the **Power LED** tab shows whether the LED monitor is running and which SMBus controller it uses, and the **LAN LED** tab shows the LAN LED state and interface, including a missing interface or default route. The **Drives LEDs** tab lists each drive bay, from left to right, with its mapped ATA port, drive and state (active, standby, warning, empty, disabled or identifying), for example `ATA 4 · sdb · standby` with the mapping `4 3 2 1`. These values come from the running monitor and refresh every five seconds. When the monitor is stopped, the tabs report it; **Apply** restarts the monitor.
 
 ### Drive-bay identification
 
