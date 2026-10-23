@@ -57,7 +57,8 @@ $tabDescriptions = [
         <?php endforeach; ?>
         <span class="nas-led-outline nas-led-outline-<?= $tabKey ?>" aria-hidden="true"></span>
       </div>
-      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span><span>Colour preview of settings; not live LED status.</span></figcaption>
+      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span><span>Colour preview of settings; live status is shown below.</span></figcaption>
+      <?= ugreen_pro_render_live_status(ugreen_pro_live_status()) ?>
     </figure>
     <?php endif; ?>
     <div class="nas-front-controls">
@@ -133,6 +134,20 @@ $tabDescriptions = [
           <button type="submit" name="ugreen_pro_action" value="reset" formnovalidate onclick="return confirm('Restore defaults for this tab?')">Restore tab defaults</button>
         </div>
       </form>
+      <?php if ($tabKey === 'drives'): ?>
+      <form method="post" class="nas-identify">
+        <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
+        <input type="hidden" name="ugreen_pro_group" value="Drives LEDs">
+        <input type="hidden" name="ugreen_pro_action" value="identify">
+        <strong>Identify drive bay</strong>
+        <p>Flashes the selected bay LED quickly for 30 seconds to locate its drive. Normal indication resumes afterwards.</p>
+        <div class="nas-identify-buttons">
+          <?php for ($bay = 1; $bay <= 4; ++$bay): ?>
+            <button type="submit" name="ugreen_pro_bay" value="<?= $bay ?>">Bay <?= $bay ?></button>
+          <?php endfor; ?>
+        </div>
+      </form>
+      <?php endif; ?>
     </div>
   </div>
 </div>

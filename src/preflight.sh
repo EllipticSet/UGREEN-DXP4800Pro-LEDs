@@ -4,8 +4,16 @@ set -euo pipefail
 kernel=$(uname -r)
 module_root=${1:-/usr/local/lib/ugreen-pro-leds}
 module="$module_root/$kernel/led-ugreen.ko"
-[[ -f $module ]] || { echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2; exit 1; }
-[[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || { echo "Wrong LED module release for kernel $kernel." >&2; exit 1; }
+# Also notify in the WebGUI: at boot, this output is not visible to the administrator.
+notify_missing_driver() {
+  local notify=/usr/local/emhttp/webGui/scripts/notify
+  [[ -x $notify ]] || return 0
+  "$notify" -e 'UGREEN DXP4800 Pro LEDs' -s "LED driver missing for kernel $kernel" \
+    -d 'Front-panel LED control is unavailable. Update UGREEN DXP4800 Pro LEDs to a version that supports this Unraid release.' \
+    -i alert >/dev/null 2>&1 || true
+}
+[[ -f $module ]] || { notify_missing_driver; echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2; exit 1; }
+[[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || { notify_missing_driver; echo "Wrong LED module release for kernel $kernel." >&2; exit 1; }
 [[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this build.' >&2; exit 1; }
 unraid_version=$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version)
 if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then
@@ -40,4 +48,4 @@ for client in /sys/bus/i2c/devices/*-003a; do
   [[ -e $client ]] || continue
   [[ -f /run/ugreen-pro-leds.owned-bus ]] || { echo 'An I2C client at 0x3a already exists; remove other LED control and reboot.' >&2; exit 1; }
 done
-echo 'Model, kernel and conflict checks passed.'
+echo '      Model, kernel and conflict checks passed.'

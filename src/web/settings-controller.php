@@ -32,6 +32,63 @@ function ugreen_pro_restart_monitor(?callable $command = null, ?callable $pause 
     return false;
 }
 
+function ugreen_pro_identify_bay(int $bay, ?callable $command = null): bool
+{
+    $command ??= static function (string $cmd): int {
+        exec($cmd . ' 2>&1', $output, $status);
+        return $status;
+    };
+    return $bay >= 1 && $bay <= 4 && $command("/usr/local/sbin/ugreen-pro-leds identify $bay") === 0;
+}
+
+// Read the state the LED monitor publishes in /run; nothing here touches the hardware.
+function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status', string $runDir = '/run'): array
+{
+    $pid = trim((string)@file_get_contents("$runDir/ugreen-pro-leds.pid"));
+    $running = is_file("$runDir/ugreen-pro-leds.ready") && preg_match('/^\d+$/', $pid) && is_dir("/proc/$pid");
+    $status = ['running' => $running, 'controller' => '', 'network' => [], 'bays' => []];
+    if (!$running) return $status;
+    $status['controller'] = trim((string)@file_get_contents("$statusDir/controller"));
+    foreach (preg_split('/\n/', (string)@file_get_contents("$statusDir/network")) as $line) {
+        if (preg_match('/^(mode|interface|problem)=(.*)$/', $line, $parts)) $status['network'][$parts[1]] = $parts[2];
+    }
+    foreach (preg_split('/\n/', (string)@file_get_contents("$statusDir/bays")) as $line) {
+        if (preg_match('/^bay=([1-4]) port=(\d+) device=(\S*) mode=([a-z]+)$/', $line, $parts)) {
+            $status['bays'][(int)$parts[1]] = ['port' => $parts[2], 'device' => $parts[3], 'mode' => $parts[4]];
+        }
+    }
+    return $status;
+}
+
+function ugreen_pro_render_live_status(array $status): string
+{
+    $rows = [];
+    if (!$status['running']) {
+        $rows['Monitor'] = 'Stopped. Select Apply to restart it, or see /var/log/ugreen-pro-leds.log.';
+    } else {
+        $rows['Monitor'] = 'Running' . ($status['controller'] !== '' ? " (controller {$status['controller']})" : '');
+        $network = $status['network'];
+        $interface = ($network['interface'] ?? '') !== '' ? $network['interface'] : 'no interface';
+        $rows['LAN LED'] = match ($network['mode'] ?? '') {
+            'online' => "Internet available on $interface",
+            'offline' => "Internet unavailable on $interface",
+            'down' => "No link on $interface",
+            'off' => 'Off (brightness 0)',
+            default => 'Starting',
+        };
+        if (($network['problem'] ?? '') !== '') $rows['LAN LED'] .= '. ' . rtrim($network['problem'], '.');
+        $labels = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => 'off (brightness 0)',
+            'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
+        foreach ($status['bays'] as $bay => $info) {
+            $rows["Bay $bay"] = ($info['device'] !== '' ? "{$info['device']}, " : '') . ($labels[$info['mode']] ?? $info['mode']);
+        }
+    }
+    $html = '<div class="nas-live-status" aria-live="polite"><strong>Live status</strong><dl>';
+    foreach ($rows as $label => $value) {
+        $html .= '<dt>' . ugreen_pro_escape($label) . '</dt><dd>' . ugreen_pro_escape($value) . '</dd>';
+    }
+    return $html . '</dl></div>';
+}
 
 function ugreen_pro_settings_state(): array
 {
@@ -57,6 +114,17 @@ function ugreen_pro_settings_state(): array
         }
         $action = $_POST['ugreen_pro_action'];
         $submittedGroup = $_POST['ugreen_pro_group'] ?? '';
+        if ($action === 'identify') {
+            $bay = $_POST['ugreen_pro_bay'] ?? '';
+            if (is_string($bay) && preg_match('/^[1-4]$/', $bay) && ugreen_pro_identify_bay((int)$bay)) {
+                $ugreenNotice = "Drive bay $bay LED flashes for 30 seconds.";
+                $ugreenNoticeClass = 'success';
+            } else {
+                $ugreenNotice = 'Drive bay identification failed. Check that the LED monitor is running.';
+                $ugreenNoticeClass = 'error';
+            }
+            return $state = compact('ugreenValues', 'ugreenErrors', 'ugreenNotice', 'ugreenNoticeClass');
+        }
         $allowed = [];
         if (is_string($submittedGroup)) {
             foreach ($ugreenGroups[$submittedGroup] ?? [] as $field) $allowed[$field[0]] = true;
