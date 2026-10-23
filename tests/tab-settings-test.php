@@ -33,8 +33,10 @@ check(substr_count($html, 'class="nas-led-test"') === 2, 'Only error colours mus
 check(substr_count($html, 'data-test-color="NETWORK_COLOR_OFFLINE"') === 1, 'Missing Internet unavailable test.');
 check(substr_count($html, 'data-test-color="DISK_COLOR_FAILED"') === 1, 'Missing SMART failure test.');
 check(substr_count($html, '<form ') === 5, 'Native tab rendering failed.');
-check(substr_count($html, 'class="nas-identify"') === 1 && substr_count($html, 'name="ugreen_pro_bay"') === 4, 'Drives tab must offer four identify buttons.');
-check(substr_count($html, 'class="nas-live-status"') === 3, 'Each illustrated tab must show live status.');
+check(substr_count($html, 'class="nas-live-section nas-identify"') === 1 && substr_count($html, 'name="ugreen_pro_bay"') === 4, 'Drives tab must offer four identify buttons.');
+check(substr_count($html, 'class="nas-live-section"') === 2 && substr_count($html, 'data-live="monitor"') === 1 && substr_count($html, 'data-live="lan"') === 1, 'Power and LAN tabs must show their current state.');
+check(substr_count($html, 'data-live="bay') === 4, 'Drives tab must show the state of four bays.');
+check(!str_contains(explode('<div class="nas-front-settings" data-led-tab="advanced">', $html)[1], 'data-live='), 'Advanced Settings must not show live state.');
 check(substr_count($html, 'data-color-key=') === 18, 'Each front panel must preview all six LEDs.');
 check(substr_count($html, 'class="nas-led-outline nas-led-outline-') === 3, 'Each illustrated tab must have one group outline.');
 check(substr_count($html, 'nas-led-outline-drives') === 1, 'Drive LEDs must share one outline.');
@@ -97,18 +99,19 @@ echo "Network interface menu lists Auto first, detected uplinks and retained sav
 $run = sys_get_temp_dir() . '/ugreen-run-' . getmypid();
 mkdir("$run/status", 0777, true);
 try {
-    $stopped = ugreen_pro_render_live_status(ugreen_pro_live_status("$run/status", $run));
-    check(str_contains($stopped, '<dd>Stopped.'), 'Stopped monitor must be reported.');
+    $stopped = ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run));
+    check(str_starts_with($stopped['monitor'], 'LED monitor stopped.') && $stopped['bay2'] === 'monitor stopped', 'Stopped monitor must be reported.');
     file_put_contents("$run/ugreen-pro-leds.pid", getmypid() . "\n");
     file_put_contents("$run/ugreen-pro-leds.ready", 'ready');
     file_put_contents("$run/status/controller", "i2c-0\n");
     file_put_contents("$run/status/network", "mode=offline\ninterface=eth5\nproblem=Network interface eth5 not found; the LAN LED shows Internet unavailable.\n");
-    file_put_contents("$run/status/bays", "bay=1 port=1 device=sda mode=active\nbay=2 port=2 device=sdb mode=standby\nbay=3 port=3 device= mode=empty\nbay=4 port=0 device= mode=disabled\nbay=9 port=1 device=<x> mode=active\n");
-    $live = ugreen_pro_render_live_status(ugreen_pro_live_status("$run/status", $run));
-    foreach (['Running (controller i2c-0)', 'Internet unavailable on eth5. Network interface eth5 not found', '<dd>sda, active</dd>', '<dd>sdb, standby</dd>', '<dd>empty</dd>', '<dd>disabled</dd>'] as $text) {
-        check(str_contains($live, $text), "Live status missing: $text");
-    }
-    check(!str_contains($live, 'Bay 9') && !str_contains($live, '<x>'), 'Malformed status lines must be ignored.');
+    file_put_contents("$run/status/bays", "bay=1 port=1 device=sda mode=active\nbay=2 port=2 device=sdb mode=standby\nbay=3 port=3 device= mode=empty\nbay=9 port=1 device=<x> mode=active\n");
+    $live = ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run));
+    check($live === [
+        'monitor' => 'LED monitor running, controller i2c-0',
+        'lan' => 'Internet unavailable on eth5. Network interface eth5 not found; the LAN LED shows Internet unavailable',
+        'bay1' => 'sda · active', 'bay2' => 'sdb · standby', 'bay3' => 'empty', 'bay4' => 'starting',
+    ], 'Unexpected live labels: ' . json_encode($live));
 } finally {
     exec('rm -rf ' . escapeshellarg($run));
 }

@@ -42,13 +42,13 @@ Only opaque RGB colours are supported; black and transparency are rejected. Use 
 
 Previews affect only the image and do not save settings or operate the physical LEDs. **Apply** saves the selected tab and restarts the LED monitor. Help is available by clicking each setting name.
 
-### Live status
+### Current state
 
-Below the image, **Live status** reports the state published by the LED monitor and refreshes every five seconds: whether the monitor is running and which SMBus controller it uses, the LAN LED state and interface, and the state of each drive bay (active, standby, warning, empty, disabled or identifying). A missing interface or default route is shown next to the LAN state. When the monitor is stopped, the panel reports it; **Apply** restarts the monitor.
+Below the settings, the **Power LED** tab shows whether the LED monitor is running and which SMBus controller it uses, and the **LAN LED** tab shows the LAN LED state and interface, including a missing interface or default route. The **Drives LEDs** tab lists each drive bay with its drive and state (active, standby, warning, empty, disabled or identifying). These values come from the running monitor and refresh every five seconds. When the monitor is stopped, the tabs report it; **Apply** restarts the monitor.
 
 ### Drive-bay identification
 
-The **Drives LEDs** tab has an **Identify drive bay** control with one button per bay. The selected bay LED flashes quickly at full brightness in the healthy drive colour for 30 seconds, so the drive can be located before it is replaced. Normal indication, including any warning that occurred meanwhile, resumes afterwards. Selecting another bay ends the current identification.
+Each bay in the **Drives LEDs** tab has an **Identify** button. The selected bay LED flashes quickly at full brightness in the healthy drive colour for 30 seconds, so the drive can be located before it is replaced. Normal indication, including any warning that occurred meanwhile, resumes afterwards. Selecting another bay ends the current identification.
 
 ## Compatibility
 
@@ -73,7 +73,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 - Power indication and blinking during shutdown; LAN activity with configurable connectivity checks; drive activity pulses, standby breathing and warning indications.
 - Adjustable drive-bay mapping and monitoring intervals. SMART checks run separately from activity sampling and do not wake sleeping drives.
 - Persistent settings, input validation and atomic saves. Updates preserve settings, except for migration of older default bay mappings, and attempt rollback if the new monitor fails to start.
-- Live status of the monitor, LAN LED and drive bays on the settings page, and a 30-second identification flash for each drive bay.
+- Current state of the LED monitor, LAN LED and each drive bay in the corresponding tab, and a 30-second identification flash for each drive bay.
 - An Unraid notification when no bundled LED driver matches the running kernel, for example after an Unraid update that requires a newer plugin version.
 - Step-by-step installation and update output with the selected driver, the settings action and a summary of the detected hardware.
 - Bundled dependencies and checksums, so installation needs no separate dependency downloads.

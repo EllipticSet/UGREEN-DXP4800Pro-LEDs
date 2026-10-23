@@ -117,21 +117,22 @@
   });
 })();
 (() => {
-  // Refresh every live status panel from one request while the page is visible.
+  // Refresh live state labels on all tabs from one request while the page is visible.
   if (typeof window === 'undefined' || typeof fetch !== 'function' || window.ugreenLiveStatus) return;
   window.ugreenLiveStatus = true;
   async function refresh() {
-    if (document.hidden || !document.querySelector('.nas-live-status')) return;
+    const fields = document.querySelectorAll('[data-live]');
+    if (document.hidden || !fields.length) return;
     try {
       const response = await fetch('/plugins/UGREEN-DXP4800Pro-LEDs/status.php', { cache: 'no-store', credentials: 'same-origin' });
       if (!response.ok) return;
-      const template = document.createElement('template');
-      template.innerHTML = (await response.text()).trim();
-      const fresh = template.content.firstElementChild;
-      if (!fresh || !fresh.classList.contains('nas-live-status')) return;
-      document.querySelectorAll('.nas-live-status').forEach(panel => { panel.innerHTML = fresh.innerHTML; });
+      const labels = await response.json();
+      fields.forEach(field => {
+        const label = labels[field.dataset.live];
+        if (typeof label === 'string') field.textContent = label;
+      });
     } catch (error) {
-      // Keep the last known status when the server is briefly unavailable.
+      // Keep the last known state when the server is briefly unavailable.
     }
   }
   setInterval(refresh, 5000);

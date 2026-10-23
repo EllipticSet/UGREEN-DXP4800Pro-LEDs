@@ -24,7 +24,6 @@
 .nas-front-settings .nas-led-outline-power { left: 15.14%; width: 6.6%; border-radius: 6px; }
 .nas-front-settings .nas-led-outline-lan { left: 25.82%; width: 3.8%; border-radius: 50%; }
 .nas-front-settings .nas-led-outline-drives { left: 34.93%; width: 14.8%; border-radius: 6px; }
-.nas-front-settings .nas-front-intro { margin: 8px 0 26px; opacity: .8; line-height: 1.5; }
 .nas-front-settings .field { display: grid; grid-template-columns: minmax(155px, 220px) minmax(0, 1fr); gap: 6px 20px; margin: 20px 0; align-items: center; }
 .nas-front-settings .field label { font-weight: 600; text-align: right; }
 .nas-front-settings .field input:not([type=color]), .nas-front-settings .field select { box-sizing: border-box; width: 100%; min-width: 0; }
@@ -133,12 +132,14 @@
 
 .nas-front-settings .nas-color-feedback { display: block; margin-top: 8px; font-size: .9em; line-height: 1.5; }
 
-.nas-front-settings .nas-live-status { margin-top: 18px; padding: 12px 16px; border: 1px solid #8885; border-radius: 6px; font-size: .95em; line-height: 1.5; }
-.nas-front-settings .nas-live-status > strong { display: block; margin-bottom: 6px; }
-.nas-front-settings .nas-live-status dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: 0; }
-.nas-front-settings .nas-live-status dt { opacity: .65; }
-.nas-front-settings .nas-live-status dd { margin: 0; overflow-wrap: anywhere; }
-.nas-front-settings .nas-identify { margin: 34px 0 0; padding-top: 20px; border-top: 1px solid #8885; text-align: center; }
-.nas-front-settings .nas-identify p { margin: 8px 0 14px; opacity: .65; line-height: 1.5; }
-.nas-front-settings .nas-identify-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.nas-front-settings .nas-identify-buttons button { margin: 0; }
+.nas-front-settings .nas-live-section { margin: 34px 0 0; padding-top: 20px; border-top: 1px solid #8885; text-align: center; line-height: 1.5; }
+.nas-front-settings .nas-live-section > strong { display: block; font-size: 1.05em; }
+.nas-front-settings .nas-live-section p { margin: 8px auto 0; max-width: 640px; text-align: center; }
+.nas-front-settings .nas-identify p { margin-top: 14px; opacity: .65; }
+.nas-front-settings .nas-bays { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 640px; margin: 14px auto 0; }
+.nas-front-settings .nas-bay { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.nas-front-settings .nas-bay-name { font-weight: 600; }
+.nas-front-settings .nas-bay-state { opacity: .8; overflow-wrap: anywhere; }
+.nas-front-settings .nas-bay button { margin: 4px 0 0; }
+@media (max-width: 550px) { .nas-front-settings .nas-bays { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.nas-front-settings .nas-front-form > h2.nas-settings-category:first-of-type { margin-top: 8px; }

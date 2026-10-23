@@ -60,34 +60,34 @@ function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status
     return $status;
 }
 
-function ugreen_pro_render_live_status(array $status): string
+// Plain-text labels keyed by data-live element; escaped by the page and set as text by settings.js.
+function ugreen_pro_live_labels(array $status): array
 {
-    $rows = [];
     if (!$status['running']) {
-        $rows['Monitor'] = 'Stopped. Select Apply to restart it, or see /var/log/ugreen-pro-leds.log.';
-    } else {
-        $rows['Monitor'] = 'Running' . ($status['controller'] !== '' ? " (controller {$status['controller']})" : '');
-        $network = $status['network'];
-        $interface = ($network['interface'] ?? '') !== '' ? $network['interface'] : 'no interface';
-        $rows['LAN LED'] = match ($network['mode'] ?? '') {
-            'online' => "Internet available on $interface",
-            'offline' => "Internet unavailable on $interface",
-            'down' => "No link on $interface",
-            'off' => 'Off (brightness 0)',
-            default => 'Starting',
-        };
-        if (($network['problem'] ?? '') !== '') $rows['LAN LED'] .= '. ' . rtrim($network['problem'], '.');
-        $labels = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => 'off (brightness 0)',
-            'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
-        foreach ($status['bays'] as $bay => $info) {
-            $rows["Bay $bay"] = ($info['device'] !== '' ? "{$info['device']}, " : '') . ($labels[$info['mode']] ?? $info['mode']);
-        }
+        $stopped = ['monitor' => 'LED monitor stopped. Apply restarts it; see /var/log/ugreen-pro-leds.log for details.',
+            'lan' => 'LED monitor stopped'];
+        for ($bay = 1; $bay <= 4; ++$bay) $stopped["bay$bay"] = 'monitor stopped';
+        return $stopped;
     }
-    $html = '<div class="nas-live-status" aria-live="polite"><strong>Live status</strong><dl>';
-    foreach ($rows as $label => $value) {
-        $html .= '<dt>' . ugreen_pro_escape($label) . '</dt><dd>' . ugreen_pro_escape($value) . '</dd>';
+    $labels = ['monitor' => 'LED monitor running' . ($status['controller'] !== '' ? ", controller {$status['controller']}" : '')];
+    $network = $status['network'];
+    $interface = ($network['interface'] ?? '') !== '' ? $network['interface'] : 'no interface';
+    $labels['lan'] = match ($network['mode'] ?? '') {
+        'online' => "Internet available on $interface",
+        'offline' => "Internet unavailable on $interface",
+        'down' => "No link on $interface",
+        'off' => 'Off (brightness 0)',
+        default => 'Starting',
+    };
+    if (($network['problem'] ?? '') !== '') $labels['lan'] .= '. ' . rtrim($network['problem'], '.');
+    $modes = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => 'off',
+        'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
+    for ($bay = 1; $bay <= 4; ++$bay) {
+        $info = $status['bays'][$bay] ?? null;
+        $labels["bay$bay"] = $info === null ? 'starting' :
+            ($info['device'] !== '' ? "{$info['device']} · " : '') . ($modes[$info['mode']] ?? $info['mode']);
     }
-    return $html . '</dl></div>';
+    return $labels;
 }
 
 function ugreen_pro_settings_state(): array

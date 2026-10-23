@@ -12,6 +12,7 @@ $submittedTab = $_POST['ugreen_pro_group'] ?? 'Power LED';
 if (!is_string($submittedTab) || !isset(ugreen_pro_groups()[$submittedTab])) $submittedTab = 'Power LED';
 $tabKeys = ['Power LED' => 'power', 'LAN LED' => 'lan', 'Drives LEDs' => 'drives', 'Advanced Settings' => 'advanced'];
 $tabKey = $tabKeys[$ugreenTab];
+$ugreenLive = $tabKey === 'advanced' ? [] : ugreen_pro_live_labels(ugreen_pro_live_status());
 $categoryStarts = [
     'BRIGHTNESS_MODE' => 'Brightness',
     'CONNECTIVITY_METHOD' => 'Connectivity',
@@ -23,7 +24,6 @@ $tabDescriptions = [
     'power' => 'Power indication while running and during shutdown.',
     'lan' => 'Network activity and connectivity status.',
     'drives' => 'Activity, standby and health indications for the four drive bays.',
-    'advanced' => 'Brightness display, connectivity checks, drive-bay mapping and monitoring intervals.',
 ];
 ?>
 <?php if (empty($ugreenStylesLoaded)): $ugreenStylesLoaded = true; ?>
@@ -57,12 +57,10 @@ $tabDescriptions = [
         <?php endforeach; ?>
         <span class="nas-led-outline nas-led-outline-<?= $tabKey ?>" aria-hidden="true"></span>
       </div>
-      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span><span>Colour preview of settings; live status is shown below.</span></figcaption>
-      <?= ugreen_pro_render_live_status(ugreen_pro_live_status()) ?>
+      <figcaption><strong><?= ugreen_pro_escape($ugreenTab === 'Advanced Settings' ? 'Front-panel LEDs' : $ugreenTab) ?></strong><span><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></span><span>Colour preview of settings; not live LED status.</span></figcaption>
     </figure>
     <?php endif; ?>
     <div class="nas-front-controls">
-      <?php if ($tabKey === 'advanced'): ?><p class="nas-front-intro"><?= ugreen_pro_escape($tabDescriptions[$tabKey]) ?></p><?php endif; ?>
       <?php if ($ugreenNotice !== '' && $submittedTab === $ugreenTab): ?>
         <div class="nas-feedback <?= ugreen_pro_escape($ugreenNoticeClass) ?>" role="<?= $ugreenNoticeClass === 'error' ? 'alert' : 'status' ?>">
           <i class="fa <?= $ugreenNoticeClass === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle' ?>" aria-hidden="true"></i>
@@ -134,18 +132,27 @@ $tabDescriptions = [
           <button type="submit" name="ugreen_pro_action" value="reset" formnovalidate onclick="return confirm('Restore defaults for this tab?')">Restore tab defaults</button>
         </div>
       </form>
-      <?php if ($tabKey === 'drives'): ?>
-      <form method="post" class="nas-identify">
+      <?php if ($tabKey === 'power' || $tabKey === 'lan'): ?>
+      <section class="nas-live-section" aria-live="polite">
+        <strong>Current state</strong>
+        <p data-live="<?= $tabKey === 'power' ? 'monitor' : 'lan' ?>"><?= ugreen_pro_escape($ugreenLive[$tabKey === 'power' ? 'monitor' : 'lan']) ?></p>
+      </section>
+      <?php elseif ($tabKey === 'drives'): ?>
+      <form method="post" class="nas-live-section nas-identify">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
         <input type="hidden" name="ugreen_pro_group" value="Drives LEDs">
         <input type="hidden" name="ugreen_pro_action" value="identify">
-        <strong>Identify drive bay</strong>
-        <p>Flashes the selected bay LED quickly for 30 seconds to locate its drive. Normal indication resumes afterwards.</p>
-        <div class="nas-identify-buttons">
+        <strong>Drive bays</strong>
+        <div class="nas-bays" aria-live="polite">
           <?php for ($bay = 1; $bay <= 4; ++$bay): ?>
-            <button type="submit" name="ugreen_pro_bay" value="<?= $bay ?>">Bay <?= $bay ?></button>
+            <div class="nas-bay">
+              <span class="nas-bay-name">Bay <?= $bay ?></span>
+              <span class="nas-bay-state" data-live="bay<?= $bay ?>"><?= ugreen_pro_escape($ugreenLive["bay$bay"]) ?></span>
+              <button type="submit" name="ugreen_pro_bay" value="<?= $bay ?>" aria-label="Identify bay <?= $bay ?>">Identify</button>
+            </div>
           <?php endfor; ?>
         </div>
+        <p>Identify flashes the bay LED quickly for 30 seconds to locate its drive. Normal indication resumes afterwards.</p>
       </form>
       <?php endif; ?>
     </div>
