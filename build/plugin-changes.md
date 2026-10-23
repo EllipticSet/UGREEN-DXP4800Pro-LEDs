@@ -1,3 +1,6 @@
+###1.5.0
+- Select the LAN LED network interface from a menu: Auto, which shows the interface currently selected through the default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state.
+
 ###1.4.3
 - Add Unraid 7.3.4 support with a rebuilt driver for 6.18.58-Unraid.
 - Retain support for Unraid 7.3.2 and 7.3.3.

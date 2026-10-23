@@ -95,6 +95,7 @@ $tabDescriptions = [
                 $value = ugreen_pro_round_brightness($value);
                 $field[4] = ugreen_pro_brightness_options();
             }
+            if ($key === 'NETWORK_INTERFACE') $field[4] = ugreen_pro_network_interface_options($value);
         ?>
           <?php if ($tabKey === 'advanced' && isset($categoryStarts[$key])): ?>
             <h2 class="nas-settings-category"><?= ugreen_pro_escape($categoryStarts[$key]) ?></h2>

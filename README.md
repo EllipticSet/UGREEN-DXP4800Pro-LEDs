@@ -129,7 +129,7 @@ The guide in **Advanced Settings** explains how to use `/usr/local/sbin/ugreen-p
 
 ### Network connectivity
 
-Automatic interface selection follows the default route, typically `br0`. You can select a different interface manually.
+The **Network interface** menu in the LAN LED tab lists **Auto** first, followed by the detected bridges, bonds, VLANs and physical ports with their link state. Auto follows the interface of the first default route and shows it in the menu, for example **Auto (br0)**. With the Unraid default network settings (bridging enabled) this is `br0`; with bridging disabled it is `bond0` or `eth0`. Docker, VM and other virtual interfaces are not listed. A previously saved interface that is no longer present remains selectable and is marked as not detected.
 
 | Mode | What is checked |
 | --- | --- |

@@ -74,3 +74,20 @@ foreach (['settings.css', 'settings.js', 'images/nas-front.png'] as $asset) {
 check(str_contains($html, 'id="nas-mapping-content" style="display:none"'), 'Mapping guide must start collapsed before JavaScript runs.');
 $version = trim(file_get_contents(__DIR__ . '/../src/web/version.txt'));
 check(str_contains($html, 'href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/tag/v' . $version . '"'), 'Version must link to its exact release.');
+
+$net = sys_get_temp_dir() . '/ugreen-net-' . getmypid();
+foreach (['br0/bridge', 'bond0/bonding', 'eth0/device', 'eth1/device', 'eth10/device', 'br0.10', 'docker0/bridge', 'virbr0/bridge', 'vethabc/device', 'shim-br0', 'lo', 'wg0'] as $entry) mkdir("$net/$entry", 0777, true);
+file_put_contents("$net/br0/carrier", "1\n");
+file_put_contents("$net/eth1/carrier", "0\n");
+try {
+    $options = ugreen_pro_network_interface_options('auto', $net, fn() => 'br0');
+    check(array_keys($options) === ['auto', 'bond0', 'br0', 'br0.10', 'eth0', 'eth1', 'eth10'], 'Unexpected network interface list.');
+    check($options['auto'] === 'Auto (br0)' && $options['br0'] === 'br0 (link up)' && $options['eth1'] === 'eth1 (no link)', 'Interface labels incorrect.');
+    check(ugreen_pro_network_interface_options('auto', $net, fn() => '')['auto'] === 'Auto (no default route)', 'Missing default route label incorrect.');
+    check(ugreen_pro_network_interface_options('eth5', $net, fn() => 'br0')['eth5'] === 'eth5 (not detected)', 'Saved interface must remain selectable.');
+    check(!isset(ugreen_pro_network_interface_options('a;b', $net, fn() => 'x;y')['a;b']), 'Invalid interface names must not be listed.');
+} finally {
+    exec('rm -rf ' . escapeshellarg($net));
+}
+check(preg_match('/<select id="ugreen-NETWORK_INTERFACE"[^>]*>\s*<option value="auto" selected>Auto \(/', $html) === 1, 'Network interface must render as a select with Auto first.');
+echo "Network interface menu lists Auto first, detected uplinks and retained saved values.\n";
