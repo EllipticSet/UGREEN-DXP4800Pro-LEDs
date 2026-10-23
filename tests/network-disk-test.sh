@@ -129,3 +129,16 @@ check_identify >/dev/null
 check "$sim/sys/class/leds/disk1/brightness" 0
 check "$sim/sys/class/leds/disk1/blink_type" none
 echo 'Bay identification and restoration passed.'
+
+# Stopping during identification of a disabled bay turns its LED off.
+mkdir -p "$sim/sys/class/leds/disk2"
+DISK_ATA_PORTS=(1 0 0 0)
+printf "2 $((EPOCHSECONDS + 60))\n" > "$identify_file"
+check_identify >/dev/null
+check "$sim/sys/class/leds/disk2/blink_type" 'blink 200 200'
+hardware_ready=1 network_pid='' health_pid=''
+cleanup
+check "$sim/sys/class/leds/disk2/blink_type" none
+check "$sim/sys/class/leds/disk2/brightness" 0
+[[ ! -e $identify_file ]]
+echo 'Stopping during identification of a disabled bay turns its LED off.'

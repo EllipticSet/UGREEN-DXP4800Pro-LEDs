@@ -501,7 +501,7 @@ cleanup() {
     printf 'none\n' > /sys/class/leds/netdev/blink_type || true
     printf '0\n' > /sys/class/leds/netdev/brightness || true
     for bay in 1 2 3 4; do
-      [[ ${DISK_ATA_PORTS[bay-1]} != 0 ]] || continue
+      [[ ${DISK_ATA_PORTS[bay-1]} != 0 || $bay == "${identify_bay:-}" ]] || continue
       printf 'none\n' > "/sys/class/leds/disk$bay/trigger" || true
       printf 'none\n' > "/sys/class/leds/disk$bay/blink_type" || true
       printf '0\n' > "/sys/class/leds/disk$bay/brightness" || true
