@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.5.0
+
+Version 1.5.0 changes the settings interface, the installer output and the LED monitor; the kernel modules are unchanged from 1.4.3. The **Network interface** setting is a menu with Auto, which shows the interface of the first default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state. The Power and LAN tabs show the current state reported by the monitor, and the Drives tab lists each bay with its mapped ATA port, drive and state, with an **Identify** button that flashes the bay LED for 30 seconds. The monitor publishes this state in `/run/ugreen-pro-leds.status`, logs a missing interface or default route once, and sends an Unraid notification when no bundled driver matches the running kernel. Installation and update output lists each step and ends with a hardware summary.
+
+On October 23, 2026, version 1.5.0 was installed as an update from 1.4.3 on Unraid 7.3.4 / `6.18.58-Unraid`. The installer reported each step, the `6.18.58-Unraid` driver, preserved settings, the controller on `i2c-0`, LAN online on `br0` and the four drive bays. Tests confirmed the interface menu with Auto (br0), bond0, br0, eth0 and eth1 and their link states, the current state in the Power, LAN and Drives tabs, and the Identify buttons: the selected bay LED flashed for 30 seconds and then returned to its normal indication.
+
 ## Version 1.4.3
 
 Version 1.4.3 supports Unraid 7.3.4 and retains support for Unraid 7.3.2 and 7.3.3. The new module was built against the checksum-pinned `6.18.58-Unraid` archive, using the existing hardening patch. Compared with `6.18.54-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver and LED class sources are identical. The settings interface and LED monitor are unchanged.

@@ -51,7 +51,11 @@ scratch=$(mktemp -d /tmp/ugreen-pro-install.XXXXXX)
 trap 'rm -rf -- "$scratch"' EXIT
 base64 -d > "$scratch/bundle.tar.xz" <<'UGREEN_PAYLOAD'
 '''+base64.encodebytes(bundle.read_bytes()).decode()+'''UGREEN_PAYLOAD
-printf '%s  %s\\n' "'''+digest(bundle)+'''" "$scratch/bundle.tar.xz" | sha256sum -c -
+echo '[1/8] Verifying package integrity'
+if ! printf '%s  %s\\n' "'''+digest(bundle)+'''" "$scratch/bundle.tar.xz" | sha256sum -c --status -; then
+  echo 'Package checksum mismatch; the download is incomplete or modified.' >&2; exit 1
+fi
+echo '      Package SHA-256 verified: '''+digest(bundle)+''''
 tar -xJf "$scratch/bundle.tar.xz" -C "$scratch"
 mkdir "$scratch/payload"
 tar -xJf "$scratch/'''+PKG+'''.txz" -C "$scratch/payload"

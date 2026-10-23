@@ -42,6 +42,14 @@ Only opaque RGB colours are supported; black and transparency are rejected. Use 
 
 Previews affect only the image and do not save settings or operate the physical LEDs. **Apply** saves the selected tab and restarts the LED monitor. Help is available by clicking each setting name.
 
+### Current state
+
+Below the settings, the **Power LED** tab shows whether the LED monitor is running and which SMBus controller it uses, and the **LAN LED** tab shows the LAN LED state and interface, including a missing interface or default route. The **Drives LEDs** tab lists each drive bay, from left to right, with its mapped ATA port, drive and state (active, standby, warning, empty, disabled or identifying), for example `ATA 4 · sdb · standby` with the mapping `4 3 2 1`. These values come from the running monitor and refresh every five seconds. When the monitor is stopped, the tabs report it; **Apply** restarts the monitor.
+
+### Drive-bay identification
+
+Each bay in the **Drives LEDs** tab has an **Identify** button. The selected bay LED flashes quickly at full brightness in the healthy drive colour for 30 seconds, so the drive can be located before it is replaced. Normal indication, including any warning that occurred meanwhile, resumes afterwards. Selecting another bay ends the current identification.
+
 ## Compatibility
 
 | Requirement | Supported configuration |
@@ -65,6 +73,9 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 - Power indication and blinking during shutdown; LAN activity with configurable connectivity checks; drive activity pulses, standby breathing and warning indications.
 - Adjustable drive-bay mapping and monitoring intervals. SMART checks run separately from activity sampling and do not wake sleeping drives.
 - Persistent settings, input validation and atomic saves. Updates preserve settings, except for migration of older default bay mappings, and attempt rollback if the new monitor fails to start.
+- Current state of the LED monitor, LAN LED and each drive bay in the corresponding tab, and a 30-second identification flash for each drive bay.
+- An Unraid notification when no bundled LED driver matches the running kernel, for example after an Unraid update that requires a newer plugin version.
+- Step-by-step installation and update output with the selected driver, the settings action and a summary of the detected hardware.
 - Bundled dependencies and checksums, so installation needs no separate dependency downloads.
 
 ## Installation
@@ -129,7 +140,7 @@ The guide in **Advanced Settings** explains how to use `/usr/local/sbin/ugreen-p
 
 ### Network connectivity
 
-Automatic interface selection follows the default route, typically `br0`. You can select a different interface manually.
+The **Network interface** menu in the LAN LED tab lists **Auto** first, followed by the detected bridges, bonds, VLANs and physical ports with their link state. Auto follows the interface of the first default route and shows it in the menu, for example **Auto (br0)**. With the Unraid default network settings (bridging enabled) this is `br0`; with bridging disabled it is `bond0` or `eth0`. Docker, VM and other virtual interfaces are not listed. A previously saved interface that is no longer present remains selectable and is marked as not detected.
 
 | Mode | What is checked |
 | --- | --- |
@@ -157,6 +168,7 @@ The table below describes the default white and orange indications. You can chan
 | Drive | Slow orange blink | Explicit SMART failure or disappearance of a previously present drive |
 | Drive | Off | Initially empty mapped bay |
 | Drive | Off | Bay mapping set to `0` (disabled) |
+| Drive | Fast blink, 200 ms on / 200 ms off, full brightness | Bay identification running (30 seconds) |
 
 The default drive activity style is **Dark when idle**, with brief white pulses during I/O. **Solid when idle**, with brief off pulses during I/O, is also available.
 
@@ -174,6 +186,17 @@ Check the monitor and recent log entries:
 /usr/local/sbin/ugreen-pro-leds status
 tail -n 60 /var/log/ugreen-pro-leds.log
 ```
+
+Flash a drive-bay LED for identification (bay 1–4, optional duration of 1–300 seconds), or stop it:
+
+```bash
+/usr/local/sbin/ugreen-pro-leds identify 2
+/usr/local/sbin/ugreen-pro-leds identify off
+```
+
+If the selected network interface does not exist or no default route is available, the log records a warning once and the LAN LED shows Internet unavailable.
+
+Installation and update output lists each step, from the package checksum to the shutdown hook. After the monitor starts, it reports the LED controller, the LAN LED state and each drive bay. If a step fails, the output names the step, the previous installation is restored and the monitor log path is shown.
 
 Stop LED monitoring:
 
