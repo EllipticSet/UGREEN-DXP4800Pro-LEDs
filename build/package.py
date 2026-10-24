@@ -61,7 +61,7 @@ mkdir "$scratch/payload"
 tar -xJf "$scratch/'''+PKG+'''.txz" -C "$scratch/payload"
 "$scratch/install.sh" "$scratch"
 '''
- plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues','version':VERSION,'icon':'icons/icon-azure.png','launch':'Settings/LED-Settings','min':'7.3.2'})
+ plg=ET.Element('PLUGIN',{'name':NAME,'author':'EllipticSet','pluginURL':'https://raw.githubusercontent.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/main/UGREEN-DXP4800Pro-LEDs.plg','support':'https://forums.unraid.net/topic/201027-plugin-ugreen-dxp4800-pro-leds/','version':VERSION,'icon':'icons/icon-azure.png','launch':'Settings/LED-Settings','min':'7.3.2'})
  ET.SubElement(plg,'CHANGES').text='\n'+(ROOT/'build/plugin-changes.md').read_text()
  desc=ET.SubElement(plg,'FILE',{'Name':f'/usr/local/emhttp/plugins/{NAME}/README.md'})
  # Plugin manager can read the description; installation will replace it with full documentation.

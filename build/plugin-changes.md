@@ -1,3 +1,6 @@
+###1.5.1
+- Point the Support link in Plugins and Apps to the Unraid forum support topic.
+
 ###1.5.0
 - Select the LAN LED network interface from a menu: Auto, which shows the interface currently selected through the default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state.
 - Show the current state of the LED monitor, LAN LED and each drive bay, including its mapped ATA port, in the corresponding tab, refreshed every five seconds.
