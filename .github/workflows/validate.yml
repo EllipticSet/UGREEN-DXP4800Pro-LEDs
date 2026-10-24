@@ -47,6 +47,37 @@ jobs:
           python3 tests/package-test.py dist/UGREEN-DXP4800Pro-LEDs.plg
           python3 tests/reproducible-package-test.py
 
+  branch-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keep the simulator on beta-testing only
+        env:
+          TARGET: ${{ github.base_ref || github.ref_name }}
+        run: |
+          failed=0
+          case "$TARGET" in
+            main)
+              for path in lab .github/workflows/beta-lab.yml docs/production-readme.md; do
+                if [ -e "$path" ]; then
+                  echo "::error::$path belongs to beta-testing and must not reach main."
+                  failed=1
+                fi
+              done
+              ;;
+            beta-testing)
+              if [ ! -d lab ]; then
+                echo "::error::lab/ is missing; beta-testing must keep the simulator."
+                failed=1
+              fi
+              if [ -e .github/workflows/release.yml ]; then
+                echo "::error::release.yml must not run on beta-testing."
+                failed=1
+              fi
+              ;;
+          esac
+          exit "$failed"
+
   update-badge:
     needs: validate
     if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
