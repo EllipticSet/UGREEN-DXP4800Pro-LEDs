@@ -22,6 +22,7 @@ setup_hardware() {
   [[ -f $lab_config/network ]] || printf 'online\n' > "$lab_config/network"
   if [[ $(cat "$lab_config/network") == down ]]; then printf '0\n'; else printf '1\n'; fi > "$lab_root/carrier"
   log 'LAB SIMULATION: regular files replace LED sysfs; no hardware driver is loaded.'
+  write_status controller 'LAB SIMULATION (no SMBus controller)'
 }
 
 device_on_ata_port() {

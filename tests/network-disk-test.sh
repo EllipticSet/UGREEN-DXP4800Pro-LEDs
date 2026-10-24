@@ -54,6 +54,17 @@ rm "$sim/sys/class/leds/disk1/shot"
 printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
 [[ ! -f $sim/sys/class/leds/disk1/shot ]]
+# A standby result recorded before later I/O is discarded; an unchanged one applies.
+DISK_ATA_PORTS=(1 0 0 0)
+bay_mode[1]=active
+printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
+printf 'standby 13:20\n' > "$state_dir/sda"
+refresh_bay_health
+[[ ${bay_mode[1]} == standby ]]
+bay_mode[1]=active
+printf '5 0 14 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
+refresh_bay_health
+[[ ${bay_mode[1]} == active ]]
 echo 'Network online/offline/down/reconnect and disk activity/standby/failure transitions passed.'
 
 NETWORK_BRIGHTNESS=0
@@ -61,3 +72,73 @@ configure_network
 check "$sim/sys/class/leds/netdev/trigger" none
 check "$sim/sys/class/leds/netdev/blink_type" none
 check "$sim/sys/class/leds/netdev/brightness" 0
+
+# Stopping the monitor turns the LAN LED off and leaves the Power LED untouched.
+mkdir -p "$sim/sys/class/leds/power"
+printf '179\n' > "$sim/sys/class/leds/netdev/brightness"
+printf '179\n' > "$sim/sys/class/leds/power/brightness"
+pid_file=$sim/pid ready_file=$sim/ready hardware_ready=1 network_pid='' health_pid=''
+cleanup
+check "$sim/sys/class/leds/netdev/brightness" 0
+check "$sim/sys/class/leds/power/brightness" 179
+check "$sim/sys/class/leds/disk1/brightness" 0
+echo 'Monitor stop turns off LAN and drive LEDs and retains Power.'
+
+# Missing interfaces are logged once and published with the LAN state.
+status_dir=$sim/status identify_file=$sim/identify
+mkdir -p "$status_dir"
+NETWORK_BRIGHTNESS=179
+pick_network_interface() { printf eth5; }
+out=$(configure_network; configure_network)
+[[ $(grep -c 'WARNING: Network interface eth5 not found' <<< "$out") == 1 ]]
+configure_network >/dev/null
+grep -qx 'mode=down' "$status_dir/network" && grep -qx 'interface=eth5' "$status_dir/network"
+grep -q '^problem=Network interface eth5 not found' "$status_dir/network"
+pick_network_interface() { printf ''; }
+out=$(configure_network); grep -q 'WARNING: No default route found' <<< "$out"
+pick_network_interface() { printf br0; }
+configure_network >/dev/null
+grep -qx 'problem=' "$status_dir/network"
+echo 'Missing interface and default route warnings and LAN status passed.'
+
+# Identify flashes one bay, defers its normal mode and restores it afterwards.
+DISK_ATA_PORTS=(1 0 0 0)
+bay_device[1]=sda bay_mode[1]=active
+printf "1 $((EPOCHSECONDS + 60))\n" > "$identify_file"
+check_identify >/dev/null
+check "$sim/sys/class/leds/disk1/blink_type" 'blink 200 200'
+check "$sim/sys/class/leds/disk1/brightness" 255
+set_bay_mode 1 failed >/dev/null
+check "$sim/sys/class/leds/disk1/blink_type" 'blink 200 200'
+bays_status
+grep -qx 'bay=1 port=1 device=sda mode=identify' "$status_dir/bays"
+grep -qx 'bay=2 port=0 device= mode=disabled' "$status_dir/bays"
+printf "1 $((EPOCHSECONDS - 1))\n" > "$identify_file"
+check_identify >/dev/null
+[[ ! -e $identify_file && -z $identify_bay ]]
+check "$sim/sys/class/leds/disk1/blink_type" 'blink 500 500'
+check "$sim/sys/class/leds/disk1/color" '255 165 0'
+bays_status
+grep -qx 'bay=1 port=1 device=sda mode=failed' "$status_dir/bays"
+# A bay without a drive returns to off.
+bay_device[1]='' bay_mode[1]=''
+printf "1 $((EPOCHSECONDS + 60))\n" > "$identify_file"
+check_identify >/dev/null
+rm "$identify_file"
+check_identify >/dev/null
+check "$sim/sys/class/leds/disk1/brightness" 0
+check "$sim/sys/class/leds/disk1/blink_type" none
+echo 'Bay identification and restoration passed.'
+
+# Stopping during identification of a disabled bay turns its LED off.
+mkdir -p "$sim/sys/class/leds/disk2"
+DISK_ATA_PORTS=(1 0 0 0)
+printf "2 $((EPOCHSECONDS + 60))\n" > "$identify_file"
+check_identify >/dev/null
+check "$sim/sys/class/leds/disk2/blink_type" 'blink 200 200'
+hardware_ready=1 network_pid='' health_pid=''
+cleanup
+check "$sim/sys/class/leds/disk2/blink_type" none
+check "$sim/sys/class/leds/disk2/brightness" 0
+[[ ! -e $identify_file ]]
+echo 'Stopping during identification of a disabled bay turns its LED off.'

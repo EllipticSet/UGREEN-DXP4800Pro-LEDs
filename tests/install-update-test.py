@@ -9,7 +9,7 @@ with tempfile.TemporaryDirectory() as t:
  base=Path(t); machine=base/'machine'; bundle=base/'bundle';bundle.mkdir()
  for p in ['tmp','boot/config/plugins/UGREEN-DXP4800Pro-LEDs','usr/local/sbin','usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs','var/log/packages','usr/local/lib/ugreen-pro-leds','usr/local/share/ugreen-pro-leds']:(machine/p).mkdir(parents=True,exist_ok=True)
  (bundle/'preflight.sh').write_text('#!/bin/bash\nexit 0\n');(bundle/'preflight.sh').chmod(0o755)
- for kernel in ['6.18.38-Unraid', '6.18.54-Unraid']:
+ for kernel in ['6.18.38-Unraid', '6.18.54-Unraid', '6.18.58-Unraid']:
   payload=bundle/'payload/usr/local/lib/ugreen-pro-leds'/kernel;payload.mkdir(parents=True);(payload/'led-ugreen.ko').touch()
  (bundle/f'{PKG}.txz').touch()
  version_file=bundle/'payload/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt'
@@ -45,16 +45,24 @@ export -f uname modinfo i2cget php upgradepkg removepkg
   return subprocess.run([bash,'-c',mocks+f'"{bash}" "{installer}" "{bundle}"'],capture_output=True,text=True)
  r=run();assert r.returncode==0,r.stderr+r.stdout
  assert config.read_text()=='CUSTOM=preserved\n'
+ assert f'Installing UGREEN DXP4800 Pro LEDs {VERSION}' in r.stdout, r.stdout
+ for text in ['[2/8] Checking compatibility','LED driver: 6.18.38-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid)','[6/8] Preparing settings','Settings preserved: ','[8/8] Configuring shutdown hook','Shutdown hook added']:
+  assert text in r.stdout,(text,r.stdout)
+ (machine/'usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt').write_text('1.4.3\n')
+ r=run();assert r.returncode==0 and f'Updating UGREEN DXP4800 Pro LEDs from 1.4.3 to {VERSION}' in r.stdout,r.stdout
+ assert 'Shutdown hook already present' in r.stdout
  assert stop.read_text().count('# UGREEN-DXP4800Pro-LEDs')==1, repr(stop.read_text())+r.stdout+r.stderr
  prior_stop=stop.read_text()
- r=run(kernel='6.18.54-Unraid');assert r.returncode==0,r.stderr+r.stdout
+ for kernel in ['6.18.54-Unraid','6.18.58-Unraid']:
+  r=run(kernel=kernel);assert r.returncode==0,r.stderr+r.stdout
  assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
- for kernel,module_kernel in [('6.18.55-Unraid',None),('6.18.54-Unraid','6.18.38-Unraid')]:
+ for kernel,module_kernel in [('6.18.55-Unraid',None),('6.18.59-Unraid',None),('6.18.58-Unraid','6.18.54-Unraid'),('6.18.54-Unraid','6.18.38-Unraid')]:
   r=run(kernel=kernel,module_kernel=module_kernel);assert r.returncode!=0
   assert monitor.read_text()==old
   assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
  r=run(fail=True);assert r.returncode!=0,r.stdout+r.stderr
  assert monitor.read_text()==old
+ assert 'Step 7/8 (Starting LED monitor) failed' in r.stderr and 'Previous installation' in r.stderr and 'Monitor log:' in r.stderr, r.stderr
  assert config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
  page=machine/web/'LED-Settings.page';page.write_text('old lightbulb page')
  r=run(stale=True);assert r.returncode!=0,r.stdout+r.stderr
@@ -65,6 +73,7 @@ export -f uname modinfo i2cget php upgradepkg removepkg
   config.unlink()
   r=run(occupied=occupied);assert r.returncode==0,r.stderr+r.stdout
   assert config.read_text()=='DISK_ATA_PORTS=(1 2 3 4)\n',config.read_text()
+  assert 'Default settings created: ' in r.stdout
   assert 'DRIVE-BAY MAPPING:' not in r.stdout
  config.write_text('DISK_ATA_PORTS=(1 2 0 0)\n')
  r=run(fail=True);assert r.returncode!=0
@@ -73,4 +82,5 @@ export -f uname modinfo i2cget php upgradepkg removepkg
   config.write_text(f'DISK_ATA_PORTS=({before})\n')
   r=run();assert r.returncode==0,r.stderr+r.stdout
   assert config.read_text()==f'DISK_ATA_PORTS=({after})\n'
- print('Four-bay defaults, migration, custom mapping preservation and rollback passed.')
+  assert ('ATA mapping migrated from 1 2 0 0 to 1 2 3 4.' in r.stdout)==(before=='1 2 0 0'),r.stdout
+ print('Four-bay defaults, migration, custom mapping preservation, rollback and step-by-step output passed.')

@@ -8,7 +8,9 @@ with tempfile.TemporaryDirectory() as t:
  (p/'sys/class/dmi/id/product_name').write_text('DXP4800 Pro\n')
  (p/'etc/unraid-version').write_text('version="7.3.2"\n')
  s=(root/'src/preflight.sh').read_text().replace('$EUID','0')
- for prefix in ['/sys/','/etc/','/boot/']: s=s.replace(prefix,t+prefix)
+ for prefix in ['/sys/','/etc/','/boot/','/usr/local/emhttp/']: s=s.replace(prefix,t+prefix)
+ notify=p/'usr/local/emhttp/webGui/scripts/notify';notify.parent.mkdir(parents=True)
+ notify.write_text(f'#!/bin/bash\nprintf "%s|" "$@" >> "{t}/notified"\n');notify.chmod(0o755)
  script=p/'check';script.write_text(s)
  mocks='''uname() { echo "${TEST_KERNEL}"; }
 upgradepkg() { return 0; }; installpkg() { return 0; }; removepkg() { return 0; }; modinfo() { echo "${TEST_VERMAGIC:-${TEST_KERNEL} SMP}"; }
@@ -18,13 +20,13 @@ pgrep() { return 1; }
 export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo modprobe php timeout ip pgrep
 '''
  modules=p/'modules'
- for kernel in ['6.18.38-Unraid','6.18.54-Unraid']:
+ for kernel in ['6.18.38-Unraid','6.18.54-Unraid','6.18.58-Unraid']:
   (modules/kernel).mkdir(parents=True)
   (modules/kernel/'led-ugreen.ko').touch()
  def run(kernel='6.18.38-Unraid', vermagic=None):
   return subprocess.run([bash,'-c',mocks+f'source "{script}" "{modules}"'],env={**os.environ,'TEST_KERNEL':kernel, 'TEST_VERMAGIC':vermagic or kernel+' SMP'},capture_output=True,text=True)
  assert run().returncode==0,run().stderr
- for version in ['7.3.2', '7.3.3', '7.4', '7.4.0', '8.0.0']:
+ for version in ['7.3.2', '7.3.3', '7.3.4', '7.4', '7.4.0', '8.0.0']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run().returncode==0, (version, run().stderr)
  for version in ['6.12.0', '7.2.9', '7.3', '7.3.0', '7.3.1', 'invalid', '']:
@@ -32,11 +34,19 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
   assert run().returncode!=0, version
  (p/'etc/unraid-version').write_text('version="7.3.2"\n')
  (p/'etc/unraid-version').write_text('version="7.3.3"\n')
+ for version in ['7.3.4']:
+  (p/'etc/unraid-version').write_text(f'version="{version}"\n')
+  assert run('6.18.58-Unraid').returncode==0,run('6.18.58-Unraid').stderr
+  assert run('6.18.58-Unraid', '6.18.54-Unraid SMP').returncode!=0
+ (p/'etc/unraid-version').write_text('version="7.3.3"\n')
  assert run('6.18.54-Unraid').returncode==0,run('6.18.54-Unraid').stderr
  assert run('6.18.54-Unraid', '6.18.38-Unraid SMP').returncode!=0
  (modules/'6.18.54-Unraid/led-ugreen.ko').unlink()
  assert run('6.18.54-Unraid').returncode!=0
+ (p/'notified').unlink(missing_ok=True)
+ assert run().returncode==0 and not (p/'notified').exists()
  assert run('6.18.39-Unraid').returncode!=0
+ assert 'LED driver missing for kernel 6.18.39-Unraid' in (p/'notified').read_text()
  (p/'sys/class/dmi/id/product_name').write_text('DXP4800 GT\n')
  assert run().returncode!=0
  (p/'sys/class/dmi/id/product_name').write_text('DXP4800 Pro\n')

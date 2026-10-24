@@ -74,6 +74,7 @@ def build(output, vm_uuid):
         monitor = monitor.replace('/sys/class/leds', '/run/ugreen-led-lab/leds')
         monitor = monitor.replace('/sys/class/block', '/run/ugreen-led-lab/block')
         monitor = replace_once(monitor, '/sys/class/net/$iface/carrier', '/run/ugreen-led-lab/carrier')
+        monitor = replace_once(monitor, '[[ ! -e /sys/class/net/$iface ]]', '[[ ! -e /run/ugreen-led-lab/carrier ]]')
         monitor = replace_once(monitor, "printf 'Model: '; cat /sys/class/dmi/id/product_name", "printf 'Model: DXP4800 Pro (SIMULATED)\\n'")
         anchor = '[[ ${BASH_SOURCE[0]} == "$0" ]] || return 0'
         monitor = replace_once(monitor, anchor, guard + '\n' + (ROOT / 'lab/runtime.sh').read_text() + '\n' + anchor + '\nlab_guard || exit 1')
@@ -98,11 +99,11 @@ def build(output, vm_uuid):
         write(stage / 'install/slack-desc', 'ugreen-pro-leds: UGREEN LEDs LAB SIMULATION (VM only)\n')
         install = (ROOT / 'src/install.sh').read_text()
         start = install.index('kernel=$(uname -r)')
-        end = install.index('mkdir -p "$plugin"', start)
-        install = install[:start] + install[end:]
+        end = install.index("step 3 'Saving the current state for rollback'", start)
+        install = install[:start] + "detail 'LED driver: not installed (LAB SIMULATION)'\n" + install[end:]
         install = replace_once(install, 'if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi', '# Lab package requires no i2c-tools.')
         install = replace_once(install, 'paths=()', 'paths=()\n[[ ! -e /usr/local/sbin/ugreen-led-lab ]] || paths+=(usr/local/sbin/ugreen-led-lab)')
-        install = replace_once(install, '\n/usr/local/sbin/ugreen-pro-leds start\nif [[ ! -f /boot/config/stop', '\n"$root/lab-migrate-settings.sh" "$plugin/settings.cfg"\n/usr/local/sbin/ugreen-pro-leds start\nif [[ ! -f /boot/config/stop')
+        install = replace_once(install, "\nstep 7 'Starting LED monitor'\n", "\n\"$root/lab-migrate-settings.sh\" \"$plugin/settings.cfg\"\nstep 7 'Starting LED monitor'\n")
         write(outer / 'lab-migrate-settings.sh', (ROOT / 'lab/migrate-settings.sh').read_text(), True)
         write(outer / 'install.sh', install, True)
         preflight = '#!/bin/bash\nset -euo pipefail\n' + guard + '''

@@ -10,6 +10,10 @@ pid_file=${UGREEN_PRO_PID_FILE:-/run/ugreen-pro-leds.pid}
 lock_file=${UGREEN_PRO_LOCK_FILE:-/run/ugreen-pro-leds.lock}
 ready_file=/run/ugreen-pro-leds.ready
 log_file=${UGREEN_PRO_LOG_FILE:-/var/log/ugreen-pro-leds.log}
+status_dir=${UGREEN_PRO_STATUS_DIR:-/run/ugreen-pro-leds.status}
+identify_file=${UGREEN_PRO_IDENTIFY_FILE:-/run/ugreen-pro-leds.identify}
+notify_command=/usr/local/emhttp/webGui/scripts/notify
+IDENTIFY_SECONDS=30
 
 POWER_COLOR='255 255 255'
 POWER_BRIGHTNESS=179
@@ -32,21 +36,35 @@ POLL_INTERVAL=0.5
 REFRESH_INTERVAL=15
 DISK_STATUS_INTERVAL=60
 
-if [[ -f $config_file && ( ${1:-} == run || ${1:-} == shutdown ) ]]; then
+if [[ -f $config_file && ( ${1:-} == run || ${1:-} == shutdown || ${1:-} == detect ) ]]; then
   # Parse known settings and validate before sourcing canonical shell output.
   # Stop/status must remain usable even if an administrator damaged the config.
   if canonical=$(php /usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/settings-cli.php "$config_file"); then
     source /dev/stdin <<< "$canonical"
   elif [[ ${1:-} == run ]]; then
     echo 'Invalid settings; refusing to start.' >&2; exit 1
-  else
+  elif [[ ${1:-} == shutdown ]]; then
     echo 'Invalid settings; using default power colour for shutdown.' >&2
+  else
+    echo 'Invalid settings; using default network interface selection.' >&2
   fi
 fi
 
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*"; }
 fail() { log "ERROR: $*" >&2; exit 1; }
 led_path() { printf '/sys/class/leds/%s' "$1"; }
+
+# Unraid notification; unavailable early in boot or outside Unraid.
+notify_admin() {
+  [[ -x $notify_command ]] || return 0
+  "$notify_command" -e 'UGREEN DXP4800 Pro LEDs' -s "$1" -d "$2" -i alert >/dev/null 2>&1 || true
+}
+
+# Live state for the settings page, one atomically replaced file per writer.
+write_status() {
+  [[ -d $status_dir ]] || return 0
+  { printf '%s\n' "$2" > "$status_dir/.$1.tmp" && mv -f "$status_dir/.$1.tmp" "$status_dir/$1"; } 2>/dev/null || true
+}
 
 model_check() {
   [[ $(cat /sys/class/dmi/id/product_name) == 'DXP4800 Pro' ]] ||
@@ -60,7 +78,10 @@ setup_hardware() {
   local kernel module
   kernel=$(uname -r)
   module="/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko"
-  [[ -f $module ]] || fail "No packaged LED module for kernel $kernel. Update the plugin before using this kernel."
+  if [[ ! -f $module ]]; then
+    notify_admin "LED driver missing for kernel $kernel" 'Front-panel LED control is unavailable. Update UGREEN DXP4800 Pro LEDs to a version that supports this Unraid release.'
+    fail "No packaged LED module for kernel $kernel. Update the plugin before using this kernel."
+  fi
   command -v modinfo >/dev/null || fail 'Missing dependency: modinfo'
   [[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || fail "Wrong LED module release for kernel $kernel."
   for cmd in i2cget modprobe insmod flock jq smartctl timeout ip curl; do
@@ -103,6 +124,7 @@ setup_hardware() {
       fail "Unexpected LED owner or missing interface: $name"
   done
   log "LED MCU bound on $found using Intel legacy protocol."
+  write_status controller "$found"
 }
 
 pick_network_interface() {
@@ -134,10 +156,26 @@ internet_reachable() {
   esac
 }
 
+network_status() {
+  local status="mode=$1"$'\n'"interface=$2"$'\n'"problem=${network_problem:-}"
+  [[ $status != "${last_network_status:-}" ]] || return 0
+  write_status network "$status"
+  last_network_status=$status
+}
+
 configure_network() {
-  local iface carrier color mode
+  local iface carrier color mode problem=''
   iface=$(pick_network_interface)
   carrier=$(cat "/sys/class/net/$iface/carrier" 2>/dev/null || true)
+  if [[ -z $iface ]]; then
+    problem='No default route found; the LAN LED shows Internet unavailable.'
+  elif [[ ! -e /sys/class/net/$iface ]]; then
+    problem="Network interface $iface not found; the LAN LED shows Internet unavailable."
+  fi
+  if [[ $problem != "${network_problem:-}" ]]; then
+    [[ -z $problem ]] || log "WARNING: $problem"
+    network_problem=$problem
+  fi
   if (( NETWORK_BRIGHTNESS == 0 )); then
     if [[ ${current_network_mode:-} != off ]]; then
       printf 'none\n' > /sys/class/leds/netdev/trigger
@@ -145,6 +183,7 @@ configure_network() {
       printf '0\n' > /sys/class/leds/netdev/brightness
       current_network_mode=off
     fi
+    network_status off "$iface"
     return 0
   fi
   mode=down
@@ -174,6 +213,7 @@ configure_network() {
     current_network_mode=$mode
     log "Network LED: $mode on $iface."
   fi
+  network_status "$mode" "$iface"
 }
 
 network_worker() {
@@ -198,10 +238,21 @@ device_on_ata_port() {
 
 declare -A bay_device bay_signature bay_mode
 
+# Sectors read and written; SMART commands do not change these counters.
+disk_signature() {
+  local -a counters
+  [[ -r /sys/class/block/$1/stat ]] || return 1
+  read -r -a counters < "/sys/class/block/$1/stat" || return 1
+  (( ${#counters[@]} >= 7 )) || return 1
+  printf '%s:%s\n' "${counters[2]}" "${counters[6]}"
+}
+
 set_bay_mode() {
   local bay=$1 mode=$2 path lighting_mode
   (( DISK_BRIGHTNESS > 0 )) || mode=off
   [[ ${bay_mode[$bay]:-} == "$mode" ]] && return 0
+  # An identified bay keeps flashing; its mode is applied when identification ends.
+  if [[ $bay == "${identify_bay:-}" ]]; then bay_mode[$bay]=$mode; return 0; fi
   path=$(led_path "disk$bay")
   printf 'none\n' > "$path/trigger"
   lighting_mode=$mode
@@ -256,14 +307,19 @@ disk_health_mode() {
 }
 
 refresh_bay_health() {
-  local bay device mode before after
+  local bay device mode recorded before after
   before=$(standby_bays)
   for bay in 1 2 3 4; do
     device=${bay_device[$bay]:-}
     [[ -n $device ]] || continue
     mode=active
-    if [[ -r $state_dir/"$device" ]]; then read -r mode < "$state_dir/$device" || mode=active; fi
+    recorded=''
+    if [[ -r $state_dir/"$device" ]]; then read -r mode recorded < "$state_dir/$device" || mode=active; fi
     [[ $mode == active || $mode == standby || $mode == failed ]] || mode=active
+    # A standby result is stale if I/O occurred after the SMART check started.
+    if [[ $mode == standby && -n $recorded && $(disk_signature "$device" || true) != "$recorded" ]]; then
+      mode=active
+    fi
     set_bay_mode "$bay" "$mode"
   done
   after=$(standby_bays)
@@ -285,15 +341,24 @@ synchronize_standby_breathing() {
   # start their identical hardware cycles together when membership changes.
   # Writing breath alone is insufficient: the driver caches unchanged modes.
   for bay in 1 2 3 4; do
-    [[ ${bay_mode[$bay]:-} == standby ]] || continue
+    [[ ${bay_mode[$bay]:-} == standby && $bay != "${identify_bay:-}" ]] || continue
     path=$(led_path "disk$bay")
     printf 'none\n' > "$path/blink_type"
   done
   for bay in 1 2 3 4; do
-    [[ ${bay_mode[$bay]:-} == standby ]] || continue
+    [[ ${bay_mode[$bay]:-} == standby && $bay != "${identify_bay:-}" ]] || continue
     path=$(led_path "disk$bay")
     printf 'breath 1000 1000\n' > "$path/blink_type"
   done
+}
+
+bay_led_off() {
+  local path
+  [[ $1 != "${identify_bay:-}" ]] || return 0
+  path=$(led_path "disk$1")
+  printf 'none\n' > "$path/trigger"
+  printf 'none\n' > "$path/blink_type"
+  printf '0\n' > "$path/brightness"
 }
 
 configure_bay() {
@@ -302,9 +367,7 @@ configure_bay() {
   [[ -d $path ]] || return 0
   if [[ $port == 0 ]]; then
     if [[ ${bay_mode[$bay]:-} != disabled ]]; then
-      printf 'none\n' > "$path/trigger"
-      printf 'none\n' > "$path/blink_type"
-      printf '0\n' > "$path/brightness"
+      bay_led_off "$bay"
       bay_device[$bay]=''
       bay_signature[$bay]=''
       bay_mode[$bay]=disabled
@@ -324,9 +387,7 @@ configure_bay() {
       set_bay_mode "$bay" failed
       log "$led: previously present drive disappeared (failure or removal)."
     else
-      printf 'none\n' > "$path/trigger"
-      printf 'none\n' > "$path/blink_type"
-      printf '0\n' > "$path/brightness"
+      bay_led_off "$bay"
       bay_mode[$bay]=''
     fi
     bay_device[$bay]=''
@@ -337,20 +398,17 @@ configure_bay() {
 
 poll_disk_activity() {
   local bay device path signature
-  local -a counters
   for bay in 1 2 3 4; do
     device=${bay_device[$bay]:-}
-    [[ -n $device && -r /sys/class/block/$device/stat ]] || continue
-    read -r -a counters < "/sys/class/block/$device/stat" || continue
-    (( ${#counters[@]} >= 7 )) || continue
-    signature="${counters[2]}:${counters[6]}"
+    [[ -n $device ]] || continue
+    signature=$(disk_signature "$device") || continue
     path=$(led_path "disk$bay")
     if [[ -n ${bay_signature[$bay]:-} && ${bay_signature[$bay]} != "$signature" ]]; then
       if [[ ${bay_mode[$bay]:-} == standby ]]; then
         rm -f -- "$state_dir/$device"
         set_bay_mode "$bay" active
       fi
-      if [[ ${bay_mode[$bay]:-} == active ]]; then
+      if [[ ${bay_mode[$bay]:-} == active && $bay != "${identify_bay:-}" ]]; then
         printf '1\n' > "$path/shot"
       fi
       [[ ${UGREEN_PRO_DEBUG:-0} == 1 ]] && log "Activity on disk$bay ($device)."
@@ -359,16 +417,69 @@ poll_disk_activity() {
   done
 }
 
+# Flash one bay LED quickly so the drive can be located; normal state returns afterwards.
+check_identify() {
+  local bay='' until=0 path
+  [[ ! -f $identify_file ]] || read -r bay until < "$identify_file" || true
+  if [[ $bay =~ ^[1-4]$ && $until =~ ^[0-9]+$ ]] && (( EPOCHSECONDS < until )); then
+    [[ $bay != "${identify_bay:-}" ]] || return 0
+    end_identify
+    identify_bay=$bay
+    path=$(led_path "disk$bay")
+    printf 'none\n' > "$path/trigger"
+    printf '%s\n' "$DISK_COLOR" > "$path/color"
+    printf '255\n' > "$path/brightness"
+    printf 'blink 200 200\n' > "$path/blink_type"
+    log "disk$bay: identify for $((until - EPOCHSECONDS)) seconds."
+    return 0
+  fi
+  [[ ! -f $identify_file ]] || rm -f "$identify_file"
+  end_identify
+}
+
+end_identify() {
+  local bay=${identify_bay:-} mode
+  [[ -n $bay ]] || return 0
+  identify_bay=''
+  mode=${bay_mode[$bay]:-}
+  case $mode in
+    active|standby|failed|off)
+      bay_mode[$bay]=identify
+      set_bay_mode "$bay" "$mode"
+      [[ $mode != standby ]] || synchronize_standby_breathing ;;
+    *) bay_led_off "$bay" ;;
+  esac
+  log "disk$bay: identify ended."
+}
+
+bays_status() {
+  local bay port mode status=''
+  for bay in 1 2 3 4; do
+    port=${DISK_ATA_PORTS[bay-1]}
+    mode=${bay_mode[$bay]:-}
+    if [[ $bay == "${identify_bay:-}" ]]; then mode=identify
+    elif [[ $port == 0 ]]; then mode=disabled
+    elif [[ -z ${bay_device[$bay]:-} && $mode != failed ]]; then mode=empty
+    elif [[ -z $mode ]]; then mode=active
+    fi
+    status+="bay=$bay port=$port device=${bay_device[$bay]:-} mode=$mode"$'\n'
+  done
+  [[ $status != "${last_bays_status:-}" ]] || return 0
+  write_status bays "${status%$'\n'}"
+  last_bays_status=$status
+}
+
 health_worker() {
-  local port device mode pause
+  local port device mode signature pause
   trap - EXIT
   trap 'exit 0' TERM INT
   while :; do
     for port in "${DISK_ATA_PORTS[@]}"; do
       device=$(device_on_ata_port "$port" || true)
       [[ -n $device ]] || continue
+      signature=$(disk_signature "$device" || true)
       mode=$(disk_health_mode "$device")
-      printf '%s\n' "$mode" > "$state_dir/$device.tmp"
+      printf '%s %s\n' "$mode" "$signature" > "$state_dir/$device.tmp"
       mv -f "$state_dir/$device.tmp" "$state_dir/$device"
     done
     for ((pause=0; pause<DISK_STATUS_INTERVAL; pause++)); do sleep 1; done
@@ -384,18 +495,20 @@ cleanup() {
   for child in "${network_pid:-}" "${health_pid:-}"; do
     [[ -z $child ]] || wait "$child" 2>/dev/null || true
   done
-  # Release only LED triggers managed by this monitor. Leave power solid white.
+  # Release LEDs managed by this monitor and turn them off. Leave power on.
   if [[ ${hardware_ready:-0} == 1 ]]; then
     printf 'none\n' > /sys/class/leds/netdev/trigger || true
     printf 'none\n' > /sys/class/leds/netdev/blink_type || true
+    printf '0\n' > /sys/class/leds/netdev/brightness || true
     for bay in 1 2 3 4; do
-      [[ ${DISK_ATA_PORTS[bay-1]} != 0 ]] || continue
+      [[ ${DISK_ATA_PORTS[bay-1]} != 0 || $bay == "${identify_bay:-}" ]] || continue
       printf 'none\n' > "/sys/class/leds/disk$bay/trigger" || true
       printf 'none\n' > "/sys/class/leds/disk$bay/blink_type" || true
       printf '0\n' > "/sys/class/leds/disk$bay/brightness" || true
     done
   fi
-  rm -f "$pid_file" "$ready_file"
+  rm -f "$pid_file" "$ready_file" "$identify_file"
+  rm -rf -- "$status_dir"
   [[ -z ${state_dir:-} ]] || rm -rf -- "$state_dir"
 }
 
@@ -406,6 +519,8 @@ run() {
   printf '%s\n' "$$" > "$pid_file"
   trap cleanup EXIT
   trap 'exit 0' TERM INT
+  rm -rf -- "$status_dir" "$identify_file"
+  mkdir -p "$status_dir"
   setup_hardware
   hardware_ready=1
   state_dir=$(mktemp -d /run/ugreen-pro-leds.health.XXXXXX)
@@ -434,6 +549,8 @@ run() {
       refresh_bay_health
       next_disk_status=$((SECONDS + 2))
     fi
+    check_identify
+    bays_status
     poll_disk_activity
     kill -0 "$network_pid" 2>/dev/null || fail 'Network worker stopped.'
     kill -0 "$health_pid" 2>/dev/null || fail 'Health worker stopped.'
@@ -465,7 +582,7 @@ case ${1:-} in
     if running_pid >/dev/null; then fail 'Monitor is still initializing; check status before restarting.'; fi
     nohup "$0" run >> "$log_file" 2>&1 < /dev/null &
     started_pid=$!
-    for attempt in {1..12}; do
+    for _ in {1..12}; do
       sleep 1
       kill -0 "$started_pid" 2>/dev/null || fail "Monitor exited; see $log_file."
       if running_pid >/dev/null && [[ -f $ready_file ]]; then
@@ -504,6 +621,18 @@ case ${1:-} in
       exit 1
     fi
     ;;
+  identify)
+    bay=${2:-}; seconds=${3:-$IDENTIFY_SECONDS}
+    [[ $bay =~ ^([1-4]|off)$ && $seconds =~ ^[0-9]{1,3}$ ]] && (( seconds >= 1 && seconds <= 300 )) ||
+      { echo "Usage: $0 identify {1|2|3|4|off} [seconds 1-300]" >&2; exit 2; }
+    running_pid >/dev/null && [[ -f $ready_file ]] || fail 'LED monitor is not running.'
+    if [[ $bay == off ]]; then
+      rm -f "$identify_file"; echo 'Bay identification stopped.'; exit 0
+    fi
+    printf '%s %s\n' "$bay" "$((EPOCHSECONDS + seconds))" > "$identify_file.tmp"
+    mv -f "$identify_file.tmp" "$identify_file"
+    echo "Bay $bay LED flashes for $seconds seconds."
+    ;;
   detect)
     printf 'Model: '; cat /sys/class/dmi/id/product_name
     printf 'Kernel: '; uname -r
@@ -514,5 +643,5 @@ case ${1:-} in
     done
     printf 'Network default route interface: %s\n' "$(pick_network_interface)"
     ;;
-  *) echo "Usage: $0 {start|stop|shutdown|status|detect|run}" >&2; exit 2 ;;
+  *) echo "Usage: $0 {start|stop|shutdown|status|detect|identify|run}" >&2; exit 2 ;;
 esac

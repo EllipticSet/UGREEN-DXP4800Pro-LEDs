@@ -1,5 +1,23 @@
 # Validation
 
+## Version 1.5.0
+
+Version 1.5.0 changes the settings interface, the installer output and the LED monitor; the kernel modules are unchanged from 1.4.3. The **Network interface** setting is a menu with Auto, which shows the interface of the first default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state. The Power and LAN tabs show the current state reported by the monitor, and the Drives tab lists each bay with its mapped ATA port, drive and state, with an **Identify** button that flashes the bay LED for 30 seconds. The monitor publishes this state in `/run/ugreen-pro-leds.status`, logs a missing interface or default route once, and sends an Unraid notification when no bundled driver matches the running kernel. Installation and update output lists each step and ends with a hardware summary.
+
+On October 23, 2026, version 1.5.0 was installed as an update from 1.4.3 on Unraid 7.3.4 / `6.18.58-Unraid`. The installer reported each step, the `6.18.58-Unraid` driver, preserved settings, the controller on `i2c-0`, LAN online on `br0` and the four drive bays. Tests confirmed the interface menu with Auto (br0), bond0, br0, eth0 and eth1 and their link states, the current state in the Power, LAN and Drives tabs, and the Identify buttons: the selected bay LED flashed for 30 seconds and then returned to its normal indication.
+
+## Version 1.4.3
+
+Version 1.4.3 supports Unraid 7.3.4 and retains support for Unraid 7.3.2 and 7.3.3. The new module was built against the checksum-pinned `6.18.58-Unraid` archive, using the existing hardening patch. Compared with `6.18.54-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver and LED class sources are identical. The settings interface and LED monitor are unchanged.
+
+On October 22, 2026, version 1.4.3 was installed with Unraid 7.3.4 / `6.18.58-Unraid`. Tests confirmed monitor startup, Power and LAN operation, activity and standby on all four drives, and Apply. The log records the controller on `i2c-0`, ATA ports 1–4 and LAN online on `br0`.
+
+## Version 1.4.2
+
+Version 1.4.2 records the disk I/O counters at the start of each SMART round and discards a standby result when I/O occurred after that point, so a drive woken during the check no longer breathes as if asleep. Stopping the monitor now turns off the LAN LED as well as the drive LEDs; the Power LED is unchanged. The detect command reads the configured network interface. The installer extracts the bundled package once instead of carrying a second uncompressed copy, which reduces the plugin download from about 1.3 MB to about 1.0 MB. Theme icons use content-based cache keys.
+
+Local checks on October 19, 2026 passed the full automated suite, including new regressions for stale standby results, unchanged standby results, LAN and drive LEDs turned off on stop with Power retained, theme-icon cache keys and the single embedded payload. The changelog check rejects headings that are not semantic versions, and the metadata check confirms that every supported kernel is listed in the published descriptions.
+
 ## Version 1.4.1
 
 Version 1.4.1 renames the five-second warning-colour controls to Preview / Stop preview and adds Standby breathing to Drives LEDs. It defaults to enabled, including when older settings omit the new key. Disabled breathing follows Activity style: dark or solid when idle, with I/O pulses; zero brightness remains off. SMART checks, activity and failure indications retain their existing behavior.

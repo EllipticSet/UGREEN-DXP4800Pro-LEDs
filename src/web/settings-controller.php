@@ -32,6 +32,69 @@ function ugreen_pro_restart_monitor(?callable $command = null, ?callable $pause 
     return false;
 }
 
+function ugreen_pro_identify_bay(int $bay, ?callable $command = null): bool
+{
+    $command ??= static function (string $cmd): int {
+        exec($cmd . ' 2>&1', $output, $status);
+        return $status;
+    };
+    return $bay >= 1 && $bay <= 4 && $command("/usr/local/sbin/ugreen-pro-leds identify $bay") === 0;
+}
+
+// Read the state the LED monitor publishes in /run; nothing here touches the hardware.
+function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status', string $runDir = '/run'): array
+{
+    $pid = trim((string)@file_get_contents("$runDir/ugreen-pro-leds.pid"));
+    $running = is_file("$runDir/ugreen-pro-leds.ready") && preg_match('/^\d+$/', $pid) && is_dir("/proc/$pid");
+    $status = ['running' => $running, 'controller' => '', 'network' => [], 'bays' => []];
+    if (!$running) return $status;
+    $status['controller'] = trim((string)@file_get_contents("$statusDir/controller"));
+    foreach (preg_split('/\n/', (string)@file_get_contents("$statusDir/network")) as $line) {
+        if (preg_match('/^(mode|interface|problem)=(.*)$/', $line, $parts)) $status['network'][$parts[1]] = $parts[2];
+    }
+    foreach (preg_split('/\n/', (string)@file_get_contents("$statusDir/bays")) as $line) {
+        if (preg_match('/^bay=([1-4]) port=(\d+) device=(\S*) mode=([a-z]+)$/', $line, $parts)) {
+            $status['bays'][(int)$parts[1]] = ['port' => $parts[2], 'device' => $parts[3], 'mode' => $parts[4]];
+        }
+    }
+    return $status;
+}
+
+// Plain-text labels keyed by data-live element; escaped by the page and set as text by settings.js.
+function ugreen_pro_live_labels(array $status): array
+{
+    if (!$status['running']) {
+        $stopped = ['monitor' => 'LED monitor stopped. Apply restarts it; see /var/log/ugreen-pro-leds.log for details.',
+            'lan' => 'LED monitor stopped'];
+        for ($bay = 1; $bay <= 4; ++$bay) $stopped["bay$bay"] = 'monitor stopped';
+        return $stopped;
+    }
+    $labels = ['monitor' => 'LED monitor running' . ($status['controller'] !== '' ? ", controller {$status['controller']}" : '')];
+    $network = $status['network'];
+    $interface = ($network['interface'] ?? '') !== '' ? $network['interface'] : 'no interface';
+    $labels['lan'] = match ($network['mode'] ?? '') {
+        'online' => "Internet available on $interface",
+        'offline' => "Internet unavailable on $interface",
+        'down' => "No link on $interface",
+        'off' => 'Off (brightness 0)',
+        default => 'Starting',
+    };
+    if (($network['problem'] ?? '') !== '') $labels['lan'] .= '. ' . rtrim($network['problem'], '.');
+    $modes = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => 'off',
+        'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
+    for ($bay = 1; $bay <= 4; ++$bay) {
+        $info = $status['bays'][$bay] ?? null;
+        if ($info === null) {
+            $labels["bay$bay"] = 'starting';
+            continue;
+        }
+        $parts = $info['port'] !== '0' ? ["ATA {$info['port']}"] : [];
+        if ($info['device'] !== '') $parts[] = $info['device'];
+        $parts[] = $modes[$info['mode']] ?? $info['mode'];
+        $labels["bay$bay"] = implode(' · ', $parts);
+    }
+    return $labels;
+}
 
 function ugreen_pro_settings_state(): array
 {
@@ -57,6 +120,17 @@ function ugreen_pro_settings_state(): array
         }
         $action = $_POST['ugreen_pro_action'];
         $submittedGroup = $_POST['ugreen_pro_group'] ?? '';
+        if ($action === 'identify') {
+            $bay = $_POST['ugreen_pro_bay'] ?? '';
+            if (is_string($bay) && preg_match('/^[1-4]$/', $bay) && ugreen_pro_identify_bay((int)$bay)) {
+                $ugreenNotice = "Drive bay $bay LED flashes for 30 seconds.";
+                $ugreenNoticeClass = 'success';
+            } else {
+                $ugreenNotice = 'Drive bay identification failed. Check that the LED monitor is running.';
+                $ugreenNoticeClass = 'error';
+            }
+            return $state = compact('ugreenValues', 'ugreenErrors', 'ugreenNotice', 'ugreenNoticeClass');
+        }
         $allowed = [];
         if (is_string($submittedGroup)) {
             foreach ($ugreenGroups[$submittedGroup] ?? [] as $field) $allowed[$field[0]] = true;
@@ -110,11 +184,12 @@ function ugreen_pro_groups(): array
             ['NETWORK_COLOR_ONLINE', 'Internet available colour', 'color', 'Used when linked and the connectivity check succeeds. Default: white; traffic flashes. Gateway checks local reachability only. Edits preview immediately; Apply updates the LED.'],
             ['NETWORK_COLOR_OFFLINE', 'Internet unavailable colour', 'color', 'Used when link/checks fail; HTTPS requires both endpoints to fail. Default: orange. Preview affects only the image for 5 seconds. Stop preview or editing either LAN colour restores the normal preview. Apply saves settings.'],
             ['NETWORK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
-            ['NETWORK_INTERFACE', 'Network interface', 'text', 'Interface for traffic and connectivity checks. Default: auto selects the first default-route interface, usually br0. Enter an interface name to select explicitly. Apply restarts monitoring.'],
+            ['NETWORK_INTERFACE', 'Network interface', 'select', 'Interface for traffic and connectivity checks. Default: Auto follows the first default-route interface, usually br0, and shows the interface currently selected. Detected bridges, bonds, VLANs and physical ports are listed with their link state. Apply restarts monitoring.',
+                ['auto' => 'Auto']],
         ],
         'Drives LEDs' => [
             ['DISK_COLOR', 'Healthy drive colour', 'color', 'Activity and standby colour. Default: white. Activity style controls idle lighting; Standby breathing controls sleeping drives. Initially empty bays stay off. The image previews all four LEDs; Apply updates them.'],
-            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Preview affects only the image; Stop preview or editing either drive colour restores the healthy preview.'],
+            ['DISK_COLOR_FAILED', 'SMART failure colour', 'color', 'Warning for explicit SMART failure or disappearance of a detected drive, including intentional removal; Apply clears a removal warning. Default: orange; flashes 500 ms on/off. Failed queries alone are not failures. Preview affects only the image; Stop preview or editing either drive colour restores the healthy preview.'],
             ['DISK_BRIGHTNESS', 'Brightness', 'number', 'Default: 70%. Percentage: 10% steps. Raw (Advanced Settings): 0–255. Zero = off.', 0, 255],
             ['DISK_STANDBY_BREATHING', 'Standby breathing', 'select', 'Enabled (default): sleeping drives breathe in the healthy colour, with 1 s fade in/out. Disabled: follows Activity style, dark or solid when idle, with I/O pulses. Zero brightness turns LEDs off; failure warnings are unchanged. Apply activates changes.',
                 ['1' => 'Enabled', '0' => 'Disabled']],
@@ -152,12 +227,42 @@ function ugreen_pro_tab_candidate(array $current, array $posted, string $group, 
 
 // Percentage mode has exactly eleven choices. Legacy values are rounded when
 // read in percentage mode; raw mode retains their exact controller values.
-function ugreen_pro_brightness_options(string $current): array
+function ugreen_pro_brightness_options(): array
 {
     $options = [];
     for ($percent = 0; $percent <= 100; $percent += 10) {
         $raw = (string)(int)round($percent * 255 / 100);
         $options[$raw] = $percent === 0 ? '0% (off)' : "$percent%";
+    }
+    return $options;
+}
+
+// Auto first, then detected uplinks in natural order. Container and VM links are omitted.
+function ugreen_pro_network_interface_options(string $current, string $sysNet = '/sys/class/net', ?callable $defaultRoute = null): array
+{
+    $defaultRoute ??= static function (): string {
+        exec('PATH=/sbin:/usr/sbin:/bin:/usr/bin ip -o route show default 2>/dev/null', $output);
+        return preg_split('/\s+/', trim($output[0] ?? ''))[4] ?? '';
+    };
+    $valid = static fn(string $name): bool => (bool)preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,14}$/', $name);
+    $auto = $defaultRoute();
+    $options = ['auto' => $valid($auto) ? "Auto ($auto)" : 'Auto (no default route)'];
+    $names = [];
+    foreach (glob($sysNet . '/*') ?: [] as $path) {
+        $name = basename($path);
+        if (!$valid($name) || $name === 'lo' || preg_match('/^(docker|br-|virbr|veth|vnet|vhost|tap|tun|macvtap|shim-)/', $name)) continue;
+        if (is_dir("$path/bridge") || is_dir("$path/bonding") || file_exists("$path/device") ||
+            file_exists("$path/wireless") || preg_match('/\.\d+$/', $name)) {
+            $names[] = $name;
+        }
+    }
+    natsort($names);
+    foreach ($names as $name) {
+        $carrier = trim((string)@file_get_contents("$sysNet/$name/carrier"));
+        $options[$name] = $name . ($carrier === '1' ? ' (link up)' : ' (no link)');
+    }
+    if ($current !== 'auto' && $valid($current) && !isset($options[$current])) {
+        $options[$current] = "$current (not detected)";
     }
     return $options;
 }

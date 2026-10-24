@@ -3,12 +3,10 @@ set -euo pipefail
 [[ $(uname -s) == Linux && $(uname -m) == x86_64 ]] || { echo 'Linux x86_64 required.' >&2; exit 1; }
 root=$(cd "$(dirname "$0")/.." && pwd)
 archive=${1:?Pass the matching linux-KERNEL-Unraid.tar.xz archive from ich777/unraid_kernel}
-kernel=${2:-6.18.38-Unraid}
-case $kernel in
-  6.18.38-Unraid) checksum=b336c66bf1d7ee2cedba88e8be2124b2256c94476b1d1c944518ce8d6bcf37da ;;
-  6.18.54-Unraid) checksum=5c8795f9c7a60a01f7135018d0339466f180c7d2bef6f2b35bae8711783c6e00 ;;
-  *) echo "Unsupported build target: $kernel" >&2; exit 1 ;;
-esac
+kernel=${2:?Pass the target kernel release, for example 6.18.54-Unraid}
+# Supported kernels and archive checksums are defined in build/package_manifest.py.
+checksum=$(python3 -I -c 'import sys; sys.path.insert(0, sys.argv[1]); from package_manifest import KERNEL_ARCHIVE_SHA256 as k; print(k.get(sys.argv[2], ""))' "$root/build" "$kernel")
+[[ -n $checksum ]] || { echo "Unsupported build target: $kernel" >&2; exit 1; }
 printf '%s  %s\n' "$checksum" "$archive" | sha256sum -c -
 build=$(mktemp -d "$root/build/module.XXXXXX")
 mkdir "$build/kernel" "$build/led"

@@ -25,7 +25,7 @@ body:
     attributes:
       label: Kernel version
       description: Shown in Unraid system information.
-      placeholder: "6.18.54-Unraid"
+      placeholder: "6.18.58-Unraid"
     validations:
       required: true
   - type: textarea
