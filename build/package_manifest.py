@@ -33,7 +33,7 @@ def payload_inputs(root):
         'usr/local/sbin/ugreen-pro-leds': (root/'src/ugreen-pro-leds', 0o755),
         'usr/local/sbin/ugreen-pro-leds-uninstall': (root/'src/uninstall.sh', 0o755),
         f'{web}/README.md': (root/'src/plugin-readme.md', 0o644),
-        f'{share}/USER-GUIDE.md': (root/'README.md', 0o644),
+        f'{share}/USER-GUIDE.md': (root/'docs/production-readme.md', 0o644),
         f'{share}/LICENSE': (root/'LICENSE', 0o644),
         f'{share}/THIRD_PARTY.md': (root/'THIRD_PARTY.md', 0o644),
     }

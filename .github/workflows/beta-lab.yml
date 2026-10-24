@@ -1,0 +1,25 @@
+name: Beta laboratory
+on:
+  push:
+    branches: [beta-testing]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  simulator:
+    if: github.ref == 'refs/heads/beta-testing'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify simulator isolation and runtime
+        run: python3 lab/test.py
+      - name: Build fixture-only plugin
+        run: python3 lab/build.py --vm-uuid 11111111-2222-4333-8444-555555555555
+      - name: Verify production inputs remain unchanged
+        run: git diff --exit-code -- src build UGREEN-DXP4800Pro-LEDs.plg UGREEN-DXP4800Pro-LEDs.plg.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UGREEN-LEDs-LAB-${{ github.sha }}
+          path: dist/lab/
+          retention-days: 30
+          if-no-files-found: error
