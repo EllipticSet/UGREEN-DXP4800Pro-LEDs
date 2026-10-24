@@ -12,7 +12,7 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/release-build/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Build and verify the offline plugin
@@ -34,7 +34,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Publish the verified version with the plugin changelog
         env:
           GH_TOKEN: ${{ github.token }}
