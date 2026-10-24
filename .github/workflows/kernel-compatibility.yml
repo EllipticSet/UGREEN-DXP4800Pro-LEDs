@@ -10,7 +10,7 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/compatibility/')
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install kernel build dependencies
         run: |
           sudo apt-get update
@@ -62,7 +62,7 @@ jobs:
             git commit -m 'Build and verify rebuilt LED modules and plugin package'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: kernel-compatibility-plugin
           path: |
