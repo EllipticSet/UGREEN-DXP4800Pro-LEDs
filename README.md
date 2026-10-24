@@ -28,9 +28,9 @@ Releases follow `MAJOR.MINOR.PATCH`: patch versions contain fixes, minor version
 <a href="docs/screenshots/NAS-Front-LEDs-power.jpg"><img src="docs/screenshots/NAS-Front-LEDs-power.jpg" alt="Power LED settings" width="600"></a>
 
 <details>
-<summary>Mobile preview — Drives LEDs (1.2.0)</summary>
+<summary>Mobile preview — Power LED</summary>
 
-<a href="docs/screenshots/NAS-Front-LEDs-mobile.gif"><img src="docs/screenshots/NAS-Front-LEDs-mobile.gif" alt="Drives LEDs mobile scrolling preview" width="200"></a>
+<a href="docs/screenshots/NAS-Front-LEDs-mobile.jpg"><img src="docs/screenshots/NAS-Front-LEDs-mobile.jpg" alt="Power LED settings on a mobile screen" width="300"></a>
 
 </details>
 
@@ -206,7 +206,7 @@ Stop LED monitoring:
 
 The stop command releases the LED triggers and turns off the configured drive LEDs. The Power LED remains on, so use `status` to confirm whether the monitor is running. The command stops monitoring without shutting down the NAS. Logs are kept in RAM; settings remain on the boot device.
 
-To report a problem or suggest a change, open a [GitHub issue](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues). Include the Unraid, kernel and plugin versions, describe what happened, and attach the relevant status and log output. Remove private information before posting.
+For questions, use the [Unraid forum support topic](https://forums.unraid.net/topic/201027-plugin-ugreen-dxp4800-pro-leds/). To report a problem or suggest a change, open a [GitHub issue](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/issues). Include the Unraid, kernel and plugin versions, describe what happened, and attach the relevant status and log output. Remove private information before posting.
 
 ## Removal
 

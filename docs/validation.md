@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.5.1
+
+Version 1.5.1 changes only the plugin support link: the `support` attribute of the plugin manifest and the `<Support>` element of the Community Applications listing point to the Unraid forum support topic. The settings interface, LED monitor, installer and kernel modules are unchanged from 1.5.0.
+
+Local checks on October 24, 2026 passed the full automated suite, including the package, metadata and reproducibility checks for the generated 1.5.1 installer and checksum.
+
 ## Version 1.5.0
 
 Version 1.5.0 changes the settings interface, the installer output and the LED monitor; the kernel modules are unchanged from 1.4.3. The **Network interface** setting is a menu with Auto, which shows the interface of the first default route, followed by the detected bridges, bonds, VLANs and physical ports with their link state. The Power and LAN tabs show the current state reported by the monitor, and the Drives tab lists each bay with its mapped ATA port, drive and state, with an **Identify** button that flashes the bay LED for 30 seconds. The monitor publishes this state in `/run/ugreen-pro-leds.status`, logs a missing interface or default route once, and sends an Unraid notification when no bundled driver matches the running kernel. Installation and update output lists each step and ends with a hardware summary.
