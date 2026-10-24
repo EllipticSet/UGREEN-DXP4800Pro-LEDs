@@ -1,0 +1,72 @@
+name: Build and publish plugin release
+on:
+  push:
+    branches:
+      - main
+      - 'release-build/**'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  prepare-package:
+    if: startsWith(github.ref, 'refs/heads/release-build/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build and verify the offline plugin
+        run: |
+          python3 build/package.py
+          python3 tests/package-test.py
+          python3 tests/ca-metadata-test.py
+          python3 tests/reproducible-package-test.py
+      - name: Commit the generated package to the preparation branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add UGREEN-DXP4800Pro-LEDs.plg UGREEN-DXP4800Pro-LEDs.plg.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build verified offline plugin release package'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+  publish-release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the verified version with the plugin changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python3 -c 'import xml.etree.ElementTree as E; print(E.parse("UGREEN-DXP4800Pro-LEDs.plg").getroot().get("version"))')
+          if gh release view "v${version}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release v${version} already exists."
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, xml.etree.ElementTree as E
+          plugin = E.parse('UGREEN-DXP4800Pro-LEDs.plg').getroot()
+          changes = plugin.findtext('CHANGES').strip()
+          heading, notes = changes.split('\n', 1)
+          assert heading == '###' + plugin.get('version')
+          notes = notes.split('\n\n###', 1)[0].strip() + '\n'
+          Path(os.environ['RUNNER_TEMP'], 'release-notes.md').write_text(notes)
+          PY
+          # Release only after the normal validation workflow passes this exact commit.
+          for attempt in $(seq 1 60); do
+            runs=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100")
+            conclusion=$(printf '%s' "$runs" | python3 -c 'import json,sys; runs=[r for r in json.load(sys.stdin)["workflow_runs"] if r["path"]==".github/workflows/validate.yml"]; print(runs[0].get("conclusion") or "pending" if runs else "pending")')
+            if [ "$conclusion" = success ]; then
+              gh release create "v${version}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$version" --notes-file "$RUNNER_TEMP/release-notes.md" --latest UGREEN-DXP4800Pro-LEDs.plg UGREEN-DXP4800Pro-LEDs.plg.sha256
+              exit 0
+            fi
+            if [ "$conclusion" != pending ]; then
+              echo "Validation ended with: $conclusion" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for validation; no release was published.' >&2
+          exit 1
