@@ -88,7 +88,8 @@ trap rollback ERR
 step 4 'Installing files'
 # Reuse any existing i2cget instead of downgrading shared tools.
 if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi
-upgradepkg --reinstall --install-new "$root/$package.txz" >/dev/null
+# Show the native package banner and PACKAGE DESCRIPTION from slack-desc.
+upgradepkg --reinstall --install-new "$root/$package.txz"
 step 5 'Verifying WebGUI files'
 # Refuse success if package installation left an old page or missing icons.
 web=usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs
@@ -149,5 +150,9 @@ else
   detail 'Shutdown hook already present in /boot/config/stop.'
 fi
 trap - ERR
-printf '\n%s\n' '============================================================' 
-printf '%s\n' '  UGREEN DXP4800 Pro LEDs installed successfully' '' '  CUSTOMIZE YOUR FRONT-PANEL LEDs:' '' '       Settings  >  LED Settings' '' '  Set colours, brightness and LED behaviour in the WebGUI.' '============================================================'
+previous=''
+[[ -z $old_version || $old_version == "$version" ]] || previous=" (previous: $old_version)"
+rule=------------------------------------------------------------
+printf '\n%s\n' "$rule"
+printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed.' "Version: $version$previous" 'Settings: LED Settings in the Settings menu'
+printf '%s\n\n' "$rule"
