@@ -17,7 +17,7 @@ def module_source(root, kernel):
 
 def module_sha256(root, kernel):
     return PREBUILT_SHA256 if kernel == PREBUILT_KERNEL else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
-VERSION = '1.5.1'
+VERSION = '1.5.2'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',
@@ -51,5 +51,13 @@ def payload_inputs(root):
         result[f'{share}/docs/{name}'] = (root/'docs'/name, 0o644)
     return result
 
-SLACK_DESC = ('ugreen-pro-leds: UGREEN DXP4800 Pro LEDs (Unraid 7.3.2+ build)\n'
-              'ugreen-pro-leds: Intel I801 LED control, white/orange status and native settings.\n')
+# Eleven-line Slackware description; installpkg prints it under PACKAGE DESCRIPTION.
+SLACK_DESC = ''.join(f'ugreen-pro-leds:{" " + line if line else ""}\n' for line in (
+    'ugreen-pro-leds (UGREEN DXP4800 Pro LEDs)',
+    '',
+    'Power, LAN and drive-bay LED control for the UGREEN DXP4800 Pro',
+    'on Unraid 7.3.2 and later, through the Intel I801 SMBus.',
+    '',
+    'Homepage: https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs',
+    '', '', '', '', '',
+))

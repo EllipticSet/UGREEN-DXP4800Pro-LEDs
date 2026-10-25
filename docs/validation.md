@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.5.2
+
+Version 1.5.2 changes only the installer and removal output. The package installation step no longer discards the output of `upgradepkg`, so the Plugins page shows the standard package banner and the `PACKAGE DESCRIPTION` read from `install/slack-desc`, which now uses the eleven-line Slackware layout with a homepage line. Installation and update end with a short summary of the installed version, the previous version after an update, and the location of LED Settings; removal ends with a short summary that names the retained settings folder. The settings interface, LED monitor and kernel modules are unchanged from 1.5.1.
+
+Local checks on October 25, 2026 passed the full automated suite, including the package, metadata and reproducibility checks for the generated 1.5.2 installer and checksum. On October 25, 2026, version 1.5.2 was installed as an update from 1.5.1 on Unraid 7.3.4 / `6.18.58-Unraid`. The Plugins page showed the eight installer steps, the package banner, the package description and the summary with the new and previous versions; the hardware summary reported the controller on `i2c-0`, LAN online on `br0` and the four drive bays. The Plugins page escapes the `>` character, so the summary names LED Settings without it.
+
 ## Version 1.5.1
 
 Version 1.5.1 changes only the plugin support link: the `support` attribute of the plugin manifest and the `<Support>` element of the Community Applications listing point to the Unraid forum support topic. The settings interface, LED monitor, installer and kernel modules are unchanged from 1.5.0.

@@ -1,3 +1,7 @@
+###1.5.2
+- Show the standard package banner and description during installation and updates, followed by a short summary with the installed version and the location of LED Settings.
+- Show a short summary after removal.
+
 ###1.5.1
 - Point the Support link in Plugins and Apps to the Unraid forum support topic.
 
