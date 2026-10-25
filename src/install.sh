@@ -154,5 +154,5 @@ previous=''
 [[ -z $old_version || $old_version == "$version" ]] || previous=" (previous: $old_version)"
 rule=------------------------------------------------------------
 printf '\n%s\n' "$rule"
-printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed.' "Version: $version$previous" 'Settings: Settings > LED Settings'
+printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed.' "Version: $version$previous" 'Settings: LED Settings in the Settings menu'
 printf '%s\n\n' "$rule"
