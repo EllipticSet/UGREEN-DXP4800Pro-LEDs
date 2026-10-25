@@ -48,8 +48,10 @@ export -f uname modinfo i2cget php upgradepkg removepkg
  assert f'Installing UGREEN DXP4800 Pro LEDs {VERSION}' in r.stdout, r.stdout
  for text in ['[2/8] Checking compatibility','LED driver: 6.18.38-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid)','[6/8] Preparing settings','Settings preserved: ','[8/8] Configuring shutdown hook','Shutdown hook added']:
   assert text in r.stdout,(text,r.stdout)
+ assert ' UGREEN DXP4800 Pro LEDs is installed.' in r.stdout and f' Version: {VERSION}\n' in r.stdout,r.stdout
  (machine/'usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt').write_text('1.4.3\n')
  r=run();assert r.returncode==0 and f'Updating UGREEN DXP4800 Pro LEDs from 1.4.3 to {VERSION}' in r.stdout,r.stdout
+ assert f' Version: {VERSION} (previous: 1.4.3)' in r.stdout,r.stdout
  assert 'Shutdown hook already present' in r.stdout
  assert stop.read_text().count('# UGREEN-DXP4800Pro-LEDs')==1, repr(stop.read_text())+r.stdout+r.stderr
  prior_stop=stop.read_text()
@@ -67,7 +69,7 @@ export -f uname modinfo i2cget php upgradepkg removepkg
  page=machine/web/'LED-Settings.page';page.write_text('old lightbulb page')
  r=run(stale=True);assert r.returncode!=0,r.stdout+r.stderr
  assert 'Installed WebGUI file is missing or outdated' in r.stderr
- assert 'installed successfully' not in r.stdout
+ assert 'is installed.' not in r.stdout
  assert page.read_text()=='old lightbulb page' and config.read_text()=='CUSTOM=preserved\n'
  for occupied in ['1 2','1 2 3 4','2 4','']:
   config.unlink()

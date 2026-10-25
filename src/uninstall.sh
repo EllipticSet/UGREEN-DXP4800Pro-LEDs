@@ -34,4 +34,7 @@ if [[ -d /sys/module/led_ugreen ]]; then
 fi
 # Remove only our package; shared i2c-tools and all user settings are retained.
 removepkg "$package" >/dev/null
-printf 'Removed. Settings retained in %s.\n' "$plugin"
+rule=------------------------------------------------------------
+printf '\n%s\n' "$rule"
+printf ' %s\n' 'UGREEN DXP4800 Pro LEDs has been removed.' "Settings retained in $plugin."
+printf '%s\n\n' "$rule"
