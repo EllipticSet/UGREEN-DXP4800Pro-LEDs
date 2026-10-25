@@ -8,7 +8,7 @@ permissions:
 jobs:
   simulator:
     if: github.ref == 'refs/heads/beta-testing'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Verify simulator isolation and runtime
