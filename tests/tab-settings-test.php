@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../src/web/settings-controller.php';
 function check($condition, $message) { if (!$condition) throw new RuntimeException($message); }
+function array_sort_copy(array $values): array { sort($values); return $values; }
 $current = ugreen_pro_defaults();
 $current['DISK_ATA_PORTS'] = '4 3 2 1';
 $current['POWER_COLOR'] = '#123456';
@@ -32,7 +33,7 @@ $html = ob_get_clean();
 check(substr_count($html, 'class="nas-led-test"') === 2, 'Only error colours must have Test buttons.');
 check(substr_count($html, 'data-test-color="NETWORK_COLOR_OFFLINE"') === 1, 'Missing Internet unavailable test.');
 check(substr_count($html, 'data-test-color="DISK_COLOR_FAILED"') === 1, 'Missing SMART failure test.');
-check(substr_count($html, '<form ') === 5, 'Native tab rendering failed.');
+check(substr_count($html, '<form ') === 6, 'Native tab rendering failed.');
 check(substr_count($html, 'class="nas-live-section nas-identify"') === 1 && substr_count($html, 'name="ugreen_pro_bay"') === 4, 'Drives tab must offer four identify buttons.');
 check(substr_count($html, 'class="nas-live-section"') === 2 && substr_count($html, 'data-live="monitor"') === 1 && substr_count($html, 'data-live="lan"') === 1, 'Power and LAN tabs must show their current state.');
 check(substr_count($html, 'data-live="bay') === 4, 'Drives tab must show the state of four bays.');
@@ -41,7 +42,7 @@ check(substr_count($html, 'data-color-key=') === 18, 'Each front panel must prev
 check(substr_count($html, 'class="nas-led-outline nas-led-outline-') === 3, 'Each illustrated tab must have one group outline.');
 check(substr_count($html, 'nas-led-outline-drives') === 1, 'Drive LEDs must share one outline.');
 check(!str_contains($html, 'is-highlighted'), 'Separate per-drive highlights remain.');
-check(substr_count($html, 'name="csrf_token"') === 5, 'Missing form tokens.');
+check(substr_count($html, 'name="csrf_token"') === 6, 'Missing form tokens.');
 preg_match_all('/id="([^"]+)"/', $html, $matches);
 check(count($matches[1]) === count(array_unique($matches[1])), 'Duplicate input IDs.');
 check(substr_count($html, '<figure ') === 3, 'Advanced Settings must not render a NAS image.');
@@ -59,13 +60,26 @@ check(substr_count($html, 'class="nas-help-toggle"') === count(ugreen_pro_defaul
 check(!str_contains($html, '<label for='), 'Setting labels must not activate colour inputs.');
 check(!str_contains($html, '<span>UGREEN DXP4800 Pro</span>'), 'Old image caption remains.');
 
-check(substr_count($html, 'class="nas-settings-category"') === 4, 'Advanced settings categories are missing.');
-check(strpos($html, '>Drive mapping</h2>') < strpos($html, 'Optional drive-bay mapping guide'), 'Mapping guide must belong to its category.');
+check(substr_count($html, 'class="nas-settings-category"') === 5, 'Advanced settings categories are missing.');
+$advancedHtml = explode('<div class="nas-front-settings" data-led-tab="advanced">', $html)[1];
+$order = array_map(fn($text) => strpos($advancedHtml, $text), ['>Brightness</h2>', 'name="NIGHT_MODE"', '>Connectivity</h2>',
+    '>Optional drive-bay mapping (advanced users)</h2>', 'name="DISK_ATA_PORTS"', '>Monitoring</h2>', 'name="DISK_STATUS_INTERVAL"',
+    '>Troubleshooting</h2>', 'value="restart">Restart monitor</button>', 'formaction="/plugins/UGREEN-DXP4800Pro-LEDs/diagnostics.php">Download diagnostics</button>']);
+check(!in_array(false, $order, true) && $order === array_values(array_unique($order)) && $order == array_values(array_sort_copy($order)), 'Advanced Settings sections are out of order.');
+check(strpos($advancedHtml, 'class="nas-mapping-guide"') > strpos($advancedHtml, '>Optional drive-bay mapping (advanced users)</h2>') &&
+    strpos($advancedHtml, 'class="nas-mapping-guide"') < strpos($advancedHtml, 'name="DISK_ATA_PORTS"'), 'Mapping guide must sit inside the collapsed mapping section.');
+check(preg_match('/<button type="button" class="nas-collapsible-toggle" aria-controls="nas-mapping-content" aria-expanded="false">Show<\/button>/', $advancedHtml) === 1, 'Mapping section must start closed.');
+check(preg_match('/<button type="button" class="nas-collapsible-toggle" aria-controls="nas-troubleshooting-content" aria-expanded="false">Show<\/button>/', $advancedHtml) === 1, 'Troubleshooting must start closed.');
+preg_match('/id="nas-troubleshooting-content" style="display:none">(.*?)<\/section>/s', $advancedHtml, $troubleshooting);
+check(isset($troubleshooting[1]) && substr_count($troubleshooting[1], '<form ') === 1 && substr_count($troubleshooting[1], '<button type="submit"') === 2, 'Troubleshooting buttons must share one collapsed form.');
+preg_match('/class="nas-collapsible-content" id="nas-mapping-content" style="display:none">(.*?)<\/section>/s', $advancedHtml, $mappingSection);
+check(isset($mappingSection[1]) && str_contains($mappingSection[1], 'name="DISK_ATA_PORTS"') && str_contains($mappingSection[1], 'id="ugreen-help-DISK_ATA_PORTS"'), 'Mapping field and help must be inside the collapsed content.');
+check(substr_count($advancedHtml, 'data-night-field hidden') === 4, 'Night settings must be hidden while night mode is disabled.');
 
 check(!preg_match('/class="inline_help nas-inline-help"[^>]* hidden/', $html), 'Native animated help must not be blocked by hidden.');
-check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults()) + 1, 'Each native help panel must start collapsed.');
+check(substr_count($html, 'style="display:none"') === count(ugreen_pro_defaults()) + 2, 'Each native help panel must start collapsed.');
 
-check(substr_count($html, '<dl class="field">') === count(ugreen_pro_defaults()), 'Each setting must use the native definition-list structure.');
+check(preg_match_all('/<dl class="field"[ >]/', $html) === count(ugreen_pro_defaults()), 'Each setting must use the native definition-list structure.');
 preg_match_all('/<\/dl>\s*<blockquote class="inline_help nas-inline-help"/', $html, $nativePairs);
 check(count($nativePairs[0]) === count(ugreen_pro_defaults()), 'Native help must immediately follow its definition list.');
 
@@ -75,7 +89,7 @@ foreach (['settings.css', 'settings.js', 'images/nas-front.png'] as $asset) {
     check(str_contains($html, $asset . '?v=' . $fingerprint), 'Stale cache key for ' . $asset);
 }
 
-check(str_contains($html, 'id="nas-mapping-content" style="display:none"'), 'Mapping guide must start collapsed before JavaScript runs.');
+check(str_contains($html, 'id="nas-mapping-content" style="display:none"') && str_contains($html, 'id="nas-troubleshooting-content" style="display:none"'), 'Mapping guide must start collapsed before JavaScript runs.');
 $version = trim(file_get_contents(__DIR__ . '/../src/web/version.txt'));
 check(str_contains($html, 'href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/releases/tag/v' . $version . '"'), 'Version must link to its exact release.');
 
@@ -115,6 +129,11 @@ try {
         'lan' => 'Internet unavailable on eth5. Network interface eth5 not found; the LAN LED shows Internet unavailable',
         'bay1' => 'ATA 1 · sda · active', 'bay2' => 'ATA 2 · sdb · standby', 'bay3' => 'ATA 3 · empty', 'bay4' => 'disabled',
     ], 'Unexpected live labels: ' . json_encode($live));
+    file_put_contents("$run/status/night", "1\n");
+    file_put_contents("$run/status/bays", "bay=1 port=1 device=sda mode=off\n");
+    $night = ugreen_pro_live_labels(ugreen_pro_live_status("$run/status", $run));
+    check($night['monitor'] === 'LED monitor running, controller i2c-0, night mode active', 'Night mode must be shown with the monitor state.');
+    check(str_ends_with($night['lan'], '. Night mode active') && $night['bay1'] === 'ATA 1 · sda · off (night mode)', 'Night mode labels incorrect: ' . json_encode($night));
 } finally {
     exec('rm -rf ' . escapeshellarg($run));
 }

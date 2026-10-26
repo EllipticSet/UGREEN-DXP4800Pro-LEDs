@@ -104,3 +104,85 @@ for mode in active standby failed; do
   assert_file "$test_root/disk1/blink_type" none
   assert_file "$test_root/disk1/trigger" none
 done
+echo 'Zero brightness turns drive LEDs off while keeping their drive state.'
+
+# Night mode: the window may cross midnight and caps brightness.
+NIGHT_MODE=1 NIGHT_START='23:00' NIGHT_END='07:00'
+is_day() { if night_active "$1"; then echo "FAIL night at $1" >&2; exit 1; fi; }
+for now in 2300 2359 0000 0659; do night_active "$now"; done
+for now in 0700 1200 2259; do is_day "$now"; done
+NIGHT_START='08:30' NIGHT_END='17:45'
+night_active 0830
+night_active 1744
+is_day 1745
+is_day 0829
+NIGHT_MODE=0
+is_day 1000
+NIGHT_BRIGHTNESS=51 NIGHT_KEEP_WARNINGS=1 night=1
+led_level level 179; [[ $level == 51 ]]
+led_level level 26; [[ $level == 26 ]]
+led_level level 179 1; [[ $level == 179 ]]
+NIGHT_KEEP_WARNINGS=0
+led_level level 179 1; [[ $level == 51 ]]
+night=0
+led_level level 179; [[ $level == 179 ]]
+# Switching to night re-applies drive LEDs at night brightness; warnings keep their level.
+DISK_BRIGHTNESS=179 NIGHT_KEEP_WARNINGS=1 DISK_ACTIVITY_STYLE=solid
+power_dir=$test_root/power
+mkdir -p "$power_dir"
+write_status() { :; }
+update_night_test() {
+  # update_night writes the power LED under /sys; redirect it to the test directory.
+  local source
+  source=$(declare -f update_night)
+  eval "${source//\/sys\/class\/leds\/power/$power_dir}"
+  update_night
+}
+bay_mode=() bay_light=()
+set_bay_mode 1 active
+set_bay_mode 2 failed
+night_active() { [[ $test_night == 1 ]]; }
+test_night=0 night=''
+update_night_test
+test_night=1
+update_night_test
+[[ $night == 1 ]]
+assert_file "$power_dir/brightness" 51
+assert_file "$test_root/disk1/brightness" 51
+assert_file "$test_root/disk2/brightness" 179
+assert_file "$test_root/disk2/blink_type" 'blink 500 500'
+[[ ${bay_mode[1]} == active && ${bay_light[1]} == 'active 51' ]]
+NIGHT_BRIGHTNESS=0
+test_night=0
+update_night_test
+test_night=1
+update_night_test
+assert_file "$test_root/disk1/brightness" 0
+assert_file "$test_root/disk1/trigger" none
+[[ ${bay_mode[1]} == active ]]
+bay_device[1]=sda bay_device[2]=sdb bay_device[3]='' bay_device[4]=''
+DISK_ATA_PORTS=(1 2 3 4)
+last_bays_status=''
+write_status() { [[ $1 != bays ]] || bays_written=$2; }
+bays_status
+[[ $bays_written == *'bay=1 port=1 device=sda mode=off'* && $bays_written == *'bay=2 port=2 device=sdb mode=failed'* ]]
+test_night=0
+update_night_test
+assert_file "$power_dir/brightness" 179
+assert_file "$test_root/disk1/brightness" 179
+[[ ${bay_light[1]} == 'active 179' ]]
+echo 'Night mode window, brightness cap, warning exception and day/night switching passed.'
+
+# Diagnostics collect the sections needed for support requests.
+mkdir -p "$test_root/status"
+printf 'i2c-0\n' > "$test_root/status/controller"
+printf '# comment\nNIGHT_MODE=1\n' > "$test_root/settings.cfg"
+for line in {1..250}; do printf 'log line %s\n' "$line"; done > "$test_root/log"
+report=$(UGREEN_PRO_CONFIG=$test_root/settings.cfg UGREEN_PRO_STATUS_DIR=$test_root/status UGREEN_PRO_LOG_FILE=$test_root/log \
+  bash "$root/src/ugreen-pro-leds" diagnostics 2>&1)
+for text in 'UGREEN DXP4800 Pro LEDs diagnostics' '== Monitor' '== Detection' '== LED driver' '== Current state' \
+            'i2c-0' '== Settings' 'NIGHT_MODE=1' '== Log (last 200 lines)' 'log line 250'; do
+  [[ $report == *"$text"* ]] || { echo "FAIL diagnostics: $text" >&2; exit 1; }
+done
+[[ $report != *'# comment'* && $report != *'log line 50'$'\n'* ]]
+echo 'Diagnostics report includes monitor, detection, driver, state, settings and the log tail.'

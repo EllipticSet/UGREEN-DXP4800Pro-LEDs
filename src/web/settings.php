@@ -16,10 +16,10 @@ $ugreenLive = $tabKey === 'advanced' ? [] : ugreen_pro_live_labels(ugreen_pro_li
 $categoryStarts = [
     'BRIGHTNESS_MODE' => 'Brightness',
     'CONNECTIVITY_METHOD' => 'Connectivity',
-    'DISK_ATA_PORTS' => 'Drive mapping',
     'POLL_INTERVAL' => 'Monitoring',
 ];
-$ugreenMappingGuide = '';
+$ugreenMappingOpen = isset($ugreenErrors['DISK_ATA_PORTS']);
+$ugreenNightFields = ['NIGHT_START', 'NIGHT_END', 'NIGHT_BRIGHTNESS', 'NIGHT_KEEP_WARNINGS'];
 $tabDescriptions = [
     'power' => 'Power indication while running and during shutdown.',
     'lan' => 'Network activity and connectivity status.',
@@ -68,21 +68,6 @@ $tabDescriptions = [
           <button type="button" class="nas-feedback-close" aria-label="Dismiss message">&times;</button>
         </div>
       <?php endif; ?>
-      <?php if ($tabKey === 'advanced'): ob_start(); ?>
-        <aside class="nas-mapping-guide" aria-label="Drive LED setup">
-          <div class="nas-guide-header">
-            <strong>Optional drive-bay mapping guide</strong>
-            <button type="button" class="nas-guide-open" aria-controls="nas-mapping-content" aria-expanded="false">Show guide</button>
-          </div>
-          <div id="nas-mapping-content" style="display:none">
-          <p>The standard mapping is 1 2 3 4. Empty bays remain off; newly added drives are detected automatically within approximately 15 seconds. Change the mapping only for troubleshooting or to disable a bay.</p>
-          <p>For troubleshooting or a custom mapping, open the Unraid terminal and run:</p>
-          <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
-          <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Keep 0 for any bay you want to leave disabled.</p>
-          <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#drive-bay-mapping" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
-          </div>
-        </aside>
-      <?php $ugreenMappingGuide = ob_get_clean(); endif; ?>
       <form method="post" class="nas-front-form">
         <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
         <input type="hidden" name="ugreen_pro_group" value="<?= ugreen_pro_escape($ugreenTab) ?>">
@@ -96,11 +81,24 @@ $tabDescriptions = [
             }
             if ($key === 'NETWORK_INTERFACE') $field[4] = ugreen_pro_network_interface_options($value);
         ?>
-          <?php if ($tabKey === 'advanced' && isset($categoryStarts[$key])): ?>
+          <?php if ($tabKey === 'advanced' && $key === 'DISK_ATA_PORTS'): ?>
+            <section class="nas-collapsible" aria-labelledby="nas-mapping-title">
+            <div class="nas-collapsible-header">
+              <h2 class="nas-settings-category" id="nas-mapping-title">Optional drive-bay mapping (advanced users)</h2>
+              <button type="button" class="nas-collapsible-toggle" aria-controls="nas-mapping-content" aria-expanded="<?= $ugreenMappingOpen ? 'true' : 'false' ?>"><?= $ugreenMappingOpen ? 'Hide' : 'Show' ?></button>
+            </div>
+            <div class="nas-collapsible-content" id="nas-mapping-content"<?= $ugreenMappingOpen ? '' : ' style="display:none"' ?>>
+              <div class="nas-mapping-guide">
+                <p>The plugin monitors ATA ports 1 2 3 4, which match the four bays of the DXP4800 Pro. Empty bays remain off; added drives are detected within approximately 15 seconds. Change the mapping only for troubleshooting or to disable a bay.</p>
+                <p>To check the mapping, open the Unraid terminal and run:</p>
+                <pre><code>/usr/local/sbin/ugreen-pro-leds detect</code></pre>
+                <p>Confirm which ATA port belongs to each physical bay, then enter the ports in bay order below and select Apply. Detection alone does not confirm physical bay order. Enter 0 for any bay to leave disabled.</p>
+                <a href="https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs#drive-bay-mapping" target="_blank" rel="noopener noreferrer">Read the drive-bay mapping guide <i class="fa fa-external-link" aria-hidden="true"></i></a>
+              </div>
+          <?php elseif ($tabKey === 'advanced' && isset($categoryStarts[$key])): ?>
             <h2 class="nas-settings-category"><?= ugreen_pro_escape($categoryStarts[$key]) ?></h2>
-            <?php if ($key === 'DISK_ATA_PORTS') echo $ugreenMappingGuide; ?>
           <?php endif; ?>
-          <dl class="field">
+          <dl class="field"<?php if (in_array($key, $ugreenNightFields, true)): ?> data-night-field<?= $ugreenValues['NIGHT_MODE'] === '1' ? '' : ' hidden' ?><?php endif; ?>>
             <dt><button type="button" class="nas-help-toggle" id="ugreen-label-<?= ugreen_pro_escape($key) ?>" aria-controls="ugreen-help-<?= ugreen_pro_escape($key) ?>" aria-expanded="false"><?= ugreen_pro_escape($label) ?></button></dt>
             <dd>
             <?php if ($type === 'select'): ?>
@@ -124,6 +122,10 @@ $tabDescriptions = [
             </dd>
           </dl>
           <blockquote class="inline_help nas-inline-help" id="ugreen-help-<?= ugreen_pro_escape($key) ?>" style="display:none"><?= ugreen_pro_escape($help) ?></blockquote>
+          <?php if ($tabKey === 'advanced' && $key === 'DISK_ATA_PORTS'): ?>
+            </div>
+            </section>
+          <?php endif; ?>
         <?php endforeach; ?>
 
         <div class="actions">
@@ -132,7 +134,23 @@ $tabDescriptions = [
           <button type="submit" name="ugreen_pro_action" value="reset" formnovalidate onclick="return confirm('Restore defaults for this tab?')">Restore tab defaults</button>
         </div>
       </form>
-      <?php if ($tabKey === 'power' || $tabKey === 'lan'): ?>
+      <?php if ($tabKey === 'advanced'): ?>
+      <section class="nas-collapsible nas-troubleshooting" aria-labelledby="nas-troubleshooting-title">
+        <div class="nas-collapsible-header">
+          <h2 class="nas-settings-category" id="nas-troubleshooting-title">Troubleshooting</h2>
+          <button type="button" class="nas-collapsible-toggle" aria-controls="nas-troubleshooting-content" aria-expanded="false">Show</button>
+        </div>
+        <div class="nas-collapsible-content" id="nas-troubleshooting-content" style="display:none">
+        <form method="post" class="nas-troubleshooting-actions">
+          <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
+          <input type="hidden" name="ugreen_pro_group" value="Advanced Settings">
+          <button type="submit" name="ugreen_pro_action" value="restart">Restart monitor</button>
+          <button type="submit" formaction="/plugins/UGREEN-DXP4800Pro-LEDs/diagnostics.php">Download diagnostics</button>
+        </form>
+        <p>Restart monitor stops and starts the LED monitor with the saved settings. Download diagnostics saves a text report for support requests: plugin, Unraid and kernel versions, drive detection, current state, settings and the last 200 log lines. The report contains no drive serial numbers or MAC addresses.</p>
+        </div>
+      </section>
+      <?php elseif ($tabKey === 'power' || $tabKey === 'lan'): ?>
       <section class="nas-live-section" aria-live="polite">
         <strong>Current state</strong>
         <p data-live="<?= $tabKey === 'power' ? 'monitor' : 'lan' ?>"><?= ugreen_pro_escape($ugreenLive[$tabKey === 'power' ? 'monitor' : 'lan']) ?></p>

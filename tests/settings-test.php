@@ -125,3 +125,36 @@ $legacy = tempnam(__DIR__, 'raw-');
 file_put_contents($legacy, "BRIGHTNESS_MODE='raw'\nPOWER_BRIGHTNESS=180\n");
 $rawValues = ugreen_pro_read_settings($legacy); unlink($legacy);
 check($rawValues['POWER_BRIGHTNESS'] === '180', 'Raw mode must retain exact brightness.');
+
+// Night mode: disabled by default, times in 24-hour HH:MM, distinct start and end when enabled.
+[$values] = ugreen_pro_validate(ugreen_pro_defaults());
+check($values['NIGHT_MODE'] === '0' && $values['NIGHT_BRIGHTNESS'] === '51' && $values['NIGHT_KEEP_WARNINGS'] === '1', 'Night mode defaults changed.');
+$rendered = ugreen_pro_render_settings($values);
+check(str_contains($rendered, "NIGHT_MODE=0\nNIGHT_START='23:00'\nNIGHT_END='07:00'\nNIGHT_BRIGHTNESS=51\nNIGHT_KEEP_WARNINGS=1\n"), 'Night settings must render as shell values.');
+$night = $values;
+$night['NIGHT_MODE'] = '1';
+$night['NIGHT_START'] = '22:30';
+$night['NIGHT_END'] = '06:15';
+$night['NIGHT_BRIGHTNESS'] = '0';
+$night['NIGHT_KEEP_WARNINGS'] = '0';
+[$night, $errors] = ugreen_pro_validate($night);
+check($errors === [], 'Valid night settings rejected: ' . json_encode($errors));
+foreach ([['NIGHT_START', '24:00'], ['NIGHT_END', '7:00'], ['NIGHT_START', '23:00:00'], ['NIGHT_MODE', '2'],
+          ['NIGHT_KEEP_WARNINGS', 'yes'], ['NIGHT_BRIGHTNESS', '256']] as [$key, $bad]) {
+    $candidate = $night;
+    $candidate[$key] = $bad;
+    [, $errors] = ugreen_pro_validate($candidate);
+    check(isset($errors[$key]), "Invalid $key accepted: $bad");
+}
+$same = $night;
+$same['NIGHT_END'] = $same['NIGHT_START'];
+[, $errors] = ugreen_pro_validate($same);
+check(isset($errors['NIGHT_END']), 'Equal night start and end accepted while enabled.');
+$same['NIGHT_MODE'] = '0';
+[, $errors] = ugreen_pro_validate($same);
+check($errors === [], 'Equal night times must not block saving while night mode is disabled.');
+$file = tempnam(__DIR__, 'night-');
+file_put_contents($file, ugreen_pro_render_settings($night) . "NIGHT_BRIGHTNESS=60\n");
+$loaded = ugreen_pro_read_settings($file); unlink($file);
+check($loaded['NIGHT_START'] === '22:30' && $loaded['NIGHT_MODE'] === '1' && $loaded['NIGHT_BRIGHTNESS'] === '51', 'Night settings must load; percentage mode rounds night brightness.');
+echo "Night mode settings validate, render and reload.\n";
