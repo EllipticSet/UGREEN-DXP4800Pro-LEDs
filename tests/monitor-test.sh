@@ -10,8 +10,11 @@ led_path() { printf '%s/%s' "$test_root" "$1"; }
 for bay in 1 2 3 4; do mkdir -p "$test_root/disk$bay"; done
 assert_file() { [[ $(cat "$1") == "$2" ]] || { echo "FAIL $1" >&2; exit 1; }; }
 set_bay_mode 1 active
-assert_file "$test_root/disk1/brightness" 0
+# Dark style primes the pulse brightness with one pulse at the configured level.
+assert_file "$test_root/disk1/trigger" oneshot
 assert_file "$test_root/disk1/invert" 0
+assert_file "$test_root/disk1/brightness" 179
+assert_file "$test_root/disk1/shot" 1
 set_bay_mode 1 standby
 assert_file "$test_root/disk1/blink_type" 'breath 1000 1000'
 set_bay_mode 1 failed
@@ -87,7 +90,8 @@ for bay in 1 2; do bay_mode[$bay]=''; done
 refresh_bay_health
 for bay in 1 2; do
   [[ ${bay_mode[$bay]} == standby ]]
-  assert_file "$test_root/disk$bay/brightness" 0
+  assert_file "$test_root/disk$bay/brightness" 179
+  assert_file "$test_root/disk$bay/shot" 1
   assert_file "$test_root/disk$bay/trigger" oneshot
   assert_file "$test_root/disk$bay/invert" 0
   assert_file "$test_root/disk$bay/blink_type" none
@@ -186,3 +190,24 @@ for text in 'UGREEN DXP4800 Pro LEDs diagnostics' '== Monitor' '== Detection' '=
 done
 [[ $report != *'# comment'* && $report != *'log line 50'$'\n'* ]]
 echo 'Diagnostics report includes monitor, detection, driver, state, settings and the log tail.'
+
+# Dark style: night mode re-primes activity pulses at the night level and daytime restores it.
+DISK_ACTIVITY_STYLE=dark DISK_BRIGHTNESS=179 NIGHT_BRIGHTNESS=26 NIGHT_KEEP_WARNINGS=1
+write_status() { :; }
+bay_mode=() bay_light=()
+test_night=0 night=''
+update_night_test
+set_bay_mode 3 active
+assert_file "$test_root/disk3/brightness" 179
+rm "$test_root/disk3/shot"
+test_night=1
+update_night_test
+assert_file "$test_root/disk3/trigger" oneshot
+assert_file "$test_root/disk3/brightness" 26
+assert_file "$test_root/disk3/shot" 1
+rm "$test_root/disk3/shot"
+test_night=0
+update_night_test
+assert_file "$test_root/disk3/brightness" 179
+assert_file "$test_root/disk3/shot" 1
+echo 'Dark activity pulses follow the day and night brightness.'

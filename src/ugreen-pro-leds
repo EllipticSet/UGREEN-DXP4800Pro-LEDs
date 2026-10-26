@@ -313,7 +313,12 @@ set_bay_mode() {
           printf 'oneshot\n' > "$path/trigger"
           printf '0\n' > "$path/invert"
           printf '%s\n' "$DISK_PULSE_MS" > "$path/delay_on"
-          printf '100\n' > "$path/delay_off" ;;
+          printf '100\n' > "$path/delay_off"
+          # Pulses use the brightness present when a software blink starts.
+          # Light the LED at the effective level and send one pulse, which
+          # ends dark, so later pulses use this level instead of the maximum.
+          printf '%s\n' "$brightness" > "$path/brightness"
+          printf '1\n' > "$path/shot" ;;
         *) fail "Unknown DISK_ACTIVITY_STYLE: $DISK_ACTIVITY_STYLE" ;;
       esac ;;
     standby)
