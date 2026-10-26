@@ -1,3 +1,6 @@
+###1.6.1
+- Apply the drive LED brightness to activity pulses in the Dark when idle style, including the night mode brightness. Previously these pulses used full brightness.
+
 ###1.6.0
 - Add night mode in Advanced Settings: between a start and an end time, the LEDs use a lower brightness or turn off. Internet unavailable and drive warnings keep their normal brightness by default.
 - Add a Troubleshooting section to Advanced Settings, closed by default, with Restart monitor and Download diagnostics. The diagnostics report is also available with the diagnostics command.

@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.1
+
+With the Dark when idle activity style, the LED core starts each activity pulse at the brightness the LED had when its software blink began, or at the maximum when the LED was dark. The monitor wrote brightness 0 before enabling the pulses, so they ran at full brightness and ignored both the drive brightness and the night mode limit. When it applies the Dark when idle style, the monitor now lights the LED at the effective brightness and sends one pulse, which ends dark; later pulses use that level. The settings interface, installer and kernel modules are unchanged from 1.6.0.
+
+Local checks on October 26, 2026 passed the full automated suite, including new regressions for the pulse brightness in the Dark when idle style and its update when night mode starts and ends.
+
 ## Version 1.6.0
 
 Version 1.6.0 changes the settings interface, the LED monitor and the installer and removal output; the kernel modules are unchanged from 1.5.2. **Advanced Settings → Brightness** adds night mode: between a start and an end time, which may cross midnight, the monitor caps the brightness of every LED at the night brightness, with Internet unavailable and drive warnings kept at their configured brightness by default. The monitor stores the drive state separately from the applied lighting, so a zero or night brightness no longer replaces the drive state and no activity pulse is sent to an LED that is off. The drive-bay mapping is a closed **Optional drive-bay mapping (advanced users)** section that opens on request or when the mapping needs correction. A **Troubleshooting** section, also closed by default, adds **Restart monitor** and **Download diagnostics**; the report is produced by the new `diagnostics` command. The compatibility step of the installer reports the detected system and each check, the file step reports the `i2c-tools` source, and removal lists five steps before its summary.
