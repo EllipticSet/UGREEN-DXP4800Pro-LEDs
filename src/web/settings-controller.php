@@ -46,9 +46,10 @@ function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status
 {
     $pid = trim((string)@file_get_contents("$runDir/ugreen-pro-leds.pid"));
     $running = is_file("$runDir/ugreen-pro-leds.ready") && preg_match('/^\d+$/', $pid) && is_dir("/proc/$pid");
-    $status = ['running' => $running, 'controller' => '', 'network' => [], 'bays' => []];
+    $status = ['running' => $running, 'controller' => '', 'night' => false, 'network' => [], 'bays' => []];
     if (!$running) return $status;
     $status['controller'] = trim((string)@file_get_contents("$statusDir/controller"));
+    $status['night'] = trim((string)@file_get_contents("$statusDir/night")) === '1';
     foreach (preg_split('/\n/', (string)@file_get_contents("$statusDir/network")) as $line) {
         if (preg_match('/^(mode|interface|problem)=(.*)$/', $line, $parts)) $status['network'][$parts[1]] = $parts[2];
     }
@@ -69,7 +70,9 @@ function ugreen_pro_live_labels(array $status): array
         for ($bay = 1; $bay <= 4; ++$bay) $stopped["bay$bay"] = 'monitor stopped';
         return $stopped;
     }
-    $labels = ['monitor' => 'LED monitor running' . ($status['controller'] !== '' ? ", controller {$status['controller']}" : '')];
+    $night = $status['night'] ?? false;
+    $labels = ['monitor' => 'LED monitor running' . ($status['controller'] !== '' ? ", controller {$status['controller']}" : '') .
+        ($night ? ', night mode active' : '')];
     $network = $status['network'];
     $interface = ($network['interface'] ?? '') !== '' ? $network['interface'] : 'no interface';
     $labels['lan'] = match ($network['mode'] ?? '') {
@@ -80,7 +83,8 @@ function ugreen_pro_live_labels(array $status): array
         default => 'Starting',
     };
     if (($network['problem'] ?? '') !== '') $labels['lan'] .= '. ' . rtrim($network['problem'], '.');
-    $modes = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => 'off',
+    if ($night && ($network['mode'] ?? '') !== 'off') $labels['lan'] .= '. Night mode active';
+    $modes = ['active' => 'active', 'standby' => 'standby', 'failed' => 'warning', 'off' => $night ? 'off (night mode)' : 'off',
         'empty' => 'empty', 'disabled' => 'disabled', 'identify' => 'identifying'];
     for ($bay = 1; $bay <= 4; ++$bay) {
         $info = $status['bays'][$bay] ?? null;
@@ -127,6 +131,16 @@ function ugreen_pro_settings_state(): array
                 $ugreenNoticeClass = 'success';
             } else {
                 $ugreenNotice = 'Drive bay identification failed. Check that the LED monitor is running.';
+                $ugreenNoticeClass = 'error';
+            }
+            return $state = compact('ugreenValues', 'ugreenErrors', 'ugreenNotice', 'ugreenNoticeClass');
+        }
+        if ($action === 'restart') {
+            if (ugreen_pro_restart_monitor()) {
+                $ugreenNotice = 'LED monitor restarted with the saved settings.';
+                $ugreenNoticeClass = 'success';
+            } else {
+                $ugreenNotice = 'LED monitor could not restart; see /var/log/ugreen-pro-leds.log for details.';
                 $ugreenNoticeClass = 'error';
             }
             return $state = compact('ugreenValues', 'ugreenErrors', 'ugreenNotice', 'ugreenNoticeClass');
@@ -199,6 +213,13 @@ function ugreen_pro_groups(): array
         ],
         'Advanced Settings' => [
             ['BRIGHTNESS_MODE', 'Brightness display', 'select', 'Percentage rounds to 10% steps; Raw preserves exact 0–255 values. Zero turns LEDs off.', ['percent' => 'Percentage (0–100%)', 'raw' => 'Raw (0–255)']],
+            ['NIGHT_MODE', 'Night mode', 'select', 'Enabled: lowers LED brightness from Night start to Night end, in the Unraid time zone. Default: disabled. Shutdown indication and Identify are unchanged. Apply activates changes.',
+                ['0' => 'Disabled', '1' => 'Enabled']],
+            ['NIGHT_START', 'Night start', 'time', 'Start of night mode; default: 23:00. The period may cross midnight. The time format follows the browser.'],
+            ['NIGHT_END', 'Night end', 'time', 'End of night mode; default: 07:00. Must differ from Night start.'],
+            ['NIGHT_BRIGHTNESS', 'Night brightness', 'number', 'Maximum brightness during night mode; default: 20%. LEDs set lower keep their level. Zero turns the LEDs off. Percentage: 10% steps; Raw: 0–255.', 0, 255],
+            ['NIGHT_KEEP_WARNINGS', 'Warnings at night', 'select', 'Normal brightness (default): Internet unavailable and drive warnings keep their configured brightness at night. Night brightness: warnings follow Night brightness, so zero hides them until Night end.',
+                ['1' => 'Normal brightness', '0' => 'Night brightness']],
             ['CONNECTIVITY_METHOD', 'Connectivity check', 'select', 'HTTPS (default): either endpoint succeeding means available. Gateway ping checks local reachability only. Always online skips checks. No link means unavailable in every mode. Apply activates changes.',
                 ['https' => 'HTTPS', 'gateway' => 'Gateway ping', 'none' => 'Always online when linked']],
             ['CONNECTIVITY_URL', 'Primary check URL', 'url', 'Primary HTTPS endpoint; default: https://unraid.net/. Must accept HEAD requests. Uses selected interface; timeouts: 2 s connection, 5 s total. Failure tries fallback. Other modes ignore it.'],

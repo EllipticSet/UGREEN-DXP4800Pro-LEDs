@@ -52,6 +52,13 @@ export -f sed rmmod removepkg modprobe
         assert config.read_text() == 'CUSTOM=retained\n'
         assert 'echo unrelated' in stop.read_text() and '# UGREEN-DXP4800Pro-LEDs' not in stop.read_text()
         if success:
+            for text in [f'Removing UGREEN DXP4800 Pro LEDs {version}', '[1/5] Stopping LED monitor',
+                         '[2/5] Removing shutdown hook', 'Shutdown hook removed from', '[3/5] Releasing LED controller',
+                         '[4/5] Unloading LED driver', '[5/5] Removing package files', f'Package {expected_package} removed',
+                         ' UGREEN DXP4800 Pro LEDs has been removed.']:
+                assert text in result.stdout, (text, result.stdout)
+            assert ('LED driver unloaded.' in result.stdout) == (scenario == 'loaded'), result.stdout
+            assert '>' not in result.stdout and '<' not in result.stdout
             assert not module.exists()
             assert removed.read_text().strip() == expected_package
         else:

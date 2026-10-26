@@ -52,12 +52,12 @@
 .nas-front-settings .nas-mapping-guide pre { margin: 12px 0; padding: 10px 12px; border: 1px solid #9995; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .nas-front-settings .nas-mapping-guide a { font-weight: 600; }
 
-.nas-front-settings .nas-guide-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.nas-front-settings .nas-guide-header strong { font-size: 1.1em; }
-.nas-front-settings .nas-guide-header button { flex-shrink: 0; margin: 0; }
-.nas-front-settings .nas-mapping-guide [hidden] { display: none !important; }
-.nas-front-settings .nas-mapping-guide .actions { margin-top: 16px; }
-@media (max-width: 550px) { .nas-front-settings .nas-guide-header { flex-wrap: wrap; } }
+/* Collapsible sections: a category heading with a Show/Hide control. */
+.nas-front-settings .nas-collapsible-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 30px 0 16px; padding-bottom: 10px; border-bottom: 1px solid #8885; }
+.nas-front-settings .nas-collapsible-header h2.nas-settings-category { margin: 0; padding: 0; border: 0; }
+.nas-front-settings .nas-collapsible-header button { flex-shrink: 0; margin: 0; }
+@media (max-width: 550px) { .nas-front-settings .nas-collapsible-header { flex-wrap: wrap; } }
+.nas-front-settings .nas-mapping-guide { margin-bottom: 10px; }
 
 .nas-front-settings .nas-front-layout-advanced { grid-template-columns: minmax(0, 1fr); }
 
@@ -143,3 +143,8 @@
 .nas-front-settings .nas-bay button { margin: 4px 0 0; }
 @media (max-width: 550px) { .nas-front-settings .nas-bays { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .nas-front-settings .nas-front-form > h2.nas-settings-category:first-of-type { margin-top: 8px; }
+.nas-front-settings .nas-troubleshooting { margin-top: 34px; }
+/* One form, so both native buttons share the same baseline and margins. */
+.nas-front-settings .nas-troubleshooting-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin: 0; }
+.nas-front-settings .nas-troubleshooting-actions button[type=submit] { margin: 0; vertical-align: middle; }
+.nas-front-settings .nas-troubleshooting p { margin: 14px auto 0; max-width: 640px; text-align: center; line-height: 1.5; opacity: .65; }

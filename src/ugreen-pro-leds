@@ -17,6 +17,11 @@ IDENTIFY_SECONDS=30
 
 POWER_COLOR='255 255 255'
 POWER_BRIGHTNESS=179
+NIGHT_MODE=0
+NIGHT_START='23:00'
+NIGHT_END='07:00'
+NIGHT_BRIGHTNESS=51
+NIGHT_KEEP_WARNINGS=1
 NETWORK_INTERFACE=auto
 NETWORK_BRIGHTNESS=179
 NETWORK_COLOR_ONLINE='255 255 255'
@@ -64,6 +69,27 @@ notify_admin() {
 write_status() {
   [[ -d $status_dir ]] || return 0
   { printf '%s\n' "$2" > "$status_dir/.$1.tmp" && mv -f "$status_dir/.$1.tmp" "$status_dir/$1"; } 2>/dev/null || true
+}
+
+# Night mode applies between NIGHT_START and NIGHT_END (local time, HH:MM);
+# the window may cross midnight. An optional HHMM argument replaces the clock.
+night_active() {
+  local now=${1:-} start end
+  [[ $NIGHT_MODE == 1 ]] || return 1
+  [[ -n $now ]] || printf -v now '%(%H%M)T' -1
+  now=$((10#$now)); start=$((10#${NIGHT_START/:/})); end=$((10#${NIGHT_END/:/}))
+  if (( start < end )); then (( now >= start && now < end ))
+  else (( now >= start || now < end )); fi
+}
+
+# Store in $1 the brightness for configured level $2. During night mode the
+# level is capped at NIGHT_BRIGHTNESS; warnings ($3 = 1) may keep their level.
+led_level() {
+  local -n level_out=$1
+  level_out=$2
+  [[ ${night:-0} == 1 ]] || return 0
+  [[ ${3:-0} == 1 && $NIGHT_KEEP_WARNINGS == 1 ]] && return 0
+  (( NIGHT_BRIGHTNESS >= level_out )) || level_out=$NIGHT_BRIGHTNESS
 }
 
 model_check() {
@@ -164,7 +190,8 @@ network_status() {
 }
 
 configure_network() {
-  local iface carrier color mode problem=''
+  local iface carrier color mode level warning=1 problem=''
+  if night_active; then night=1; else night=0; fi
   iface=$(pick_network_interface)
   carrier=$(cat "/sys/class/net/$iface/carrier" 2>/dev/null || true)
   if [[ -z $iface ]]; then
@@ -195,13 +222,15 @@ configure_network() {
     fi
     if [[ ${network_online:-0} == 1 ]]; then mode=online; else mode=offline; fi
   fi
-  if [[ $mode == online ]]; then color=$NETWORK_COLOR_ONLINE; else color=$NETWORK_COLOR_OFFLINE; fi
-  if [[ ${current_network_interface:-} != "$iface" || ${current_network_mode:-} != "$mode" ]]; then
+  if [[ $mode == online ]]; then color=$NETWORK_COLOR_ONLINE; warning=0; else color=$NETWORK_COLOR_OFFLINE; fi
+  led_level level "$NETWORK_BRIGHTNESS" "$warning"
+  if [[ ${current_network_interface:-} != "$iface" || ${current_network_mode:-} != "$mode" ||
+        ${current_network_level:-} != "$level" ]]; then
     printf 'none\n' > /sys/class/leds/netdev/trigger
     printf 'none\n' > /sys/class/leds/netdev/blink_type
     printf '%s\n' "$color" > /sys/class/leds/netdev/color
-    printf '%s\n' "$NETWORK_BRIGHTNESS" > /sys/class/leds/netdev/brightness
-    if [[ $mode != down ]]; then
+    printf '%s\n' "$level" > /sys/class/leds/netdev/brightness
+    if [[ $mode != down ]] && (( level > 0 )); then
       printf 'netdev\n' > /sys/class/leds/netdev/trigger
       printf '%s\n' "$iface" > /sys/class/leds/netdev/device_name
       printf '1\n' > /sys/class/leds/netdev/link
@@ -211,7 +240,8 @@ configure_network() {
     fi
     current_network_interface=$iface
     current_network_mode=$mode
-    log "Network LED: $mode on $iface."
+    current_network_level=$level
+    log "Network LED: $mode on $iface, brightness $level."
   fi
   network_status "$mode" "$iface"
 }
@@ -236,7 +266,8 @@ device_on_ata_port() {
   return 1
 }
 
-declare -A bay_device bay_signature bay_mode
+# bay_mode holds the drive state; bay_light the lighting applied ("mode brightness").
+declare -A bay_device bay_signature bay_mode bay_light
 
 # Sectors read and written; SMART commands do not change these counters.
 disk_signature() {
@@ -248,15 +279,17 @@ disk_signature() {
 }
 
 set_bay_mode() {
-  local bay=$1 mode=$2 path lighting_mode
-  (( DISK_BRIGHTNESS > 0 )) || mode=off
-  [[ ${bay_mode[$bay]:-} == "$mode" ]] && return 0
+  local bay=$1 mode=$2 path lighting_mode brightness warning=0
+  [[ $mode != failed ]] || warning=1
+  led_level brightness "$DISK_BRIGHTNESS" "$warning"
+  lighting_mode=$mode
+  if (( brightness == 0 )); then lighting_mode=off
+  elif [[ $mode == standby && $DISK_STANDBY_BREATHING == 0 ]]; then lighting_mode=active; fi
+  [[ ${bay_mode[$bay]:-} == "$mode" && ${bay_light[$bay]:-} == "$lighting_mode $brightness" ]] && return 0
   # An identified bay keeps flashing; its mode is applied when identification ends.
-  if [[ $bay == "${identify_bay:-}" ]]; then bay_mode[$bay]=$mode; return 0; fi
+  if [[ $bay == "${identify_bay:-}" ]]; then bay_mode[$bay]=$mode; bay_light[$bay]=''; return 0; fi
   path=$(led_path "disk$bay")
   printf 'none\n' > "$path/trigger"
-  lighting_mode=$mode
-  if [[ $mode == standby && $DISK_STANDBY_BREATHING == 0 ]]; then lighting_mode=active; fi
   case $lighting_mode in
     off)
       printf 'none\n' > "$path/blink_type"
@@ -266,13 +299,13 @@ set_bay_mode() {
       case $DISK_ACTIVITY_STYLE in
         solid)
           printf '0\n' > "$path/brightness"
-          printf '%s\n' "$DISK_BRIGHTNESS" > "$path/brightness"
+          printf '%s\n' "$brightness" > "$path/brightness"
           printf 'oneshot\n' > "$path/trigger"
           printf '1\n' > "$path/invert"
           printf '1\n' > "$path/delay_on"
           printf '%s\n' "$DISK_PULSE_MS" > "$path/delay_off"
           printf '%s\n' "$DISK_COLOR" > "$path/color"
-          printf '%s\n' "$DISK_BRIGHTNESS" > "$path/brightness"
+          printf '%s\n' "$brightness" > "$path/brightness"
           printf 'none\n' > "$path/blink_type" ;;
         dark)
           printf '%s\n' "$DISK_COLOR" > "$path/color"
@@ -284,17 +317,18 @@ set_bay_mode() {
         *) fail "Unknown DISK_ACTIVITY_STYLE: $DISK_ACTIVITY_STYLE" ;;
       esac ;;
     standby)
-      printf '%s\n' "$DISK_BRIGHTNESS" > "$path/brightness"
+      printf '%s\n' "$brightness" > "$path/brightness"
       printf '%s\n' "$DISK_COLOR" > "$path/color"
       printf 'breath 1000 1000\n' > "$path/blink_type" ;;
     failed)
-      printf '%s\n' "$DISK_BRIGHTNESS" > "$path/brightness"
+      printf '%s\n' "$brightness" > "$path/brightness"
       printf '%s\n' "$DISK_COLOR_FAILED" > "$path/color"
       printf 'blink 500 500\n' > "$path/blink_type" ;;
     *) fail "Unknown disk LED mode: $mode" ;;
   esac
   bay_mode[$bay]=$mode
-  log "disk$bay: $mode."
+  bay_light[$bay]="$lighting_mode $brightness"
+  log "disk$bay: $mode, brightness $brightness."
 }
 
 disk_health_mode() {
@@ -329,7 +363,7 @@ refresh_bay_health() {
 standby_bays() {
   local bay
   for bay in 1 2 3 4; do
-    [[ ${bay_mode[$bay]:-} != standby ]] || printf '%s ' "$bay"
+    [[ ${bay_light[$bay]:-} != standby\ * ]] || printf '%s ' "$bay"
   done
   return 0
 }
@@ -341,12 +375,12 @@ synchronize_standby_breathing() {
   # start their identical hardware cycles together when membership changes.
   # Writing breath alone is insufficient: the driver caches unchanged modes.
   for bay in 1 2 3 4; do
-    [[ ${bay_mode[$bay]:-} == standby && $bay != "${identify_bay:-}" ]] || continue
+    [[ ${bay_light[$bay]:-} == standby\ * && $bay != "${identify_bay:-}" ]] || continue
     path=$(led_path "disk$bay")
     printf 'none\n' > "$path/blink_type"
   done
   for bay in 1 2 3 4; do
-    [[ ${bay_mode[$bay]:-} == standby && $bay != "${identify_bay:-}" ]] || continue
+    [[ ${bay_light[$bay]:-} == standby\ * && $bay != "${identify_bay:-}" ]] || continue
     path=$(led_path "disk$bay")
     printf 'breath 1000 1000\n' > "$path/blink_type"
   done
@@ -355,6 +389,7 @@ synchronize_standby_breathing() {
 bay_led_off() {
   local path
   [[ $1 != "${identify_bay:-}" ]] || return 0
+  bay_light[$1]=''
   path=$(led_path "disk$1")
   printf 'none\n' > "$path/trigger"
   printf 'none\n' > "$path/blink_type"
@@ -408,7 +443,7 @@ poll_disk_activity() {
         rm -f -- "$state_dir/$device"
         set_bay_mode "$bay" active
       fi
-      if [[ ${bay_mode[$bay]:-} == active && $bay != "${identify_bay:-}" ]]; then
+      if [[ ${bay_light[$bay]:-} == active\ * && $bay != "${identify_bay:-}" ]]; then
         printf '1\n' > "$path/shot"
       fi
       [[ ${UGREEN_PRO_DEBUG:-0} == 1 ]] && log "Activity on disk$bay ($device)."
@@ -461,6 +496,7 @@ bays_status() {
     elif [[ $port == 0 ]]; then mode=disabled
     elif [[ -z ${bay_device[$bay]:-} && $mode != failed ]]; then mode=empty
     elif [[ -z $mode ]]; then mode=active
+    elif [[ ${bay_light[$bay]:-} == off\ * ]]; then mode=off
     fi
     status+="bay=$bay port=$port device=${bay_device[$bay]:-} mode=$mode"$'\n'
   done
@@ -484,6 +520,25 @@ health_worker() {
     done
     for ((pause=0; pause<DISK_STATUS_INTERVAL; pause++)); do sleep 1; done
   done
+}
+
+# Apply a change between day and night brightness to the power and drive LEDs.
+# The network worker evaluates night mode on its own schedule.
+update_night() {
+  local was=${night:-} level bay
+  if night_active; then night=1; else night=0; fi
+  [[ $night != "$was" ]] || return 0
+  write_status night "$night"
+  [[ -n $was ]] || return 0
+  if [[ $night == 1 ]]; then log 'Night mode started.'; else log 'Night mode ended.'; fi
+  led_level level "$POWER_BRIGHTNESS"
+  printf '%s\n' "$level" > /sys/class/leds/power/brightness
+  for bay in 1 2 3 4; do
+    case ${bay_mode[$bay]:-} in
+      active|standby|failed) set_bay_mode "$bay" "${bay_mode[$bay]}" ;;
+    esac
+  done
+  synchronize_standby_breathing
 }
 
 cleanup() {
@@ -524,6 +579,9 @@ run() {
   setup_hardware
   hardware_ready=1
   state_dir=$(mktemp -d /run/ugreen-pro-leds.health.XXXXXX)
+  update_night
+  local power_level
+  led_level power_level "$POWER_BRIGHTNESS"
   printf 'none\n' > /sys/class/leds/power/trigger
   printf 'none\n' > /sys/class/leds/power/blink_type
   printf '%s\n' "$POWER_COLOR" > /sys/class/leds/power/color
@@ -531,7 +589,7 @@ run() {
   # Cycle it so the driver sends an explicit on command instead of skipping it.
   printf '0\n' > /sys/class/leds/power/brightness
   sleep 0.1
-  printf '%s\n' "$POWER_BRIGHTNESS" > /sys/class/leds/power/brightness
+  printf '%s\n' "$power_level" > /sys/class/leds/power/brightness
   network_worker 9>&- &
   network_pid=$!
   health_worker 9>&- &
@@ -549,6 +607,7 @@ run() {
       refresh_bay_health
       next_disk_status=$((SECONDS + 2))
     fi
+    update_night
     check_identify
     bays_status
     poll_disk_activity
@@ -643,5 +702,32 @@ case ${1:-} in
     done
     printf 'Network default route interface: %s\n' "$(pick_network_interface)"
     ;;
-  *) echo "Usage: $0 {start|stop|shutdown|status|detect|identify|run}" >&2; exit 2 ;;
+  diagnostics)
+    # Text report for support requests: no serial numbers, MAC or IP addresses.
+    printf 'UGREEN DXP4800 Pro LEDs diagnostics\n'
+    printf 'Generated: %(%F %T %Z)T\n' -1
+    printf 'Plugin version: %s\n' "$(cat /usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt 2>/dev/null || echo unknown)"
+    printf 'Unraid version: %s\n' "$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version 2>/dev/null || true)"
+    printf '\n== Monitor\n'
+    "$0" status 2>&1 || true
+    printf '\n== Detection\n'
+    "$0" detect 2>&1 || true
+    printf '\n== LED driver\n'
+    if [[ -d /sys/module/led_ugreen ]]; then
+      printf 'led_ugreen loaded, write protocol: %s\n' "$(cat /sys/module/led_ugreen/parameters/write_protocol 2>/dev/null || echo unknown)"
+    else
+      printf 'led_ugreen not loaded\n'
+    fi
+    printf 'Packaged kernels: %s\n' "$(cd /usr/local/lib/ugreen-pro-leds 2>/dev/null && printf '%s ' */ | sed 's@/@@g' || true)"
+    printf '\n== Current state\n'
+    for file in controller network night bays; do
+      [[ -f $status_dir/$file ]] || continue
+      printf -- '-- %s\n' "$file"; cat "$status_dir/$file"
+    done
+    printf '\n== Settings\n'
+    if [[ -f $config_file ]]; then grep -v -e '^#' -e '^$' "$config_file"; else printf 'Defaults (no settings file)\n'; fi
+    printf '\n== Log (last 200 lines)\n'
+    tail -n 200 "$log_file" 2>/dev/null || printf 'No log file\n'
+    ;;
+  *) echo "Usage: $0 {start|stop|shutdown|status|detect|identify|diagnostics|run}" >&2; exit 2 ;;
 esac

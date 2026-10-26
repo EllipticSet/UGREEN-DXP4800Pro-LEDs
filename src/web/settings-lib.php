@@ -5,6 +5,11 @@ function ugreen_pro_defaults(): array
 {
     return [
         'BRIGHTNESS_MODE' => 'percent',
+        'NIGHT_MODE' => '0',
+        'NIGHT_START' => '23:00',
+        'NIGHT_END' => '07:00',
+        'NIGHT_BRIGHTNESS' => '51',
+        'NIGHT_KEEP_WARNINGS' => '1',
         'POWER_COLOR' => '#ffffff',
         'POWER_BRIGHTNESS' => '179',
         'NETWORK_INTERFACE' => 'auto',
@@ -80,7 +85,7 @@ function ugreen_pro_read_settings(string $path): array
         $values[$key] = $value;
     }
     if ($values['BRIGHTNESS_MODE'] === 'percent') {
-        foreach (['POWER_BRIGHTNESS', 'NETWORK_BRIGHTNESS', 'DISK_BRIGHTNESS'] as $key) {
+        foreach (['POWER_BRIGHTNESS', 'NETWORK_BRIGHTNESS', 'DISK_BRIGHTNESS', 'NIGHT_BRIGHTNESS'] as $key) {
             if (preg_match('/^\d{1,3}$/', $values[$key]) && (int)$values[$key] <= 255) {
                 $values[$key] = ugreen_pro_round_brightness($values[$key]);
             }
@@ -99,6 +104,7 @@ function ugreen_pro_validate(array $input): array
         'NETWORK_BRIGHTNESS' => [0, 255],
         'CONNECTIVITY_INTERVAL' => [10, 3600],
         'DISK_BRIGHTNESS' => [0, 255],
+        'NIGHT_BRIGHTNESS' => [0, 255],
         'DISK_PULSE_MS' => [30, 1000],
         'REFRESH_INTERVAL' => [1, 3600],
         'DISK_STATUS_INTERVAL' => [10, 3600],
@@ -137,6 +143,12 @@ function ugreen_pro_validate(array $input): array
             if (!in_array($value, ['https', 'gateway', 'none'], true)) {
                 $errors[$key] = 'Choose a connectivity method.';
             }
+        } elseif ($key === 'NIGHT_MODE') {
+            if (!in_array($value, ['0', '1'], true)) $errors[$key] = 'Choose whether night mode is enabled.';
+        } elseif ($key === 'NIGHT_KEEP_WARNINGS') {
+            if (!in_array($value, ['0', '1'], true)) $errors[$key] = 'Choose how warnings appear at night.';
+        } elseif ($key === 'NIGHT_START' || $key === 'NIGHT_END') {
+            if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $value)) $errors[$key] = 'Enter a time from 00:00 to 23:59.';
         } elseif ($key === 'DISK_STANDBY_BREATHING') {
             if (!in_array($value, ['0', '1'], true)) $errors[$key] = 'Choose whether standby breathing is enabled.';
         } elseif ($key === 'DISK_ACTIVITY_STYLE') {
@@ -177,6 +189,10 @@ function ugreen_pro_validate(array $input): array
             }
         }
     }
+    if ($values['NIGHT_MODE'] === '1' && !isset($errors['NIGHT_START']) && !isset($errors['NIGHT_END']) &&
+        $values['NIGHT_START'] === $values['NIGHT_END']) {
+        $errors['NIGHT_END'] = 'The end time must differ from the start time.';
+    }
     return [$values, $errors];
 }
 
@@ -191,7 +207,8 @@ function ugreen_pro_render_settings(array $values): string
         if ($key === 'DISK_ATA_PORTS') {
             $value = "($value)";
         } elseif ($key === 'NETWORK_INTERFACE' || str_starts_with($key, 'CONNECTIVITY_') ||
-                  $key === 'DISK_ACTIVITY_STYLE' || $key === 'BRIGHTNESS_MODE') {
+                  $key === 'DISK_ACTIVITY_STYLE' || $key === 'BRIGHTNESS_MODE' ||
+                  $key === 'NIGHT_START' || $key === 'NIGHT_END') {
             $value = "'$value'";
         }
         $lines[] = "$key=$value";

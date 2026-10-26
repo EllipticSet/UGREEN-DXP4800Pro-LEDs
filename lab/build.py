@@ -85,8 +85,11 @@ def build(output, vm_uuid):
         write(stage / 'usr/local/sbin/ugreen-pro-leds', monitor, True)
         uninstall = (ROOT / 'src/uninstall.sh').read_text()
         start = uninstall.index('if [[ -r /run/ugreen-pro-leds.owned-bus ]]')
-        end = uninstall.index('# Remove only our package')
-        uninstall = uninstall[:start] + uninstall[end:]
+        end = uninstall.index("step 5 'Removing package files'")
+        lab_steps = ("detail 'No LED controller (LAB SIMULATION).'\n"
+                     "step 4 'Unloading LED driver'\n"
+                     "detail 'No LED driver (LAB SIMULATION).'\n")
+        uninstall = uninstall[:start] + lab_steps + uninstall[end:]
         uninstall = replace_once(uninstall, 'set -euo pipefail', 'set -euo pipefail\n' + guard + '\nlab_guard || exit 1')
         write(stage / 'usr/local/sbin/ugreen-pro-leds-uninstall', uninstall, True)
         write(stage / 'usr/local/sbin/ugreen-led-lab', (ROOT / 'lab/control.sh').read_text().replace('# @GUARD@', guard), True)
@@ -101,7 +104,9 @@ def build(output, vm_uuid):
         start = install.index('kernel=$(uname -r)')
         end = install.index("step 3 'Saving the current state for rollback'", start)
         install = install[:start] + "detail 'LED driver: not installed (LAB SIMULATION)'\n" + install[end:]
-        install = replace_once(install, 'if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi', '# Lab package requires no i2c-tools.')
+        start = install.index('if i2cget=$(command -v i2cget); then')
+        end = install.index('\nfi\n', start) + len('\nfi\n')
+        install = install[:start] + "detail 'i2c-tools: not required (LAB SIMULATION)'\n" + install[end:]
         install = replace_once(install, 'paths=()', 'paths=()\n[[ ! -e /usr/local/sbin/ugreen-led-lab ]] || paths+=(usr/local/sbin/ugreen-led-lab)')
         install = replace_once(install, "\nstep 7 'Starting LED monitor'\n", "\n\"$root/lab-migrate-settings.sh\" \"$plugin/settings.cfg\"\nstep 7 'Starting LED monitor'\n")
         write(outer / 'lab-migrate-settings.sh', (ROOT / 'lab/migrate-settings.sh').read_text(), True)
