@@ -35,7 +35,7 @@ printf '1\n' > "$sim/sys/class/net/br0/carrier"
 configure_network
 check "$sim/sys/class/leds/netdev/color" '255 255 255'
 bay_device[1]=sda
-bay_mode[1]=active
+bay_mode[1]=active bay_light[1]='active 179'
 printf '1 0 10 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
 [[ ! -e $sim/sys/class/leds/disk1/shot ]]
@@ -49,7 +49,7 @@ printf '3 0 12 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
 [[ ${bay_mode[1]} == active && ! -f $state_dir/sda ]]
 # Failed disks do not receive activity shots.
-bay_mode[1]=failed
+bay_mode[1]=failed bay_light[1]='failed 179'
 rm "$sim/sys/class/leds/disk1/shot"
 printf '4 0 13 0 1 0 20 0 0 0 0\n' > "$sim/sys/class/block/sda/stat"
 poll_disk_activity
@@ -142,3 +142,29 @@ check "$sim/sys/class/leds/disk2/blink_type" none
 check "$sim/sys/class/leds/disk2/brightness" 0
 [[ ! -e $identify_file ]]
 echo 'Stopping during identification of a disabled bay turns its LED off.'
+
+# Night mode dims the LAN LED; Internet unavailable keeps its brightness by default.
+night_active() { return 0; }
+mkdir -p "$status_dir"
+NIGHT_BRIGHTNESS=51 NIGHT_KEEP_WARNINGS=1 NETWORK_BRIGHTNESS=179
+pick_network_interface() { printf br0; }
+printf '1\n' > "$sim/sys/class/net/br0/carrier"
+reachable=1 next_connectivity_check=0
+configure_network >/dev/null
+check "$sim/sys/class/leds/netdev/brightness" 51
+check "$sim/sys/class/leds/netdev/trigger" netdev
+reachable=0 next_connectivity_check=0
+configure_network >/dev/null
+check "$sim/sys/class/leds/netdev/brightness" 179
+check "$sim/sys/class/leds/netdev/color" '255 165 0'
+NIGHT_KEEP_WARNINGS=0 NIGHT_BRIGHTNESS=0
+configure_network >/dev/null
+check "$sim/sys/class/leds/netdev/brightness" 0
+check "$sim/sys/class/leds/netdev/trigger" none
+grep -qx 'mode=offline' "$status_dir/network"
+night_active() { return 1; }
+reachable=1 next_connectivity_check=0
+configure_network >/dev/null
+check "$sim/sys/class/leds/netdev/brightness" 179
+check "$sim/sys/class/leds/netdev/trigger" netdev
+echo 'Night mode dims or turns off the LAN LED and restores it in the day.'

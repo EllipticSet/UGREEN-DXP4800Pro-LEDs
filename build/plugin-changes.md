@@ -1,3 +1,10 @@
+###1.6.0
+- Add night mode in Advanced Settings: between a start and an end time, the LEDs use a lower brightness or turn off. Internet unavailable and drive warnings keep their normal brightness by default.
+- Add a Troubleshooting section to Advanced Settings, closed by default, with Restart monitor and Download diagnostics. The diagnostics report is also available with the diagnostics command.
+- Show the drive-bay mapping as an optional section for advanced users, closed by default.
+- Report the detected Unraid version, kernel and model and the result of each compatibility check during installation, and whether i2c-tools is already present or installed.
+- Report each removal step.
+
 ###1.5.2
 - Show the standard package banner and description during installation and updates, followed by a short summary with the installed version and the location of LED Settings.
 - Show a short summary after removal.

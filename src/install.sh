@@ -24,8 +24,6 @@ step 2 'Checking compatibility'
 "$root/preflight.sh" "$root/payload/usr/local/lib/ugreen-pro-leds"
 kernel=$(uname -r)
 [[ -f $root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko && $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko") == "$kernel "* ]] || { echo 'Missing or incompatible bundled LED module.' >&2; exit 1; }
-bundled=$(cd "$root/payload/usr/local/lib/ugreen-pro-leds" && printf '%s\n' */ | sed 's@/$@@' | sort -V | paste -sd, - | sed 's/,/, /g')
-detail "LED driver: $kernel (bundled: $bundled)"
 step 3 'Saving the current state for rollback'
 mkdir -p "$plugin"
 transaction=$(mktemp -d /tmp/ugreen-pro-transaction.XXXXXX)
@@ -87,7 +85,12 @@ rollback() {
 trap rollback ERR
 step 4 'Installing files'
 # Reuse any existing i2cget instead of downgrading shared tools.
-if ! command -v i2cget >/dev/null; then installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null; fi
+if i2cget=$(command -v i2cget); then
+  detail "i2c-tools: using existing $i2cget"
+else
+  detail 'i2c-tools: installing bundled i2c-tools 4.3'
+  installpkg "$root/i2c-tools-4.3-x86_64-1.txz" >/dev/null
+fi
 # Show the native package banner and PACKAGE DESCRIPTION from slack-desc.
 upgradepkg --reinstall --install-new "$root/$package.txz"
 step 5 'Verifying WebGUI files'

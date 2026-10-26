@@ -91,30 +91,51 @@
   });
 })();
 (() => {
-  const guide = document.querySelector('.nas-mapping-guide');
-  if (!guide || guide.dataset.initialized) return;
-  guide.dataset.initialized = 'true';
-  const content = guide.querySelector('#nas-mapping-content');
-  const toggle = guide.querySelector('.nas-guide-open');
-  let expanded = false;
-  function updateButton() {
-    toggle.textContent = expanded ? 'Hide guide' : 'Show guide';
-    toggle.setAttribute('aria-expanded', String(expanded));
-  }
-  function collapseGuide() {
-    expanded = false;
-    $(content).stop(true, true).hide();
-    updateButton();
-  }
-  collapseGuide();
-  // Also reset when browser history restores this page from its cache.
-  window.addEventListener('pageshow', collapseGuide);
-  toggle.addEventListener('click', () => {
-    expanded = !expanded;
-    updateButton();
-    // Use the same jQuery animation as Unraid's native inline help.
-    $(content).stop(true, true).toggle('slow');
+  // Collapsible sections start closed unless the page opens one, e.g. for a mapping error.
+  document.querySelectorAll('.nas-collapsible').forEach(section => {
+    if (section.dataset.initialized) return;
+    section.dataset.initialized = 'true';
+    const content = section.querySelector('.nas-collapsible-content');
+    const toggle = section.querySelector('.nas-collapsible-toggle');
+    const initial = toggle.getAttribute('aria-expanded') === 'true';
+    let expanded = initial;
+    function updateButton() {
+      toggle.textContent = expanded ? 'Hide' : 'Show';
+      toggle.setAttribute('aria-expanded', String(expanded));
+    }
+    function restore() {
+      expanded = initial;
+      if (expanded) $(content).stop(true, true).show();
+      else $(content).stop(true, true).hide();
+      updateButton();
+    }
+    restore();
+    // Also reset when browser history restores this page from its cache.
+    window.addEventListener('pageshow', restore);
+    toggle.addEventListener('click', () => {
+      expanded = !expanded;
+      updateButton();
+      // Use the same jQuery animation as Unraid's native inline help.
+      $(content).stop(true, true).toggle('slow');
+    });
   });
+})();
+(() => {
+  // Night mode settings are shown only while night mode is enabled.
+  const mode = document.querySelector('select[name="NIGHT_MODE"]');
+  if (!mode || mode.dataset.initialized) return;
+  mode.dataset.initialized = 'true';
+  const fields = [...document.querySelectorAll('[data-night-field]')];
+  function update() {
+    const enabled = mode.value === '1';
+    fields.forEach(field => {
+      field.hidden = !enabled;
+      const help = field.nextElementSibling;
+      if (help && help.matches('blockquote.inline_help')) help.hidden = !enabled;
+    });
+  }
+  mode.addEventListener('change', update);
+  update();
 })();
 (() => {
   // Refresh live state labels on all tabs from one request while the page is visible.

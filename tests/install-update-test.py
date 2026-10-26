@@ -46,7 +46,7 @@ export -f uname modinfo i2cget php upgradepkg removepkg
  r=run();assert r.returncode==0,r.stderr+r.stdout
  assert config.read_text()=='CUSTOM=preserved\n'
  assert f'Installing UGREEN DXP4800 Pro LEDs {VERSION}' in r.stdout, r.stdout
- for text in ['[2/8] Checking compatibility','LED driver: 6.18.38-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid)','[6/8] Preparing settings','Settings preserved: ','[8/8] Configuring shutdown hook','Shutdown hook added']:
+ for text in ['[2/8] Checking compatibility','i2c-tools: using existing i2cget','[6/8] Preparing settings','Settings preserved: ','[8/8] Configuring shutdown hook','Shutdown hook added']:
   assert text in r.stdout,(text,r.stdout)
  assert ' UGREEN DXP4800 Pro LEDs is installed.' in r.stdout and ' Settings: LED Settings in the Settings menu' in r.stdout and '>' not in r.stdout and f' Version: {VERSION}\n' in r.stdout,r.stdout
  (machine/'usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LEDs/version.txt').write_text('1.4.3\n')
