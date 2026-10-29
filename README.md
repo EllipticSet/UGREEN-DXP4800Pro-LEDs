@@ -8,6 +8,8 @@ The builder uses the unchanged production plugin sources to create a separate
 sysfs access only in the generated package. The normal build and committed public
 plugin remain unchanged. The builder fails when expected source anchors change;
 review the adapter before testing a changed production monitor.
+The [emulated LED MCU](#emulated-led-mcu-hardware-identical-mode) instead runs
+the unchanged production plugin against an emulated controller.
 
 ## Branch contents
 
@@ -92,6 +94,97 @@ SMART states and network reachability are injected inputs; they do not query the
 real virtual array or Internet. The virtual array separately exercises Unraid
 array start/stop and the plugin's web integration. Preview is the original visual
 settings preview, not a live hardware readout.
+
+## Emulated LED MCU (hardware-identical mode)
+
+`lab/mcu-sim/` provides a second, separate laboratory that runs the **unchanged
+production plugin** in the test VM, for example on an Unraid 8 prerelease. Instead
+of replacing LED sysfs with files, the kernel module `ugreen-mcu-sim` registers an
+SMBus adapter named like the NAS controller (`SMBus I801 adapter (UGREEN MCU
+simulator)`) with an emulated LED MCU at `0x3a`. It answers the chip ID `0xc5b2`,
+validates the 12-byte legacy frames and their checksums, reports the last command
+status at `0x80` and each LED state at `0x81 + id`, and ACKs but does not execute
+the SMBus block framing, like the DXP4800 Pro MCU. The production installer,
+`led-ugreen.ko`, `/sys/class/leds` and the monitor therefore run exactly as on the
+NAS. Only the MCU is emulated; the Intel I801 hardware and physical LED timing are
+not validated.
+
+The **Utilities → NAS Front (LAB)** page is the virtual front panel. It replays
+the commands received by the MCU (on/off, brightness, colour, blink and breath)
+with their real timing, so 80 ms activity pulses, synchronized standby breathing,
+the identification flash and the shutdown blink appear as on the physical NAS.
+It also lists each bay and offers the inputs QEMU cannot produce: a forced
+**Standby** (ends at the next read or write, like a drive spinning up), a forced
+**SMART failed** state, and five seconds of read-only I/O. These inputs are served
+by a `smartctl` shim that answers only the monitor's `-n standby,0 -H -j` query
+for a forced drive; every other call reaches the real binary. The same inputs are
+available from the VM terminal:
+
+```bash
+ugreen-mcu-lab smart sdc standby   # normal | standby | failed
+ugreen-mcu-lab io sdb 5
+ugreen-mcu-lab status
+```
+
+### VM configuration
+
+Back up the current definition first, for example with
+`virsh dumpxml Unraid-Beta-Lab > /boot/config/Unraid-Beta-Lab.xml` on the host.
+Restoring that XML is the complete rollback. Edit in the **XML view** only: the
+Unraid form editor regenerates the XML and drops the `sysinfo` block.
+
+1. Use a Q35 machine and keep the default SATA controller.
+2. Report the NAS model through SMBIOS. Add `<smbios mode='sysinfo'/>` inside
+   `<os>` and this block after `</os>`:
+
+   ```xml
+   <sysinfo type='smbios'>
+     <system>
+       <entry name='product'>DXP4800 Pro</entry>
+     </system>
+   </sysinfo>
+   ```
+
+   Only the product name changes; the vendor stays `QEMU` and the CPU keeps the
+   hypervisor flag, which the simulator requires.
+3. Provide four SATA disks on controller 0, units 0–3, so ATA ports 1–4 match
+   the default bay mapping `1 2 3 4`. Small raw images are sufficient. Never pass
+   NAS disks or other NAS hardware through to this VM.
+
+### Build and install
+
+The committed modules cover the supported Unraid kernels. For a prerelease
+kernel, run the **Beta laboratory** workflow manually with the `kernel` input
+set to the release that `uname -r` prints in the VM, or locally on Linux:
+
+```bash
+bash lab/mcu-sim/build-module.sh linux-KERNEL.tar.xz KERNEL
+```
+
+Place the module in `lab/mcu-sim/modules/KERNEL/`, then build the package with
+the test VM UUID (the libvirt `<uuid>`), which is stored only as a SHA-256 value:
+
+```bash
+python3 lab/mcu-sim/test.py
+python3 lab/mcu-sim/build.py --vm-uuid YOUR_TEST_VM_UUID
+```
+
+In the VM, remove `UGREEN-DXP4800Pro-LEDs-LAB` if installed, install
+`dist/lab-mcu/UGREEN-DXP4800Pro-LAB-MCU.plg`, then the regular plugin (or the
+prerelease build that bundles `led-ugreen.ko` for the VM kernel). The MCU plugin
+sorts before the LED plugin, so it loads the simulator first at every boot; it
+also starts the LED monitor if the monitor is installed but stopped. The package
+refuses to install without a hypervisor or on a VM with another UUID, and the
+module refuses to load outside a virtual machine. Removing the MCU plugin stops
+the LED monitor and restores `smartctl`.
+
+Verified on the `6.18.58-Unraid` kernel in QEMU Q35: production preflight
+checks, monitor start and MCU binding, activity pulses from real disk reads, LAN
+blinking from real traffic, forced standby breathing and SMART failure,
+identification, monitor stop, shutdown blink, uninstall, reinstall and refusal
+without a hypervisor. That minimal test system had no udev, so `led-class` was
+loaded by hand before the monitor's `insmod led-ugreen.ko`; on a real Unraid VM,
+check `lsmod | grep led_class` before the first start and record the result.
 
 ## Validation record for each Unraid prerelease
 

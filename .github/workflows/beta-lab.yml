@@ -3,6 +3,11 @@ on:
   push:
     branches: [beta-testing]
   workflow_dispatch:
+    inputs:
+      kernel:
+        description: 'Optional: build the emulated LED MCU for this Unraid kernel release (for example an Unraid 8 prerelease)'
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -21,5 +26,47 @@ jobs:
         with:
           name: UGREEN-LEDs-LAB-${{ github.sha }}
           path: dist/lab/
+          retention-days: 30
+          if-no-files-found: error
+
+  mcu-simulator:
+    if: github.ref == 'refs/heads/beta-testing'
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify packaging, VM guard, SMART shim and front view
+        run: python3 lab/mcu-sim/test.py
+      - name: Verify committed simulator modules match their source
+        run: |
+          source=$(sha256sum lab/mcu-sim/ugreen-mcu-sim.c | cut -d ' ' -f 1)
+          for info in lab/mcu-sim/modules/*/BUILD_INFO; do
+            grep -qx "source_sha256=$source" "$info" || { echo "::error::$info is stale; rebuild with lab/mcu-sim/build-module.sh."; exit 1; }
+            (cd "$(dirname "$info")" && sha256sum -c ugreen-mcu-sim.ko.sha256)
+          done
+      - name: Build fixture-only MCU plugin
+        run: python3 lab/mcu-sim/build.py --vm-uuid 11111111-2222-4333-8444-555555555555 --output-dir dist/lab-mcu
+      - name: Verify production inputs remain unchanged
+        run: git diff --exit-code -- src build UGREEN-DXP4800Pro-LEDs.plg UGREEN-DXP4800Pro-LEDs.plg.sha256
+
+  mcu-simulator-kernel:
+    if: github.ref == 'refs/heads/beta-testing' && github.event_name == 'workflow_dispatch' && inputs.kernel != ''
+    # The ich777 Unraid kernels are built with the Ubuntu 24.04 GCC.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install kernel build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make bc bison flex libssl-dev libelf-dev kmod
+      - name: Build the emulated MCU module
+        env:
+          KERNEL: ${{ inputs.kernel }}
+        run: |
+          curl --fail --location --retry 3 "https://github.com/ich777/unraid_kernel/releases/download/$KERNEL/linux-$KERNEL.tar.xz" -o "$RUNNER_TEMP/kernel.tar.xz"
+          bash lab/mcu-sim/build-module.sh "$RUNNER_TEMP/kernel.tar.xz" "$KERNEL" lab/mcu-sim/modules
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ugreen-mcu-sim-${{ inputs.kernel }}
+          path: lab/mcu-sim/modules/${{ inputs.kernel }}/
           retention-days: 30
           if-no-files-found: error
