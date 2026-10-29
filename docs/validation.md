@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.2
+
+The compatibility step accepted only release version strings such as `7.4.0`, so an Unraid prerelease such as `7.4.0-rc.2` stopped the installation with Cannot determine Unraid version. The error was written to standard error, which the Plugins page does not show, so only the generic failure message was visible. The version check now accepts alpha, beta and release candidate suffixes and treats a prerelease as earlier than its release, so prereleases of 7.3.2 remain unsupported. The exact match between the running kernel and a bundled LED module is unchanged. The installer script in the plugin manifest sends standard error to standard output, so every installer error is shown on the Plugins page. The settings interface, LED monitor and kernel modules are unchanged from 1.6.1.
+
+Local checks on October 29, 2026 passed the full automated suite, including new regressions for accepted and rejected prerelease versions, the error message for each rejection, and the error redirection in the generated 1.6.2 installer.
+
 ## Version 1.6.1
 
 With the Dark when idle activity style, the LED core starts each activity pulse at the brightness the LED had when its software blink began, or at the maximum when the LED was dark. The monitor wrote brightness 0 before enabling the pulses, so they ran at full brightness and ignored both the drive brightness and the night mode limit. When it applies the Dark when idle style, the monitor now lights the LED at the effective brightness and sends one pulse, which ends dark; later pulses use that level. The settings interface, installer and kernel modules are unchanged from 1.6.0.

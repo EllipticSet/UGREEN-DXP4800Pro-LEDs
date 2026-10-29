@@ -31,12 +31,14 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
               'Competing LED plugins and monitors: none','Kernel components: available','LED controller address 0x3a: free']:
   assert '      '+text in r.stdout,(text,r.stdout)
  assert '<' not in r.stdout and '>' not in r.stdout
- for version in ['7.3.2', '7.3.3', '7.3.4', '7.4', '7.4.0', '8.0.0']:
+ for version in ['7.3.2', '7.3.3', '7.3.4', '7.4', '7.4.0', '8.0.0', '7.3.3-rc.1', '7.4.0-alpha.1', '7.4.0-beta.3', '7.4.0-rc.2', '7.4.0-rc2', '8.0.0-beta']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
-  assert run().returncode==0, (version, run().stderr)
- for version in ['6.12.0', '7.2.9', '7.3', '7.3.0', '7.3.1', 'invalid', '']:
+  r=run();assert r.returncode==0, (version, r.stderr)
+  assert f'System: Unraid {version}, kernel' in r.stdout, (version, r.stdout)
+ for version in ['6.12.0', '7.2.9', '7.3', '7.3.0', '7.3.1', '7.3.2-rc.1', '7.3.2-beta.2', '7.3.1-rc.3', '7.4.0-dev', '7.4.0-rc.2x', 'invalid', '']:
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
-  assert run().returncode!=0, version
+  r=run();assert r.returncode!=0, version
+  assert ('Cannot determine Unraid version.' if version in ['7.4.0-dev', '7.4.0-rc.2x', 'invalid', ''] else 'Unraid 7.3.2 or later required.') in r.stderr, (version, r.stderr)
  (p/'etc/unraid-version').write_text('version="7.3.2"\n')
  (p/'etc/unraid-version').write_text('version="7.3.3"\n')
  for version in ['7.3.4']:
