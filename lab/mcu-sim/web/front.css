@@ -8,12 +8,14 @@
 .lab-front-figure figcaption { margin-top: 14px; text-align: center; opacity: .75; }
 /* Same apertures as the plugin preview: colour sits behind the PNG, whose alpha defines each LED. */
 .lab-led, .lab-glow { position: absolute; top: 88.48%; width: 1.65%; height: 2.2%; transform: translate(-50%, -50%); pointer-events: none; }
-.lab-led { z-index: 0; background: var(--off, #4c4e5a); }
-.lab-led::before { content: ""; position: absolute; inset: 0; background: var(--rgb, #fff); opacity: var(--level, 0); }
+/* Unraid themes and custom CSS can force span backgrounds with !important: these colours use
+   scoped !important rules plus an inset shadow, which such rules do not reset. */
+.lab-front .lab-front-image .lab-led { z-index: 0; background: var(--off, #4c4e5a) !important; box-shadow: inset 0 0 0 100vmax var(--off, #4c4e5a) !important; }
+.lab-front .lab-front-image .lab-led::before { content: ""; position: absolute; inset: 0; background: var(--rgb, #fff) !important; box-shadow: inset 0 0 0 100vmax var(--rgb, #fff) !important; opacity: var(--level, 0); }
 /* A soft halo above the panel makes lit LEDs readable at small sizes. */
-.lab-glow { z-index: 2; width: 5%; height: 5%; border-radius: 50%; background: radial-gradient(circle, var(--rgb, #fff) 0%, transparent 65%); opacity: calc(var(--level, 0) * .55); mix-blend-mode: screen; }
+.lab-glow { z-index: 2; width: 1.2%; height: 1.2%; border-radius: 50%; background: transparent !important; box-shadow: 0 0 1.2vmin .5vmin var(--rgb, #fff) !important; opacity: calc(var(--level, 0) * .55); mix-blend-mode: screen; }
 .lab-led-power { --off: #575965; left: 15.14%; width: 3.6%; height: 1.65%; }
-.lab-glow.lab-led-power { width: 8%; height: 5%; }
+.lab-glow.lab-led-power { width: 3%; height: 1%; }
 .lab-led-netdev { --off: #51535f; left: 25.82%; }
 .lab-led-disk1 { --off: #4f515c; left: 29.52%; }
 .lab-led-disk2 { --off: #4c4e5a; left: 33.08%; }

@@ -169,14 +169,21 @@ python3 lab/mcu-sim/test.py
 python3 lab/mcu-sim/build.py --vm-uuid YOUR_TEST_VM_UUID
 ```
 
-In the VM, remove `UGREEN-DXP4800Pro-LEDs-LAB` if installed, install
-`dist/lab-mcu/UGREEN-DXP4800Pro-LAB-MCU.plg`, then the regular plugin (or the
-prerelease build that bundles `led-ugreen.ko` for the VM kernel). The MCU plugin
-sorts before the LED plugin, so it loads the simulator first at every boot; it
-also starts the LED monitor if the monitor is installed but stopped. The package
-refuses to install without a hypervisor or on a VM with another UUID, and the
-module refuses to load outside a virtual machine. Removing the MCU plugin stops
-the LED monitor and restores `smartctl`.
+The result, `dist/lab-mcu/UGREEN-DXP4800Pro-LEDs.plg`, is a single LAB plugin
+that contains the unchanged committed production plugin and the emulated MCU.
+It keeps the production name and settings, reports the production version with
+a `-lab` suffix and has no update URL, so it never replaces itself with the
+production-only plugin. Its first installation step loads the simulator; the
+production installation step follows unchanged, at installation and at every
+boot. Removal runs the production removal first, then removes the simulator. To
+test a release candidate before it reaches `main`, pass its `.plg` (with the
+`.sha256` beside it) with `--plugin path/to/UGREEN-DXP4800Pro-LEDs.plg`.
+
+In the VM, remove `UGREEN-DXP4800Pro-LEDs-LAB`, the regular plugin and any
+separate `UGREEN-DXP4800Pro-LAB-MCU` plugin first (settings are retained), then
+install the combined plugin. The package refuses to install without a hypervisor
+or on a VM with another UUID, and the module refuses to load outside a virtual
+machine. Removal also restores `smartctl`.
 
 Verified on the `6.18.58-Unraid` kernel in QEMU Q35: production preflight
 checks, monitor start and MCU binding, activity pulses from real disk reads, LAN

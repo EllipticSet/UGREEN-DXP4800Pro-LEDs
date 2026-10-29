@@ -40,9 +40,24 @@ class LabMcuTests(unittest.TestCase):
 
     def test_package_is_separate_and_bound_to_one_vm(self):
         plugin = ET.parse(self.plugin).getroot()
-        self.assertEqual(plugin.get('name'), 'UGREEN-DXP4800Pro-LAB-MCU')
-        self.assertNotIn('pluginURL', plugin.attrib)
-        self.assertLess('UGREEN-DXP4800Pro-LAB-MCU.plg', 'UGREEN-DXP4800Pro-LEDs.plg', 'must install before the LED plugin at boot')
+        base = ET.parse(ROOT / 'UGREEN-DXP4800Pro-LEDs.plg').getroot()
+        self.assertEqual(self.plugin.name, 'UGREEN-DXP4800Pro-LEDs.plg')
+        self.assertEqual(plugin.get('name'), base.get('name'))
+        self.assertEqual(plugin.get('version'), base.get('version') + '-lab')
+        self.assertNotIn('pluginURL', plugin.attrib, 'must not update itself to the production-only plugin')
+        # The MCU loads before the unchanged production installer and is removed after it.
+        files = plugin.findall('FILE')
+        self.assertEqual([f.get('Method') for f in files], [None, None, 'remove', 'remove'])
+        self.assertIn('ugreen-mcu-lab-install', files[0].find('INLINE').text)
+        self.assertIn('Remove the separate UGREEN-DXP4800Pro-LAB-MCU plugin', files[0].find('INLINE').text)
+        for combined, original in zip(files[1:3], base.findall('FILE')):
+            self.assertEqual(combined.find('INLINE').text, original.find('INLINE').text)
+        self.assertIn('ugreen-mcu-lab-uninstall', files[3].find('INLINE').text)
+        tampered = self.root / 'tampered.plg'
+        tampered.write_bytes((ROOT / 'UGREEN-DXP4800Pro-LEDs.plg').read_bytes() + b' ')
+        shutil.copyfile(ROOT / 'UGREEN-DXP4800Pro-LEDs.plg.sha256', self.root / 'tampered.plg.sha256')
+        with self.assertRaises(ValueError):
+            builder.build(self.root / 'tampered-out', FIXTURE_UUID, self.root / 'modules', tampered)
         for path in self.stage.rglob('*'):
             if path.is_file():
                 self.assertNotIn(FIXTURE_UUID.encode(), path.read_bytes(), str(path))

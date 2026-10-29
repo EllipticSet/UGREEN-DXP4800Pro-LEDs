@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Build the VM-only emulated LED MCU plugin. Never publish it as a release."""
+"""Build the VM-only plugin: the production LED plugin plus the emulated LED MCU. Never publish it as a release."""
 import argparse
 import base64
 import hashlib
 import importlib.util
 from pathlib import Path
 import shutil
-import subprocess
 import tempfile
 import uuid
 import xml.etree.ElementTree as ET
@@ -14,6 +13,7 @@ import xml.etree.ElementTree as ET
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 NAME = 'UGREEN-DXP4800Pro-LAB-MCU'
+PLUGIN = ROOT / 'UGREEN-DXP4800Pro-LEDs.plg'
 spec = importlib.util.spec_from_file_location('lab_build', ROOT / 'lab/build.py')
 lab = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(lab)
@@ -31,9 +31,22 @@ def modules(directory):
     return found
 
 
-def build(output, vm_uuid, module_dir=HERE / 'modules'):
+def production(plugin):
+    """Return the production plugin root after checking its adjacent checksum."""
+    expected = Path(f'{plugin}.sha256').read_text().split()[0]
+    if hashlib.sha256(plugin.read_bytes()).hexdigest() != expected:
+        raise ValueError(f'Checksum mismatch: {plugin}')
+    root = ET.parse(plugin).getroot()
+    files = root.findall('FILE')
+    if root.get('name') != 'UGREEN-DXP4800Pro-LEDs' or [f.get('Method') for f in files] != [None, 'remove']:
+        raise ValueError(f'Unexpected production plugin layout: {plugin}')
+    return root
+
+
+def build(output, vm_uuid, module_dir=HERE / 'modules', plugin=PLUGIN):
     vm_uuid = str(uuid.UUID(vm_uuid))
     output.mkdir(parents=True, exist_ok=True)
+    base = production(plugin)
     guard = (HERE / 'guard.sh').read_text().replace('@VM_UUID_SHA256@', hashlib.sha256(vm_uuid.encode()).hexdigest())
     kernels = modules(module_dir)
     with tempfile.TemporaryDirectory() as tmp:
@@ -67,20 +80,30 @@ printf '%s  %s\\n' "''' + checksum + '''" "$scratch/bundle.tar.xz" | sha256sum -
 tar -xJf "$scratch/bundle.tar.xz" -C "$scratch"
 "$scratch/install.sh" "$scratch"
 '''
-        version = subprocess.run(['git', '-C', str(ROOT), 'log', '-1', '--format=%cd', '--date=format:%Y.%m.%d'],
-                                 capture_output=True, text=True).stdout.strip() or '0.0.0'
-        plugin = ET.Element('PLUGIN', {'name': NAME, 'author': 'EllipticSet', 'version': version,
-                                       'launch': 'Utilities/NASFrontLab', 'min': '7.3.2'})
-        ET.SubElement(plugin, 'CHANGES').text = '\nLAB SIMULATION — emulated LED MCU for one test VM; never install on the NAS.\n'
+        # One plugin with the production name: the MCU is loaded before the unchanged
+        # production installer runs, at installation and at every boot.
+        install, remove = base.findall('FILE')
+        attributes = {key: value for key, value in base.attrib.items() if key != 'pluginURL'}
+        attributes['version'] = base.get('version') + '-lab'
+        plugin = ET.Element('PLUGIN', attributes)
+        ET.SubElement(plugin, 'CHANGES').text = ('\nLAB SIMULATION — production plugin ' + base.get('version') +
+                                                 ' with the emulated LED MCU, for one test VM; never install on the NAS.\n')
         item = ET.SubElement(plugin, 'FILE', {'Run': '/bin/bash'})
-        ET.SubElement(item, 'INLINE').text = script
+        ET.SubElement(item, 'INLINE').text = '''set -euo pipefail
+if [[ -f /boot/config/plugins/''' + NAME + '''.plg ]]; then
+  echo 'Remove the separate ''' + NAME + ''' plugin before installing this combined LAB plugin.'; exit 1
+fi
+''' + script
+        plugin.append(install)
+        plugin.append(remove)
         item = ET.SubElement(plugin, 'FILE', {'Run': '/bin/bash', 'Method': 'remove'})
-        ET.SubElement(item, 'INLINE').text = 'set -e\n/usr/local/sbin/ugreen-mcu-lab-uninstall\n'
+        ET.SubElement(item, 'INLINE').text = 'set -e\n[[ ! -x /usr/local/sbin/ugreen-mcu-lab-uninstall ]] || /usr/local/sbin/ugreen-mcu-lab-uninstall\n'
         ET.indent(plugin)
-        path = output / f'{NAME}.plg'
+        path = output / f'{base.get("name")}.plg'
         ET.ElementTree(plugin).write(path, encoding='utf-8', xml_declaration=True)
         lab.write(output / (path.name + '.sha256'), hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name + '\n')
-        lab.write(output / 'BUILD.txt', 'LAB SIMULATION — emulated LED MCU\nKernels: ' + ', '.join(kernels) +
+        lab.write(output / 'BUILD.txt', f'LAB SIMULATION — production plugin {base.get("version")} with the emulated LED MCU\n'
+                  'MCU kernels: ' + ', '.join(kernels) +
                   '\nVM binding: SHA-256 comparison; UUID not stored\n')
     return path
 
@@ -89,6 +112,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--vm-uuid', required=True, help='UUID of the test VM (libvirt <uuid>); no default')
     parser.add_argument('--modules', type=Path, default=HERE / 'modules', help='directory with KERNEL/ugreen-mcu-sim.ko')
+    parser.add_argument('--plugin', type=Path, default=PLUGIN,
+                        help='production .plg to combine, with its .sha256 beside it (default: the committed one)')
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'dist/lab-mcu')
     args = parser.parse_args()
-    print(build(args.output_dir, args.vm_uuid, args.modules))
+    print(build(args.output_dir, args.vm_uuid, args.modules, args.plugin))
