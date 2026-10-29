@@ -129,7 +129,8 @@ exec /bin/grep "$@"
             directory.mkdir(parents=True)
         (proc / 'state').write_text('now 5000000000\nseq 3\nrejected 1\n'
                                     'led 0 power on 179 255 255 255 0 0\nled 3 disk2 breath 179 255 255 255 1000 2000\n')
-        (proc / 'events').write_text('now 5000000000\n1 1000 0 01 179 0 0 0\n2 2000 3 05 7 208 3 232\n3 3000 3 03 0 0 0 0\n')
+        # Event 4 was accepted after the state was read: it belongs to the next poll.
+        (proc / 'events').write_text('now 5000000000\n1 1000 0 01 179 0 0 0\n2 2000 3 05 7 208 3 232\n3 3000 3 03 0 0 0 0\n4 4000 3 03 1 0 0 0\n')
         (status / 'bays').write_text('bay=1 port=1 device= mode=empty\nbay=2 port=2 device=sdb mode=standby\n')
         (smart / 'sdb').write_text('standby 1:2\n')
         script = f'''require '{HERE}/web/lib.php';
