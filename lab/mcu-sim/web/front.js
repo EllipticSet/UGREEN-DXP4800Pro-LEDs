@@ -179,7 +179,8 @@
             el.style.setProperty('--rgb', rgb);
             el.style.setProperty('--level', value);
           });
-          if (swatches[name]) swatches[name].style.background = led && led.status !== 'off' ? rgb : 'transparent';
+          // Inline !important: theme rules may force span backgrounds.
+          if (swatches[name]) swatches[name].style.setProperty('background-color', led && led.status !== 'off' ? rgb : 'transparent', 'important');
           const label = text(led);
           if (outputs[name] && outputs[name].textContent !== label) outputs[name].textContent = label;
         });
