@@ -43,6 +43,7 @@ class LabTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(path.read_bytes()).digest(), digest, str(path))
         plugin = ET.parse(self.plugin).getroot()
         self.assertNotIn('pluginURL', plugin.attrib)
+        self.assertTrue(plugin.find('FILE/INLINE').text.startswith('set -euo pipefail\nexec 2>&1\n'), 'LAB errors must reach the Plugins page')
         self.assertFalse(list((self.stage / 'payload').rglob('*.ko')))
         monitor = self.monitor.read_text()
         for token in ('insmod ', 'modprobe ', 'i2cget ', '/sys/class/leds', '/sys/bus/i2c', 'smartctl -'):

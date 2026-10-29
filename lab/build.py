@@ -132,7 +132,9 @@ echo 'LAB ONLY: VM checks passed; hardware and module ABI checks intentionally n
         bundle = output / 'lab-bundle.tar.xz'
         archive(outer, bundle)
         checksum = hashlib.sha256(bundle.read_bytes()).hexdigest()
+        # As in the production plugin: the Plugins page shows only standard output.
         script = '''set -euo pipefail
+exec 2>&1
 scratch=$(mktemp -d /tmp/ugreen-led-lab-install.XXXXXX)
 trap 'rm -rf -- "$scratch"' EXIT
 base64 -d > "$scratch/bundle.tar.xz" <<'LAB_PAYLOAD'

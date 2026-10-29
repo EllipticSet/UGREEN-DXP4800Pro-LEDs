@@ -89,7 +89,9 @@ tar -xJf "$scratch/bundle.tar.xz" -C "$scratch"
         ET.SubElement(plugin, 'CHANGES').text = ('\nLAB SIMULATION — production plugin ' + base.get('version') +
                                                  ' with the emulated LED MCU, for one test VM; never install on the NAS.\n')
         item = ET.SubElement(plugin, 'FILE', {'Run': '/bin/bash'})
+        # As in the production step: the Plugins page shows only standard output.
         ET.SubElement(item, 'INLINE').text = '''set -euo pipefail
+exec 2>&1
 if [[ -f /boot/config/plugins/''' + NAME + '''.plg ]]; then
   echo 'Remove the separate ''' + NAME + ''' plugin before installing this combined LAB plugin.'; exit 1
 fi

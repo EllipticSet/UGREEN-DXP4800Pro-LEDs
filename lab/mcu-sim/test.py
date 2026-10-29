@@ -49,6 +49,7 @@ class LabMcuTests(unittest.TestCase):
         files = plugin.findall('FILE')
         self.assertEqual([f.get('Method') for f in files], [None, None, 'remove', 'remove'])
         self.assertIn('ugreen-mcu-lab-install', files[0].find('INLINE').text)
+        self.assertTrue(files[0].find('INLINE').text.startswith('set -euo pipefail\nexec 2>&1\n'), 'LAB errors must reach the Plugins page')
         self.assertIn('Remove the separate UGREEN-DXP4800Pro-LAB-MCU plugin', files[0].find('INLINE').text)
         for combined, original in zip(files[1:3], base.findall('FILE')):
             self.assertEqual(combined.find('INLINE').text, original.find('INLINE').text)
