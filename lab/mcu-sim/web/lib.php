@@ -41,14 +41,20 @@ function lab_mcu_parse_state(string $text): ?array
     return $state['now'] === null || $state['seq'] === null ? null : $state;
 }
 
+// Compare decimal sequence numbers as strings to stay exact beyond 2^53.
+function lab_mcu_seq_cmp(string $a, string $b): int
+{
+    return strlen($a) <=> strlen($b) ?: strcmp($a, $b) <=> 0;
+}
+
 // /proc/ugreen-mcu-sim/events: "now NS", then "seq ns led command p1 p2 p3 p4" (command in hex).
-function lab_mcu_parse_events(string $text, string $since): array
+// Only events in (since, until] are returned, so the batch matches the snapshot's cursor.
+function lab_mcu_parse_events(string $text, string $since, string $until): array
 {
     $events = [];
     foreach (explode("\n", $text) as $line) {
         if (!preg_match('/^(\d+) (\d+) (\d+) ([0-9a-f]{2}) (\d+) (\d+) (\d+) (\d+)$/', $line, $m)) continue;
-        // Sequence numbers are compared as decimal strings to stay exact beyond 2^53.
-        if (strlen($m[1]) < strlen($since) || (strlen($m[1]) === strlen($since) && strcmp($m[1], $since) <= 0)) continue;
+        if (lab_mcu_seq_cmp($m[1], $since) <= 0 || lab_mcu_seq_cmp($m[1], $until) > 0) continue;
         $events[] = [
             'seq' => $m[1], 'ns' => $m[2], 'led' => (int)$m[3], 'command' => hexdec($m[4]),
             'p' => [(int)$m[5], (int)$m[6], (int)$m[7], (int)$m[8]],
@@ -92,7 +98,8 @@ function lab_mcu_snapshot(string $since = '', ?array $paths = null): array
         'seq' => $state['seq'],
         'rejected' => (int)$state['rejected'],
         'leds' => $state['leds'],
-        'events' => $since === '' ? [] : lab_mcu_parse_events($eventsText, $since),
+        // Commands accepted after the state was read arrive with the next poll.
+        'events' => $since === '' ? [] : lab_mcu_parse_events($eventsText, $since, $state['seq']),
         'bays' => $bays,
     ];
 }
