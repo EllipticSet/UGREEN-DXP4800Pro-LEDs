@@ -46,7 +46,9 @@ with tempfile.TemporaryDirectory() as temp:
  for name in ['preflight.sh','install.sh']: copy(ROOT/'src'/name,outer,name,0o755)
  copy(ROOT/'src/settings.example.cfg',outer,'settings.example.cfg')
  bundle=DIST/'offline-bundle.tar.xz';archive(outer,bundle)
+ # The Plugins page shows only standard output; send errors there too.
  script='''set -euo pipefail
+exec 2>&1
 scratch=$(mktemp -d /tmp/ugreen-pro-install.XXXXXX)
 trap 'rm -rf -- "$scratch"' EXIT
 base64 -d > "$scratch/bundle.tar.xz" <<'UGREEN_PAYLOAD'

@@ -58,7 +58,7 @@ Each bay in the **Drives LEDs** tab has an **Identify** button. The selected bay
 | Unraid | 7.3.2+ |
 | Kernel | `6.18.38-Unraid` (Unraid 7.3.2), `6.18.54-Unraid` (Unraid 7.3.3) or `6.18.58-Unraid` (Unraid 7.3.4) |
 
-The installer checks the NAS model through DMI and requires an exact match between the running kernel and a bundled LED module. Unraid 7.3.2 or later is required, but the only supported kernels are those listed above. All modules are included; the installer selects the correct one automatically, including after an Unraid upgrade or rollback.
+The installer checks the NAS model through DMI and requires an exact match between the running kernel and a bundled LED module. Unraid 7.3.2 or later is required, but the only supported kernels are those listed above. Prereleases (alpha, beta and release candidates) pass the version check when their kernel matches a bundled module; a prerelease counts as earlier than its release, so prereleases of 7.3.2 are not supported. All modules are included; the installer selects the correct one automatically, including after an Unraid upgrade or rollback.
 
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**

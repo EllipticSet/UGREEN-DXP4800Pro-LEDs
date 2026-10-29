@@ -18,12 +18,13 @@ unraid_version=$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version 2>/de
 detail "System: Unraid ${unraid_version:-unknown}, kernel $kernel, model ${model:-unknown}"
 [[ $model == 'DXP4800 Pro' ]] || { echo 'Only DXP4800 Pro is supported by this build.' >&2; exit 1; }
 detail 'Model: supported'
-if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then
+# Prereleases (7.4.0-rc.2) are accepted; each one precedes its release, so 7.3.2-rc.1 is older than 7.3.2.
+if [[ ! $unraid_version =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?(-(alpha|beta|rc)\.?[0-9]*)?$ ]]; then
   echo 'Cannot determine Unraid version.' >&2; exit 1
 fi
 major=$((10#${BASH_REMATCH[1]})); minor=$((10#${BASH_REMATCH[2]}))
-patch=$((10#${BASH_REMATCH[4]:-0}))
-(( major > 7 || (major == 7 && (minor > 3 || (minor == 3 && patch >= 2))) )) || { echo 'Unraid 7.3.2 or later required.' >&2; exit 1; }
+patch=$((10#${BASH_REMATCH[4]:-0})); prerelease=${BASH_REMATCH[5]}
+(( major > 7 || (major == 7 && (minor > 3 || (minor == 3 && (patch > 2 || (patch == 2 && ${#prerelease} == 0))))) )) || { echo 'Unraid 7.3.2 or later required.' >&2; exit 1; }
 detail 'Unraid version: supported (7.3.2 or later)'
 [[ -f $module ]] || { notify_missing_driver; echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2; exit 1; }
 [[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || { notify_missing_driver; echo "Wrong LED module release for kernel $kernel." >&2; exit 1; }
