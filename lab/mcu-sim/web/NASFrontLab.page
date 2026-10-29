@@ -1,0 +1,6 @@
+Menu="Utilities"
+Title="NAS Front (LAB)"
+Icon="icons/front.png"
+Markdown="false"
+---
+<?php require '/usr/local/emhttp/plugins/UGREEN-DXP4800Pro-LAB-MCU/front.php'; ?>

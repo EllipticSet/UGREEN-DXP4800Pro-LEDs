@@ -1,0 +1,35 @@
+/* SPDX-License-Identifier: MIT. LAB SIMULATION front view; inherits Unraid's active theme. */
+.lab-front { max-width: 1380px; margin: 20px auto; }
+.lab-front-banner { margin: 0 0 20px; padding: 10px 14px; border-left: 4px solid #ff8c28; background: #ff8c2814; line-height: 1.5; }
+.lab-front-layout { display: grid; grid-template-columns: minmax(260px, 520px) minmax(320px, 1fr); gap: clamp(20px, 4vw, 56px); align-items: start; }
+.lab-front-figure { margin: 0; }
+.lab-front-image { position: relative; width: 100%; isolation: isolate; }
+.lab-front-image img { position: relative; z-index: 1; display: block; width: 100%; height: auto; border-radius: 5%; pointer-events: none; }
+.lab-front-figure figcaption { margin-top: 14px; text-align: center; opacity: .75; }
+/* Same apertures as the plugin preview: colour sits behind the PNG, whose alpha defines each LED. */
+.lab-led, .lab-glow { position: absolute; top: 88.48%; width: 1.65%; height: 2.2%; transform: translate(-50%, -50%); pointer-events: none; }
+.lab-led { z-index: 0; background: var(--off, #4c4e5a); }
+.lab-led::before { content: ""; position: absolute; inset: 0; background: var(--rgb, #fff); opacity: var(--level, 0); }
+/* A soft halo above the panel makes lit LEDs readable at small sizes. */
+.lab-glow { z-index: 2; width: 5%; height: 5%; border-radius: 50%; background: radial-gradient(circle, var(--rgb, #fff) 0%, transparent 65%); opacity: calc(var(--level, 0) * .55); mix-blend-mode: screen; }
+.lab-led-power { --off: #575965; left: 15.14%; width: 3.6%; height: 1.65%; }
+.lab-glow.lab-led-power { width: 8%; height: 5%; }
+.lab-led-netdev { --off: #51535f; left: 25.82%; }
+.lab-led-disk1 { --off: #4f515c; left: 29.52%; }
+.lab-led-disk2 { --off: #4c4e5a; left: 33.08%; }
+.lab-led-disk3 { --off: #4a4d59; left: 36.78%; }
+.lab-led-disk4 { --off: #484b56; left: 40.34%; }
+.lab-front-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+.lab-front-table th, .lab-front-table td { padding: 6px 8px; border-bottom: 1px solid #8884; text-align: left; vertical-align: middle; }
+.lab-front-table select, .lab-front-table button { margin: 0; }
+.lab-swatch { display: inline-block; width: 12px; height: 12px; margin-right: 8px; border: 1px solid #8888; border-radius: 50%; vertical-align: -1px; background: transparent; }
+.lab-front-side h3 { margin: 22px 0 8px; }
+.lab-front-check { display: block; margin: 0 0 8px; opacity: .8; }
+.lab-front-log { max-height: 260px; overflow-y: auto; margin: 0; padding-left: 3.2em; font-family: monospace; font-size: .92em; line-height: 1.55; }
+@media (max-width: 900px) {
+  .lab-front-layout { grid-template-columns: 1fr; }
+  .lab-front-figure { width: min(100%, 420px); margin: 0 auto; }
+}
+@media (max-width: 550px) {
+  .lab-front-table th:nth-child(4), .lab-front-table td:nth-child(4) { padding-left: 0; }
+}
