@@ -134,7 +134,7 @@ exec /bin/grep "$@"
         (smart / 'sdb').write_text('standby 1:2\n')
         script = f'''require '{HERE}/web/lib.php';
 $paths = ['proc' => '{proc}', 'smart' => '{smart}', 'status' => '{status}', 'ready' => '{self.root}/ready', 'block' => '{block}'];
-echo json_encode(['snap' => lab_mcu_snapshot('1', $paths), 'first' => lab_mcu_snapshot('0', $paths),
+echo json_encode(['snap' => lab_mcu_snapshot('1', $paths), 'first' => lab_mcu_snapshot('', $paths), 'zero' => lab_mcu_snapshot('0', $paths),
   'bad' => lab_mcu_bay_device('5', $paths), 'empty' => lab_mcu_bay_device('1', $paths), 'ok' => lab_mcu_bay_device('2', $paths)]);'''
         result = json.loads(subprocess.run(['php', '-r', script], check=True, capture_output=True, text=True).stdout)
         snap = result['snap']
@@ -144,6 +144,8 @@ echo json_encode(['snap' => lab_mcu_snapshot('1', $paths), 'first' => lab_mcu_sn
         self.assertEqual([e['seq'] for e in snap['events']], ['2', '3'])
         self.assertEqual(snap['events'][0]['command'], 5)
         self.assertEqual(result['first']['events'], [])
+        # A cursor at sequence 0 (MCU idle when the page opened) still receives every later command.
+        self.assertEqual([e['seq'] for e in result['zero']['events']], ['1', '2', '3'])
         self.assertEqual(snap['bays']['2']['forced'], 'standby')
         self.assertEqual(snap['bays']['1']['device'], '')
         self.assertEqual((result['bad'], result['empty'], result['ok']), (None, None, 'sdb'))

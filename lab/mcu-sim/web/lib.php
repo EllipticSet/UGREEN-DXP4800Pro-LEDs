@@ -69,10 +69,11 @@ function lab_mcu_bays(string $statusDir): array
     return $bays;
 }
 
-function lab_mcu_snapshot(string $since = '0', ?array $paths = null): array
+// An empty $since requests only the snapshot; a sequence number (0 included) adds the later events.
+function lab_mcu_snapshot(string $since = '', ?array $paths = null): array
 {
     $paths ??= lab_mcu_paths();
-    if (!preg_match('/^\d{1,20}$/', $since)) $since = '0';
+    if (!preg_match('/^\d{1,20}$/', $since)) $since = '';
     $stateText = lab_mcu_read("{$paths['proc']}/state");
     $state = $stateText === null ? null : lab_mcu_parse_state($stateText);
     if ($state === null) return ['simulator' => false];
@@ -91,7 +92,7 @@ function lab_mcu_snapshot(string $since = '0', ?array $paths = null): array
         'seq' => $state['seq'],
         'rejected' => (int)$state['rejected'],
         'leds' => $state['leds'],
-        'events' => $since === '0' ? [] : lab_mcu_parse_events($eventsText, $since),
+        'events' => $since === '' ? [] : lab_mcu_parse_events($eventsText, $since),
         'bays' => $bays,
     ];
 }

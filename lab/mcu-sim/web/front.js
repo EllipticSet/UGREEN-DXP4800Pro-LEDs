@@ -96,8 +96,8 @@
       busy = true;
       const sent = performance.now();
       try {
-        const query = view.seq === null ? '0' : view.seq;
-        const response = await fetch(`/plugins/UGREEN-DXP4800Pro-LAB-MCU/state.php?since=${query}`, { cache: 'no-store', credentials: 'same-origin' });
+        const query = view.seq === null ? '' : `?since=${view.seq}`;
+        const response = await fetch(`/plugins/UGREEN-DXP4800Pro-LAB-MCU/state.php${query}`, { cache: 'no-store', credentials: 'same-origin' });
         if (!response.ok) throw new Error(String(response.status));
         const data = await response.json();
         const received = performance.now();
