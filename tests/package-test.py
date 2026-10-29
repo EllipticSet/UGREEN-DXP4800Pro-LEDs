@@ -10,6 +10,7 @@ el=ET.parse(plg).getroot()
 assert el.attrib['version']==VERSION
 assert el.attrib['min']=='7.3.2' and 'max' not in el.attrib
 script=el.find('FILE/INLINE').text
+assert script.startswith('set -euo pipefail\nexec 2>&1\n'), 'Installer errors must reach the Plugins page'
 assert f'tar -xJf "$scratch/{PKG}.txz" -C "$scratch/payload"' in script, 'Installer payload extraction missing'
 encoded=script.split("<<'UGREEN_PAYLOAD'\n",1)[1].split('\nUGREEN_PAYLOAD',1)[0]
 blob=base64.b64decode(encoded)

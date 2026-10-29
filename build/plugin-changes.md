@@ -1,3 +1,7 @@
+###1.6.2
+- Accept Unraid prereleases (alpha, beta and release candidates) in the compatibility check. A prerelease counts as earlier than its release, so prereleases of 7.3.2 remain unsupported, and the running kernel must still match a bundled LED driver. Previously installation failed with Cannot determine Unraid version.
+- Show installation errors on the Plugins page instead of only the generic failure message.
+
 ###1.6.1
 - Apply the drive LED brightness to activity pulses in the Dark when idle style, including the night mode brightness. Previously these pulses used full brightness.
 
