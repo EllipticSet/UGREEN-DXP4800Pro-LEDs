@@ -32,6 +32,12 @@ package stores only a SHA-256 comparison value, never the UUID itself. It accept
 only the matching VM.
 It rejects a DXP4800 Pro host, a different UUID, unexpected non-USB disks,
 a loaded physical LED module, or an existing production monitor.
+
+The VM requires exactly one virtual boot disk with serial `LABBOOT001` and one
+virtual array disk with serial `LABARRAY001`, for example
+`<serial>LABBOOT001</serial>` in the libvirt `<disk>` definition. Without them,
+installation stops with `LAB ONLY: expected virtual boot and array disks are missing.`
+Any other non-USB disk stops it with `LAB ONLY: unexpected non-USB disk; refusing to run.`
 Its own preflight checks replace the production compatibility check, so it also
 installs on Unraid prereleases whose kernel has no bundled LED driver.
 
