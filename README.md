@@ -11,6 +11,11 @@ review the adapter before testing a changed production monitor.
 The [emulated LED MCU](#emulated-led-mcu-hardware-identical-mode) instead runs
 the unchanged production plugin against an emulated controller.
 
+| Laboratory | Package | Production code | Kernel requirement |
+| --- | --- | --- | --- |
+| File-based simulation | `UGREEN-DXP4800Pro-LEDs-LAB.plg` | Monitor and web UI; hardware discovery and LED sysfs replaced | None; no kernel module is loaded |
+| Emulated LED MCU | `dist/lab-mcu/UGREEN-DXP4800Pro-LEDs.plg` | Complete production plugin, unchanged | Simulator module and bundled LED driver for the running kernel |
+
 ## Branch contents
 
 The root README is the official laboratory guide. `lab/README.md` redirects here.
@@ -24,14 +29,17 @@ The release-publishing workflow is excluded from this branch.
 Every build requires the UUID of its disposable QEMU VM through `--vm-uuid`.
 There is no default or maintainer VM identifier in the repository. The generated
 package stores only a SHA-256 comparison value, never the UUID itself. It accepts
-only the matching VM and disk serials `LABBOOT001` and `LABARRAY001`.
+only the matching VM.
 It rejects a DXP4800 Pro host, a different UUID, unexpected non-USB disks,
 a loaded physical LED module, or an existing production monitor.
 
-Obtain the UUID from the test VM configuration (not the Unraid license device GUID)
-and build locally to keep this identifier out of public workflow logs and artifacts.
-Never pass NAS hardware through to this VM. A physical USB license
-device may be attached; the NAS TPM and its production license are not used.
+The VM requires exactly one virtual boot disk with serial `LABBOOT001` and one
+virtual array disk with serial `LABARRAY001`, for example
+`<serial>LABBOOT001</serial>` in the libvirt `<disk>` definition. Without them,
+installation stops with `LAB ONLY: expected virtual boot and array disks are missing.`
+Any other non-USB disk stops it with `LAB ONLY: unexpected non-USB disk; refusing to run.`
+Its own preflight checks replace the production compatibility check, so it also
+installs on Unraid prereleases whose kernel has no bundled LED driver.
 
 ## Build and install
 
@@ -57,7 +65,9 @@ python3 lab/build.py --vm-uuid YOUR_TEST_VM_UUID
 Runtime tests require Linux and Bash 4+. On macOS the build/isolation test runs and
 the Linux runtime tests are explicitly skipped. GitHub Actions runs all tests.
 No binary kernel module is included or loaded by this simulator. Automatic updates
-from the public plugin URL are disabled in the generated LAB plugin. Remove the
+from the public plugin URL are disabled in the generated LAB plugin. Installation
+errors, such as a VM guard refusal, are shown on the Plugins page instead of only
+the generic failure message. Remove the
 LAB plugin through Plugins before replacing it with a different package; settings
 are retained. Uninstallation does not unload host hardware drivers.
 
@@ -113,7 +123,11 @@ The **Utilities → NAS Front (LAB)** page is the virtual front panel. It replay
 the commands received by the MCU (on/off, brightness, colour, blink and breath)
 with their real timing, so 80 ms activity pulses, synchronized standby breathing,
 the identification flash and the shutdown blink appear as on the physical NAS.
-It also lists each bay and offers the inputs QEMU cannot produce: a forced
+The six LEDs and their halo are drawn on canvases behind and above the front
+image, so Unraid themes, including the black theme, cannot recolour them. Beside
+the image, a table shows the last MCU state of each LED and a log lists the most
+recent MCU commands; LAN traffic blinks are hidden from the log unless
+**Include LAN traffic blinks** is selected. The page also lists each bay and offers the inputs QEMU cannot produce: a forced
 **Standby** (ends at the next read or write, like a drive spinning up), a forced
 **SMART failed** state, and five seconds of read-only I/O. These inputs are served
 by a `smartctl` shim that answers only the monitor's `-n standby,0 -H -j` query
@@ -151,11 +165,28 @@ Unraid form editor regenerates the XML and drops the `sysinfo` block.
    the default bay mapping `1 2 3 4`. Small raw images are sufficient. Never pass
    NAS disks or other NAS hardware through to this VM.
 
+### Kernel and Unraid version
+
+The combined plugin installs only on a kernel for which both modules exist:
+
+| Module | Kernels in this branch | Location |
+| --- | --- | --- |
+| Emulated MCU `ugreen-mcu-sim.ko` | `6.18.38-Unraid`, `6.18.54-Unraid`, `6.18.58-Unraid` | `lab/mcu-sim/modules/` |
+| Production LED driver `led-ugreen.ko` | `6.18.54-Unraid`, `6.18.58-Unraid` | `vendor/modules/` (inside the production `.plg`) |
+
+From production 1.6.2, the compatibility check accepts Unraid prereleases
+(`-alpha`, `-beta` and `-rc` suffixes, for example `7.4.0-rc.2`). A prerelease
+counts as earlier than its release, so prereleases of 7.3.2 are rejected. The
+running kernel must still match a bundled LED driver exactly. On a prerelease
+with a new kernel, installation therefore stops with
+`No packaged LED module for kernel KERNEL` until a production release candidate
+that bundles `led-ugreen.ko` for that kernel is passed with `--plugin`.
+
 ### Build and install
 
-The committed modules cover the supported Unraid kernels. For a prerelease
-kernel, run the **Beta laboratory** workflow manually with the `kernel` input
-set to the release that `uname -r` prints in the VM, or locally on Linux:
+For a kernel without a committed simulator module, run the **Beta laboratory**
+workflow manually with the `kernel` input set to the release that `uname -r`
+prints in the VM, or build locally on Linux:
 
 ```bash
 bash lab/mcu-sim/build-module.sh linux-KERNEL.tar.xz KERNEL
@@ -185,6 +216,19 @@ install the combined plugin. The package refuses to install without a hypervisor
 or on a VM with another UUID, and the module refuses to load outside a virtual
 machine. Removal also restores `smartctl`.
 
+Installation output, including errors from the VM guard, the simulator module
+and the production preflight, is shown on the Plugins page. Common messages:
+
+| Message | Cause | Action |
+| --- | --- | --- |
+| `LAB ONLY: no hypervisor detected; refusing to run on physical hardware.` | Package started outside a VM | Install only in the test VM |
+| `LAB ONLY: this package is restricted to the configured test VM.` | VM UUID differs from `--vm-uuid` | Rebuild with the libvirt `<uuid>` of this VM |
+| `No simulator module for kernel KERNEL.` | No `ugreen-mcu-sim.ko` for the running kernel | Build the module and rebuild the package |
+| `No packaged LED module for kernel KERNEL.` | The production plugin bundles no LED driver for the running kernel | Use a supported kernel or pass a release candidate with `--plugin` |
+| `Cannot determine Unraid version.` | Production plugin earlier than 1.6.2 on a prerelease | Combine a production plugin 1.6.2 or later |
+| `An I2C device already exists at 0x3a (...); reboot the VM first.` | Address already in use after a previous installation | Reboot the VM and install again |
+| `Remove the separate UGREEN-DXP4800Pro-LAB-MCU plugin before installing this combined LAB plugin.` | Earlier separate MCU plugin still installed | Remove it through Plugins first |
+
 Verified on the `6.18.58-Unraid` kernel in QEMU Q35: production preflight
 checks, monitor start and MCU binding, activity pulses from real disk reads, LAN
 blinking from real traffic, forced standby breathing and SMART failure,
@@ -197,7 +241,8 @@ check `lsmod | grep led_class` before the first start and record the result.
 
 Record the source commit, Unraid version, kernel, workflow run, and each result:
 
-1. Install, monitor status and LAB notice.
+1. Install, monitor status and LAB notice; installation output on the Plugins
+   page.
 2. Apply all four tabs, invalid input, brightness zero and restore tab defaults.
 3. Five-second LAN/SMART previews and Stop preview.
 4. Active, standby breathing on/off, SMART failure, disappearance/reappearance,
