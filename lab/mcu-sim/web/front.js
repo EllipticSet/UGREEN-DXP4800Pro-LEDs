@@ -7,6 +7,16 @@
   // Commands are replayed with this latency so pulses between two polls keep their real spacing.
   const DELAY_MS = 600;
   const LOG_LINES = 40;
+  // Same apertures as the plugin preview, in % of the front image: centre x, width, height, off colour.
+  const TOP = 88.48;
+  const SHAPES = {
+    power: [15.14, 3.6, 1.65, '#575965'],
+    netdev: [25.82, 1.65, 2.2, '#51535f'],
+    disk1: [29.52, 1.65, 2.2, '#4f515c'],
+    disk2: [33.08, 1.65, 2.2, '#4c4e5a'],
+    disk3: [36.78, 1.65, 2.2, '#4a4d59'],
+    disk4: [40.34, 1.65, 2.2, '#484b56'],
+  };
 
   // Apply one MCU command (as in led-ugreen's legacy protocol) to a local LED state.
   function applyEvent(led, event) {
@@ -69,10 +79,10 @@
   function start(panel) {
     const view = { leds: {}, queue: [], seq: null, offset: null, monitor: false };
     const names = {};
-    const markers = {}, glows = {}, outputs = {}, swatches = {};
+    const outputs = {}, swatches = {};
+    const ledCanvas = panel.querySelector('[data-lab-leds]');
+    const glowCanvas = panel.querySelector('[data-lab-glow]');
     LEDS.forEach(name => {
-      markers[name] = panel.querySelector(`[data-led="${name}"]`);
-      glows[name] = panel.querySelector(`[data-glow="${name}"]`);
       outputs[name] = panel.querySelector(`[data-output="${name}"]`);
       swatches[name] = panel.querySelector(`[data-swatch="${name}"]`);
     });
@@ -156,7 +166,44 @@
     panel.querySelectorAll('[data-io]').forEach(button => button.addEventListener('click', () =>
       control({ action: 'io', bay: button.dataset.io })));
 
+    // Canvases keep the LED colours out of reach of theme CSS rules.
+    function fit(canvas) {
+      const ratio = root.devicePixelRatio || 1;
+      const w = Math.round(canvas.clientWidth * ratio), h = Math.round(canvas.clientHeight * ratio);
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      return ctx;
+    }
+
+    function draw(state) {
+      if (!ledCanvas || !glowCanvas) return;
+      const leds = fit(ledCanvas), glow = fit(glowCanvas);
+      const w = ledCanvas.width / 100, h = ledCanvas.height / 100;
+      LEDS.forEach(name => {
+        const [x, width, height, off] = SHAPES[name];
+        const { rgb, value } = state[name];
+        const cx = x * w, cy = TOP * h, rw = width * w, rh = height * h;
+        leds.globalAlpha = 1;
+        leds.fillStyle = off;
+        leds.fillRect(cx - rw / 2, cy - rh / 2, rw, rh);
+        if (value <= 0) return;
+        leds.globalAlpha = value;
+        leds.fillStyle = rgb;
+        leds.fillRect(cx - rw / 2, cy - rh / 2, rw, rh);
+        const radius = Math.max(rw, rh) * 1.4;
+        const halo = glow.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        halo.addColorStop(0, rgb);
+        halo.addColorStop(1, 'transparent');
+        glow.globalAlpha = value * 0.55;
+        glow.fillStyle = halo;
+        glow.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+      });
+    }
+
     function frame() {
+      const state = {};
+      LEDS.forEach(name => { state[name] = { rgb: '#fff', value: 0 }; });
       if (view.offset !== null) {
         const t = performance.now() + view.offset - DELAY_MS;
         while (view.queue.length && view.queue[0].ms <= t) {
@@ -173,18 +220,14 @@
         LEDS.forEach(name => {
           const led = view.leds[name];
           const rgb = led ? `rgb(${led.rgb.join(',')})` : '#fff';
-          const value = level(led, t).toFixed(3);
-          [markers[name], glows[name]].forEach(el => {
-            if (!el) return;
-            el.style.setProperty('--rgb', rgb);
-            el.style.setProperty('--level', value);
-          });
+          state[name] = { rgb, value: level(led, t) };
           // Inline !important: theme rules may force span backgrounds.
           if (swatches[name]) swatches[name].style.setProperty('background-color', led && led.status !== 'off' ? rgb : 'transparent', 'important');
           const label = text(led);
           if (outputs[name] && outputs[name].textContent !== label) outputs[name].textContent = label;
         });
       }
+      draw(state);
       root.requestAnimationFrame(frame);
     }
 
