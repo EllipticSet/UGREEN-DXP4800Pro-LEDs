@@ -15,11 +15,9 @@ $labLeds = ['power' => 'Power', 'netdev' => 'LAN', 'disk1' => 'Disk 1', 'disk2' 
   <div class="lab-front-layout">
     <figure class="lab-front-figure">
       <div class="lab-front-image">
+        <canvas class="lab-front-leds" data-lab-leds aria-hidden="true"></canvas>
         <img src="/plugins/UGREEN-DXP4800Pro-LAB-MCU/images/nas-front.png?v=<?= $labVersion('images/nas-front.png') ?>" alt="Virtual UGREEN DXP4800 Pro front panel" width="730" height="729">
-        <?php foreach ($labLeds as $led => $label): ?>
-          <span class="lab-led lab-led-<?= $led ?>" data-led="<?= $led ?>" aria-hidden="true"></span>
-          <span class="lab-glow lab-led-<?= $led ?>" data-glow="<?= $led ?>" aria-hidden="true"></span>
-        <?php endforeach; ?>
+        <canvas class="lab-front-glow" data-lab-glow aria-hidden="true"></canvas>
       </div>
       <figcaption data-lab-summary role="status">Connecting to the emulated MCU…</figcaption>
     </figure>
