@@ -108,7 +108,7 @@ settings preview, not a live hardware readout.
 ## Emulated LED MCU (hardware-identical mode)
 
 `lab/mcu-sim/` provides a second, separate laboratory that runs the **unchanged
-production plugin** in the test VM, for example on an Unraid 8 prerelease. Instead
+production plugin** in the test VM. Instead
 of replacing LED sysfs with files, the kernel module `ugreen-mcu-sim` registers an
 SMBus adapter named like the NAS controller (`SMBus I801 adapter (UGREEN MCU
 simulator)`) with an emulated LED MCU at `0x3a`. It answers the chip ID `0xc5b2`,
