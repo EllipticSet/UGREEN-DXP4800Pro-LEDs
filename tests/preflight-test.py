@@ -20,14 +20,14 @@ pgrep() { return 1; }
 export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo modprobe php timeout ip pgrep
 '''
  modules=p/'modules'
- for kernel in ['6.18.38-Unraid','6.18.54-Unraid','6.18.58-Unraid']:
+ for kernel in ['6.18.38-Unraid','6.18.54-Unraid','6.18.58-Unraid','6.18.60-Unraid']:
   (modules/kernel).mkdir(parents=True)
   (modules/kernel/'led-ugreen.ko').touch()
  def run(kernel='6.18.38-Unraid', vermagic=None):
   return subprocess.run([bash,'-c',mocks+f'source "{script}" "{modules}"'],env={**os.environ,'TEST_KERNEL':kernel, 'TEST_VERMAGIC':vermagic or kernel+' SMP'},capture_output=True,text=True)
  r=run();assert r.returncode==0,r.stderr
  for text in ['System: Unraid 7.3.2, kernel 6.18.38-Unraid, model DXP4800 Pro','Model: supported','Unraid version: supported (7.3.2 or later)',
-              'LED driver: 6.18.38-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid)','Required commands: available',
+              'LED driver: 6.18.38-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid, 6.18.60-Unraid)','Required commands: available',
               'Competing LED plugins and monitors: none','Kernel components: available','LED controller address 0x3a: free']:
   assert '      '+text in r.stdout,(text,r.stdout)
  assert '<' not in r.stdout and '>' not in r.stdout
@@ -45,6 +45,9 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
   (p/'etc/unraid-version').write_text(f'version="{version}"\n')
   assert run('6.18.58-Unraid').returncode==0,run('6.18.58-Unraid').stderr
   assert run('6.18.58-Unraid', '6.18.54-Unraid SMP').returncode!=0
+ (p/'etc/unraid-version').write_text('version="7.4.0"\n')
+ assert run('6.18.60-Unraid').returncode==0,run('6.18.60-Unraid').stderr
+ assert run('6.18.60-Unraid', '6.18.58-Unraid SMP').returncode!=0
  (p/'etc/unraid-version').write_text('version="7.3.3"\n')
  assert run('6.18.54-Unraid').returncode==0,run('6.18.54-Unraid').stderr
  assert run('6.18.54-Unraid', '6.18.38-Unraid SMP').returncode!=0
