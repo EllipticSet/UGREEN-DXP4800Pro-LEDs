@@ -1,3 +1,7 @@
+###1.6.3
+- Add Unraid 7.4.0 support with a rebuilt driver for 6.18.60-Unraid.
+- Retain support for Unraid 7.3.2, 7.3.3 and 7.3.4.
+
 ###1.6.2
 - Accept Unraid prereleases (alpha, beta and release candidates) in the compatibility check. A prerelease counts as earlier than its release, so prereleases of 7.3.2 remain unsupported, and the running kernel must still match a bundled LED driver. Previously installation failed with Cannot determine Unraid version.
 - Show installation errors on the Plugins page instead of only the generic failure message.

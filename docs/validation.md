@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.3
+
+Version 1.6.3 supports Unraid 7.4.0 and retains support for Unraid 7.3.2, 7.3.3 and 7.3.4. The new module was built against the checksum-pinned `6.18.60-Unraid` archive, using the existing hardening patch. Compared with `6.18.58-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver, I2C core and LED class sources are identical. The settings interface, installer, LED monitor and existing kernel modules are unchanged from 1.6.2.
+
+Local checks on November 10, 2026 passed the full automated suite, including the preflight and update regressions for `6.18.60-Unraid`, a rejected module built for another kernel, and the package, metadata and reproducibility checks for the generated 1.6.3 installer and checksum.
+
 ## Version 1.6.2
 
 The compatibility step accepted only release version strings such as `7.4.0`, so an Unraid prerelease such as `7.4.0-rc.2` stopped the installation with Cannot determine Unraid version. The error was written to standard error, which the Plugins page does not show, so only the generic failure message was visible. The version check now accepts alpha, beta and release candidate suffixes and treats a prerelease as earlier than its release, so prereleases of 7.3.2 remain unsupported. The exact match between the running kernel and a bundled LED module is unchanged. The installer script in the plugin manifest sends standard error to standard output, so every installer error is shown on the Plugins page. The settings interface, LED monitor and kernel modules are unchanged from 1.6.1.
