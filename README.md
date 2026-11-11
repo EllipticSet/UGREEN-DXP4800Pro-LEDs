@@ -140,6 +140,8 @@ ugreen-mcu-lab io sdb 5
 ugreen-mcu-lab status
 ```
 
+<a href="docs/screenshots/NAS-Front-LAB.jpg"><img src="docs/screenshots/NAS-Front-LAB.jpg" alt="NAS Front (LAB) page with the emulated LED MCU state, drive bays and command log" width="600"></a>
+
 ### VM configuration
 
 Back up the current definition first, for example with
