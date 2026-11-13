@@ -9,6 +9,19 @@ mkdir -p "$state_dir"
 led_path() { printf '%s/%s' "$test_root" "$1"; }
 for bay in 1 2 3 4; do mkdir -p "$test_root/disk$bay"; done
 assert_file() { [[ $(cat "$1") == "$2" ]] || { echo "FAIL $1" >&2; exit 1; }; }
+# The MCU signature read is retried and the last reply is reported.
+MCU_PROBE_DELAY=0
+# i2cget runs in a command substitution, so count calls in a file.
+i2cget() { echo x >> "$test_root/probe-calls"; (( $(wc -l < "$test_root/probe-calls") >= 3 )) && { echo 0xc5b2; return 0; }; echo 'Error: Read failed' >&2; return 2; }
+probe_mcu 0
+[[ $(wc -l < "$test_root/probe-calls") == 3 ]] || { echo 'FAIL probe retry' >&2; exit 1; }
+i2cget() { echo 0x0000; }
+! probe_mcu 0 || { echo 'FAIL probe accepted wrong signature' >&2; exit 1; }
+[[ $probe_reply == 0x0000 ]] || { echo 'FAIL probe reply' >&2; exit 1; }
+i2cget() { echo 'Error: Read failed' >&2; return 2; }
+! probe_mcu 0 || { echo 'FAIL probe accepted error' >&2; exit 1; }
+[[ $probe_reply == 'Error: Read failed' ]] || { echo 'FAIL probe error text' >&2; exit 1; }
+unset -f i2cget
 set_bay_mode 1 active
 # Dark style primes the pulse brightness with one pulse at the configured level.
 assert_file "$test_root/disk1/trigger" oneshot

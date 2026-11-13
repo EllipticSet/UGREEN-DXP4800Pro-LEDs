@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.4
+
+On one DXP4800 Pro (board revision `DXP4800Pro V1.5 251030`, Unraid 7.4.0, two DDR5 modules), installation of 1.6.3 failed twice with LED MCU not found on Intel SMBus I801, although manual reads of register 0x5a at address 0x3a returned `0xc5b2`, with and without the LED driver loaded. The detection read the signature once per Intel SMBus I801 adapter and discarded the `i2cget` error output. The monitor now waits for udev after loading the SMBus drivers, retries the signature read up to five times, 0.2 seconds apart, and reports the reply or error of each I801 adapter when detection fails. The settings interface, installer steps and kernel modules are unchanged from 1.6.3.
+
+Local checks on November 11, 2026 passed the full automated suite, including new monitor regressions for a signature read that succeeds on the third attempt, a wrong signature and the reported `i2cget` error text, and the package, metadata and reproducibility checks for the generated 1.6.4 installer and checksum. On November 12, 2026 the affected system installed the 1.6.4 test build from the Plugins page: the LED controller was bound on `i2c-0` and the power, LAN and drive LEDs started normally.
+
 ## Version 1.6.3
 
 Version 1.6.3 supports Unraid 7.4.0 and retains support for Unraid 7.3.2, 7.3.3 and 7.3.4. The new module was built against the checksum-pinned `6.18.60-Unraid` archive, using the existing hardening patch. Compared with `6.18.58-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver, I2C core and LED class sources are identical. The settings interface, installer, LED monitor and existing kernel modules are unchanged from 1.6.2.
