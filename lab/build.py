@@ -69,7 +69,7 @@ def build(output, vm_uuid):
             target.chmod(mode)
         web = stage / 'usr/local/emhttp/plugins' / NAME
         monitor = (ROOT / 'src/ugreen-pro-leds').read_text()
-        for name in ('setup_hardware', 'model_check', 'device_on_ata_port', 'disk_health_mode', 'pick_network_interface', 'internet_reachable'):
+        for name in ('setup_hardware', 'probe_mcu', 'model_check', 'device_on_ata_port', 'disk_health_mode', 'pick_network_interface', 'internet_reachable'):
             monitor = replace_function(monitor, name, name + '() { :; }\n')
         monitor = monitor.replace('/sys/class/leds', '/run/ugreen-led-lab/leds')
         monitor = monitor.replace('/sys/class/block', '/run/ugreen-led-lab/block')
