@@ -102,7 +102,7 @@ module_loaded() { grep -q "^${1}[[:space:]]" /proc/modules; }
 
 # Read the MCU signature (register 0x5a). The SMBus read is retried because a
 # single transaction can fail transiently right after the drivers are loaded.
-# The last reply or i2cget error is kept in probe_reply for the error message.
+# The last reply or error message is kept in probe_reply for the failure report.
 probe_mcu() {
   local bus=$1 attempt
   probe_reply=''
