@@ -14,6 +14,7 @@ status_dir=${UGREEN_PRO_STATUS_DIR:-/run/ugreen-pro-leds.status}
 identify_file=${UGREEN_PRO_IDENTIFY_FILE:-/run/ugreen-pro-leds.identify}
 notify_command=/usr/local/emhttp/webGui/scripts/notify
 IDENTIFY_SECONDS=30
+MCU_PROBE_DELAY=0.2
 
 POWER_COLOR='255 255 255'
 POWER_BRIGHTNESS=179
@@ -99,6 +100,20 @@ model_check() {
 
 module_loaded() { grep -q "^${1}[[:space:]]" /proc/modules; }
 
+# Read the MCU signature (register 0x5a). The SMBus read is retried because a
+# single transaction can fail transiently right after the drivers are loaded.
+# The last reply or error message is kept in probe_reply for the failure report.
+probe_mcu() {
+  local bus=$1 attempt
+  probe_reply=''
+  for attempt in 1 2 3 4 5; do
+    probe_reply=$(i2cget -y "$bus" 0x3a 0x5a w 2>&1) && [[ $probe_reply == 0xc5b2 ]] && return 0
+    probe_reply=${probe_reply//$'\n'/ }
+    (( attempt == 5 )) || sleep "$MCU_PROBE_DELAY"
+  done
+  return 1
+}
+
 setup_hardware() {
   model_check
   local kernel module
@@ -117,6 +132,8 @@ setup_hardware() {
   modprobe i2c-i801
   modprobe ledtrig-oneshot
   modprobe ledtrig-netdev
+  # A freshly loaded i2c-dev creates /dev/i2c-* through udev; wait for it.
+  if command -v udevadm >/dev/null; then udevadm settle --timeout=5 || true; fi
   if module_loaded led_ugreen; then
     [[ -r /sys/module/led_ugreen/parameters/write_protocol &&
        $(cat /sys/module/led_ugreen/parameters/write_protocol) == legacy ]] ||
@@ -124,7 +141,7 @@ setup_hardware() {
   else
     insmod "$module" write_protocol=legacy num_disk_leds=4
   fi
-  local path name bus client found=''
+  local path name bus client found='' probes=''
   for path in /sys/class/i2c-dev/i2c-*; do
     [[ -r $path/name && $(cat "$path/name") == *'SMBus I801 adapter'* ]] || continue
     name=${path##*/}; bus=${name#i2c-}; client=/sys/bus/i2c/devices/${bus}-003a
@@ -132,12 +149,14 @@ setup_hardware() {
       [[ $(cat "$client/name") == led-ugreen ]] || fail 'LED address owned by another driver.'
       [[ -z $found ]] || fail 'Multiple LED controllers found.'
       found=$name
-    elif [[ $(i2cget -y "$bus" 0x3a 0x5a w 2>/dev/null || true) == 0xc5b2 ]]; then
+    elif probe_mcu "$bus"; then
       [[ -z $found ]] || fail 'Multiple LED controllers found.'
       found=$name
+    else
+      probes+="${probes:+; }$name replied ${probe_reply:-nothing}"
     fi
   done
-  [[ -n $found ]] || fail 'LED MCU not found on Intel SMBus I801.'
+  [[ -n $found ]] || fail "LED MCU not found on Intel SMBus I801 (${probes:-no I801 adapter found}). Expected 0xc5b2 from register 0x5a at address 0x3a."
   client=/sys/bus/i2c/devices/${found#i2c-}-003a
   if [[ ! -e $client ]]; then
     printf 'led-ugreen 0x3a\n' > "/sys/bus/i2c/devices/$found/new_device"

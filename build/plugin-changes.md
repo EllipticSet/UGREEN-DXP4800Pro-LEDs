@@ -1,3 +1,6 @@
+###1.6.4
+- Wait for the I2C device nodes after loading the SMBus drivers, retry the LED controller detection up to five times before installation fails, and report the reply of each Intel SMBus adapter in the error. Previously a single failed SMBus read stopped the installation with LED MCU not found on Intel SMBus I801.
+
 ###1.6.3
 - Add Unraid 7.4.0 support with a rebuilt driver for 6.18.60-Unraid.
 - Retain support for Unraid 7.3.2, 7.3.3 and 7.3.4.
