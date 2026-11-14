@@ -137,6 +137,20 @@ try {
 } finally {
     exec('rm -rf ' . escapeshellarg($run));
 }
+$modules = sys_get_temp_dir() . '/ugreen-modules-' . getmypid();
+mkdir("$modules/6.18.60-Unraid", 0777, true);
+try {
+    touch("$modules/6.18.60-Unraid/led-ugreen.ko");
+    check(ugreen_pro_missing_driver_kernel($modules, '6.18.60-Unraid') === '', 'Packaged driver must not be reported missing.');
+    check(ugreen_pro_missing_driver_kernel($modules, '6.18.61-Unraid') === '6.18.61-Unraid', 'Missing driver must name the running kernel.');
+    check(ugreen_pro_missing_driver_kernel("$modules/absent", '6.18.61-Unraid') === '', 'Without installed modules no driver state is reported.');
+    $missing = ugreen_pro_live_labels(ugreen_pro_live_status("$modules/status", $modules, '6.18.61-Unraid'));
+    check($missing['monitor'] === 'LED monitor not started: no LED driver for kernel 6.18.61-Unraid. Update the plugin on the Plugins page.' &&
+        $missing['lan'] === 'LED driver missing' && $missing['bay4'] === 'LED driver missing', 'Missing driver labels incorrect: ' . json_encode($missing));
+} finally {
+    exec('rm -rf ' . escapeshellarg($modules));
+}
+echo "A missing LED driver for the running kernel is reported in the live state.\n";
 $commands = [];
 check(ugreen_pro_identify_bay(3, function ($cmd) use (&$commands) { $commands[] = $cmd; return 0; }), 'Identify must succeed.');
 check($commands === ['/usr/local/sbin/ugreen-pro-leds identify 3'], 'Unexpected identify command.');

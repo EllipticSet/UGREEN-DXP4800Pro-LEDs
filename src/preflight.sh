@@ -5,14 +5,9 @@ kernel=$(uname -r)
 module_root=${1:-/usr/local/lib/ugreen-pro-leds}
 module="$module_root/$kernel/led-ugreen.ko"
 detail() { printf '      %s\n' "$*"; }
-# Also notify in the WebGUI: at boot, this output is not visible to the administrator.
-notify_missing_driver() {
-  local notify=/usr/local/emhttp/webGui/scripts/notify
-  [[ -x $notify ]] || return 0
-  "$notify" -e 'UGREEN DXP4800 Pro LEDs' -s "LED driver missing for kernel $kernel" \
-    -d 'Front-panel LED control is unavailable. Update UGREEN DXP4800 Pro LEDs to a version that supports this Unraid release.' \
-    -i alert >/dev/null 2>&1 || true
-}
+# Exit status 3: every check passed except the LED driver for the running kernel.
+# install.sh decides whether that permits an installation without LED control.
+driver_missing=0
 model=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)
 unraid_version=$(sed -n 's/^version="\([^"]*\)"$/\1/p' /etc/unraid-version 2>/dev/null || true)
 detail "System: Unraid ${unraid_version:-unknown}, kernel $kernel, model ${model:-unknown}"
@@ -26,10 +21,20 @@ major=$((10#${BASH_REMATCH[1]})); minor=$((10#${BASH_REMATCH[2]}))
 patch=$((10#${BASH_REMATCH[4]:-0})); prerelease=${BASH_REMATCH[5]}
 (( major > 7 || (major == 7 && (minor > 3 || (minor == 3 && (patch > 2 || (patch == 2 && ${#prerelease} == 0))))) )) || { echo 'Unraid 7.3.2 or later required.' >&2; exit 1; }
 detail 'Unraid version: supported (7.3.2 or later)'
-[[ -f $module ]] || { notify_missing_driver; echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2; exit 1; }
-[[ $(modinfo -F vermagic "$module") == "$kernel "* ]] || { notify_missing_driver; echo "Wrong LED module release for kernel $kernel." >&2; exit 1; }
 bundled=$(cd "$module_root" && printf '%s\n' */ | sed 's@/$@@' | sort -V | paste -sd, - | sed 's/,/, /g')
-detail "LED driver: $kernel (bundled: $bundled)"
+# The error is reported after the remaining checks, as the last line before exit 3.
+driver_error=''
+if [[ ! -f $module ]]; then
+  driver_error="No packaged LED module for kernel $kernel. Update the plugin before using this kernel."
+elif [[ $(modinfo -F vermagic "$module") != "$kernel "* ]]; then
+  driver_error="Wrong LED module release for kernel $kernel."
+fi
+[[ -z $driver_error ]] || driver_missing=1
+if (( driver_missing )); then
+  detail "LED driver: missing for $kernel (bundled: $bundled)"
+else
+  detail "LED driver: $kernel (bundled: $bundled)"
+fi
 for cmd in installpkg upgradepkg removepkg sha256sum base64 xz tar flock jq smartctl timeout ip curl php modinfo i2cget; do
   # i2cget is supplied separately by this plugin.
   [[ $cmd == i2cget ]] && continue
@@ -62,3 +67,4 @@ for client in /sys/bus/i2c/devices/*-003a; do
   owner='in use by this plugin'
 done
 detail "LED controller address 0x3a: $owner"
+(( ! driver_missing )) || { echo "$driver_error" >&2; exit 3; }

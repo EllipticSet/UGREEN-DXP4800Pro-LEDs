@@ -12,7 +12,8 @@ $submittedTab = $_POST['ugreen_pro_group'] ?? 'Power LED';
 if (!is_string($submittedTab) || !isset(ugreen_pro_groups()[$submittedTab])) $submittedTab = 'Power LED';
 $tabKeys = ['Power LED' => 'power', 'LAN LED' => 'lan', 'Drives LEDs' => 'drives', 'Advanced Settings' => 'advanced'];
 $tabKey = $tabKeys[$ugreenTab];
-$ugreenLive = $tabKey === 'advanced' ? [] : ugreen_pro_live_labels(ugreen_pro_live_status());
+$ugreenMissingDriver = ugreen_pro_missing_driver_kernel();
+$ugreenLive = $tabKey === 'advanced' ? [] : ugreen_pro_live_labels(ugreen_pro_live_status(missingDriver: $ugreenMissingDriver));
 $categoryStarts = [
     'BRIGHTNESS_MODE' => 'Brightness',
     'CONNECTIVITY_METHOD' => 'Connectivity',
@@ -42,6 +43,12 @@ $tabDescriptions = [
 </script>
 <?php endif; ?>
 <div class="nas-front-settings" data-led-tab="<?= $tabKey ?>">
+  <?php if ($ugreenMissingDriver !== ''): ?>
+  <div class="nas-feedback error nas-driver-missing" role="alert">
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    <span><strong>LED driver missing for kernel <?= ugreen_pro_escape($ugreenMissingDriver) ?>.</strong> Front-panel LED control is unavailable. Update UGREEN DXP4800 Pro LEDs on the <a href="/Plugins">Plugins page</a>. Settings can still be saved and take effect after the update.</span>
+  </div>
+  <?php endif; ?>
   <div class="nas-front-layout <?= $tabKey === 'advanced' ? 'nas-front-layout-advanced' : '' ?>">
     <?php if ($tabKey !== 'advanced'): ?>
     <figure class="nas-front-figure">
@@ -144,7 +151,7 @@ $tabDescriptions = [
         <form method="post" class="nas-troubleshooting-actions">
           <input type="hidden" name="csrf_token" value="<?= ugreen_pro_escape((string)($var['csrf_token'] ?? '')) ?>">
           <input type="hidden" name="ugreen_pro_group" value="Advanced Settings">
-          <button type="submit" name="ugreen_pro_action" value="restart">Restart monitor</button>
+          <button type="submit" name="ugreen_pro_action" value="restart"<?= $ugreenMissingDriver !== '' ? ' disabled' : '' ?>>Restart monitor</button>
           <button type="submit" formaction="/plugins/UGREEN-DXP4800Pro-LEDs/diagnostics.php">Download diagnostics</button>
         </form>
         <p>Restart monitor stops and starts the LED monitor with the saved settings. Download diagnostics saves a text report for support requests: plugin, Unraid and kernel versions, drive detection, current state, settings and the last 200 log lines. The report contains no drive serial numbers or MAC addresses.</p>
@@ -166,7 +173,7 @@ $tabDescriptions = [
             <div class="nas-bay">
               <span class="nas-bay-name">Bay <?= $bay ?></span>
               <span class="nas-bay-state" data-live="bay<?= $bay ?>"><?= ugreen_pro_escape($ugreenLive["bay$bay"]) ?></span>
-              <button type="submit" name="ugreen_pro_bay" value="<?= $bay ?>" aria-label="Identify bay <?= $bay ?>">Identify</button>
+              <button type="submit" name="ugreen_pro_bay" value="<?= $bay ?>" aria-label="Identify bay <?= $bay ?>"<?= $ugreenMissingDriver !== '' ? ' disabled' : '' ?>>Identify</button>
             </div>
           <?php endfor; ?>
         </div>

@@ -50,17 +50,20 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
  assert run('6.18.60-Unraid', '6.18.58-Unraid SMP').returncode!=0
  (p/'etc/unraid-version').write_text('version="7.3.3"\n')
  assert run('6.18.54-Unraid').returncode==0,run('6.18.54-Unraid').stderr
- assert run('6.18.54-Unraid', '6.18.38-Unraid SMP').returncode!=0
+ r=run('6.18.54-Unraid', '6.18.38-Unraid SMP');assert r.returncode==3 and 'Wrong LED module release for kernel 6.18.54-Unraid.' in r.stderr,r.stderr
  (modules/'6.18.54-Unraid/led-ugreen.ko').unlink()
- assert run('6.18.54-Unraid').returncode!=0
- (p/'notified').unlink(missing_ok=True)
- assert run().returncode==0 and not (p/'notified').exists()
- assert run('6.18.39-Unraid').returncode!=0
- assert 'LED driver missing for kernel 6.18.39-Unraid' in (p/'notified').read_text()
+ assert run('6.18.54-Unraid').returncode==3
+ # A missing driver is reported with exit status 3 after all other checks pass;
+ # install.sh decides between failure and installation without LED control.
+ r=run('6.18.39-Unraid');assert r.returncode==3,(r.returncode,r.stderr)
+ assert r.stderr=='No packaged LED module for kernel 6.18.39-Unraid. Update the plugin before using this kernel.\n',r.stderr
+ assert '      LED driver: missing for 6.18.39-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid, 6.18.60-Unraid)' in r.stdout,r.stdout
+ assert '      LED controller address 0x3a: free' in r.stdout,r.stdout
+ assert not (p/'notified').exists()
  (p/'sys/class/dmi/id/product_name').write_text('DXP4800 GT\n')
- assert run().returncode!=0
+ assert run().returncode==1 and run('6.18.39-Unraid').returncode==1
  (p/'sys/class/dmi/id/product_name').write_text('DXP4800 Pro\n')
  (p/'boot/config/plugins/ugreenleds-driver.plg').touch()
- assert run().returncode!=0
+ assert run().returncode==1 and run('6.18.39-Unraid').returncode==1
  assert not (p/'boot/config/plugins/UGREEN-DXP4800Pro-LEDs').exists()
- print('Preflight accepts exact model/kernel and rejects mismatched kernel, GT model, and competing plugin before configuration writes.')
+ print('Preflight accepts exact model/kernel, reports a missing kernel driver with status 3, and rejects GT model and competing plugin before configuration writes.')
