@@ -22,13 +22,14 @@ patch=$((10#${BASH_REMATCH[4]:-0})); prerelease=${BASH_REMATCH[5]}
 (( major > 7 || (major == 7 && (minor > 3 || (minor == 3 && (patch > 2 || (patch == 2 && ${#prerelease} == 0))))) )) || { echo 'Unraid 7.3.2 or later required.' >&2; exit 1; }
 detail 'Unraid version: supported (7.3.2 or later)'
 bundled=$(cd "$module_root" && printf '%s\n' */ | sed 's@/$@@' | sort -V | paste -sd, - | sed 's/,/, /g')
+# The error is reported after the remaining checks, as the last line before exit 3.
+driver_error=''
 if [[ ! -f $module ]]; then
-  driver_missing=1
-  echo "No packaged LED module for kernel $kernel. Update the plugin before using this kernel." >&2
+  driver_error="No packaged LED module for kernel $kernel. Update the plugin before using this kernel."
 elif [[ $(modinfo -F vermagic "$module") != "$kernel "* ]]; then
-  driver_missing=1
-  echo "Wrong LED module release for kernel $kernel." >&2
+  driver_error="Wrong LED module release for kernel $kernel."
 fi
+[[ -z $driver_error ]] || driver_missing=1
 if (( driver_missing )); then
   detail "LED driver: missing for $kernel (bundled: $bundled)"
 else
@@ -66,4 +67,4 @@ for client in /sys/bus/i2c/devices/*-003a; do
   owner='in use by this plugin'
 done
 detail "LED controller address 0x3a: $owner"
-(( ! driver_missing )) || exit 3
+(( ! driver_missing )) || { echo "$driver_error" >&2; exit 3; }

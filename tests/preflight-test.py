@@ -56,7 +56,7 @@ export -f upgradepkg flock smartctl sha256sum uname installpkg removepkg modinfo
  # A missing driver is reported with exit status 3 after all other checks pass;
  # install.sh decides between failure and installation without LED control.
  r=run('6.18.39-Unraid');assert r.returncode==3,(r.returncode,r.stderr)
- assert 'No packaged LED module for kernel 6.18.39-Unraid.' in r.stderr,r.stderr
+ assert r.stderr=='No packaged LED module for kernel 6.18.39-Unraid. Update the plugin before using this kernel.\n',r.stderr
  assert '      LED driver: missing for 6.18.39-Unraid (bundled: 6.18.38-Unraid, 6.18.54-Unraid, 6.18.58-Unraid, 6.18.60-Unraid)' in r.stdout,r.stdout
  assert '      LED controller address 0x3a: free' in r.stdout,r.stdout
  assert not (p/'notified').exists()
