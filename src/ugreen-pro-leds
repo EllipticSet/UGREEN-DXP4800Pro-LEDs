@@ -699,6 +699,9 @@ case ${1:-} in
   status)
     if running_pid >/dev/null && [[ -f $ready_file ]]; then
       echo 'UGREEN Pro LED monitor is running.'
+    elif [[ -d /usr/local/lib/ugreen-pro-leds && ! -f /usr/local/lib/ugreen-pro-leds/$(uname -r)/led-ugreen.ko ]]; then
+      echo "UGREEN Pro LED monitor is stopped: no LED driver for kernel $(uname -r). Update the plugin."
+      exit 1
     else
       echo 'UGREEN Pro LED monitor is stopped.'
       exit 1
@@ -741,6 +744,11 @@ case ${1:-} in
       printf 'led_ugreen loaded, write protocol: %s\n' "$(cat /sys/module/led_ugreen/parameters/write_protocol 2>/dev/null || echo unknown)"
     else
       printf 'led_ugreen not loaded\n'
+    fi
+    if [[ -f /usr/local/lib/ugreen-pro-leds/$(uname -r)/led-ugreen.ko ]]; then
+      printf 'Driver for running kernel %s: packaged\n' "$(uname -r)"
+    elif [[ -d /usr/local/lib/ugreen-pro-leds ]]; then
+      printf 'Driver for running kernel %s: missing\n' "$(uname -r)"
     fi
     printf 'Packaged kernels: %s\n' "$(cd /usr/local/lib/ugreen-pro-leds 2>/dev/null && printf '%s ' */ | sed 's@/@@g' || true)"
     printf '\n== Current state\n'

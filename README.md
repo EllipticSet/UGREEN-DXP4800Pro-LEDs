@@ -60,6 +60,8 @@ Each bay in the **Drives LEDs** tab has an **Identify** button. The selected bay
 
 The installer checks the NAS model through DMI and requires an exact match between the running kernel and a bundled LED module. Unraid 7.3.2 or later is required, but the only supported kernels are those listed above. Prereleases (alpha, beta and release candidates) pass the version check when their kernel matches a bundled module; a prerelease counts as earlier than its release, so prereleases of 7.3.2 are not supported. All modules are included; the installer selects the correct one automatically, including after an Unraid upgrade or rollback.
 
+If the NAS starts with a kernel that has no bundled module, for example after an Unraid update, the plugin installs without LED control instead of failing. It remains in the list of installed plugins, Unraid shows a notification and LED Settings shows a warning on every tab. Updating the plugin on the Plugins page to a version that supports the kernel restores LED control without a reboot. A manual installation on such a kernel fails, and the error is shown on the Plugins page.
+
 > [!WARNING]
 > **Other models and kernels are not supported by this build.**
 
@@ -75,7 +77,7 @@ The plugin uses Intel SMBus I801 and the `led-ugreen` module with `write_protoco
 - Adjustable drive-bay mapping and monitoring intervals. SMART checks run separately from activity sampling and do not wake sleeping drives.
 - Persistent settings, input validation and atomic saves. Updates preserve settings, except for migration of older default bay mappings, and attempt rollback if the new monitor fails to start.
 - Current state of the LED monitor, LAN LED and each drive bay in the corresponding tab, and a 30-second identification flash for each drive bay.
-- An Unraid notification when no bundled LED driver matches the running kernel, for example after an Unraid update that requires a newer plugin version.
+- An Unraid notification and a warning in LED Settings when no bundled LED driver matches the running kernel, for example after an Unraid update that requires a newer plugin version. The plugin stays installed and can be updated from the Plugins page.
 - Step-by-step installation, update and removal output with the detected system, each compatibility check, the selected driver, the settings action and a summary of the detected hardware.
 - Restart monitor and Download diagnostics controls in **Advanced Settings**, for troubleshooting and support requests.
 - Bundled dependencies and checksums, so installation needs no separate dependency downloads.
@@ -206,7 +208,7 @@ Flash a drive-bay LED for identification (bay 1–4, optional duration of 1–30
 
 If the selected network interface does not exist or no default route is available, the log records a warning once and the LAN LED shows Internet unavailable.
 
-Installation and update output lists each step, from the package checksum to the shutdown hook. The compatibility step reports the Unraid version, kernel and model, then each check: model, Unraid version, LED driver, required commands, competing LED plugins, kernel components and the LED controller address. The file step reports whether an existing `i2c-tools` installation is used or the bundled version is installed. After the monitor starts, it reports the LED controller, the LAN LED state and each drive bay. If a step fails, the output names the step, the previous installation is restored and the monitor log path is shown.
+Installation and update output lists each step, from the package checksum to the shutdown hook. The compatibility step reports the Unraid version, kernel and model, then each check: model, Unraid version, LED driver, required commands, competing LED plugins, kernel components and the LED controller address. The file step reports whether an existing `i2c-tools` installation is used or the bundled version is installed. After the monitor starts, it reports the LED controller, the LAN LED state and each drive bay. During system startup without a matching LED driver, the output reports that the monitor was not started. If a step fails, the output names the step, the previous installation is restored and the monitor log path is shown.
 
 **Advanced Settings → Troubleshooting**, closed by default, provides two controls. **Restart monitor** stops and starts the LED monitor with the saved settings. **Download diagnostics** saves a text report with the plugin, Unraid and kernel versions, drive detection, LED driver state, current state, settings and the last 200 log lines. The same report is available from the terminal:
 

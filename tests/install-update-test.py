@@ -31,8 +31,11 @@ with tempfile.TemporaryDirectory() as t:
  script=script.replace('"/$web/$asset"', '"'+str(machine)+'/$web/$asset"')
  installer=base/'install';installer.write_text(script)
  old='#!/bin/bash\nexit 0\n'
- def run(fail=False, stale=False, occupied="1 2", kernel="6.18.38-Unraid", module_kernel=None):
+ notify=machine/'usr/local/emhttp/webGui/scripts/notify';notify.parent.mkdir(parents=True)
+ notify.write_text(f'#!/bin/bash\nprintf "%s|" "$@" >> "{base}/notified"\n');notify.chmod(0o755)
+ def run(fail=False, stale=False, occupied="1 2", kernel="6.18.38-Unraid", module_kernel=None, preflight=0, emhttpd=True):
   monitor.write_text(old);monitor.chmod(0o755)
+  (bundle/'preflight.sh').write_text(f'#!/bin/bash\nexit {preflight}\n')
   update_web='' if stale else f"cp -R '{bundle}/payload/{web}/.' '{machine}/{web}/';"
   mocks=f'''uname() {{ echo '{kernel}'; }}
 modinfo() {{ [[ $3 == '{bundle}/payload/usr/local/lib/ugreen-pro-leds/{kernel}/led-ugreen.ko' ]] || return 1; echo '{module_kernel or kernel} SMP'; }}
@@ -40,7 +43,8 @@ i2cget() {{ return 0; }}
 php() {{ if [[ $(cat "$2") == CUSTOM* ]]; then echo 'DISK_ATA_PORTS=(4 3 2 1)'; else cat "$2"; fi; }}
 upgradepkg() {{ [[ $3 == '{bundle}/{PKG}.txz' && -f $3 ]] || return 4; {update_web} printf '%s\\n' '#!/bin/bash' 'device_on_ata_port() {{ [[ " {occupied} " == *" $1 "* ]] || return 1; printf "sd%s\\n" "$1"; }}' '[[ ${{BASH_SOURCE[0]}} != $0 ]] || {{ [[ $1 != start ]] || exit {1 if fail else 0}; }}' > '{monitor}'; chmod +x '{monitor}'; }}
 removepkg() {{ return 0; }}
-export -f uname modinfo i2cget php upgradepkg removepkg
+pgrep() {{ [[ $* == '-x emhttpd' ]] && return {0 if emhttpd else 1}; return 1; }}
+export -f uname modinfo i2cget php upgradepkg removepkg pgrep
 '''
   return subprocess.run([bash,'-c',mocks+f'"{bash}" "{installer}" "{bundle}"'],capture_output=True,text=True)
  r=run();assert r.returncode==0,r.stderr+r.stdout
@@ -85,4 +89,20 @@ export -f uname modinfo i2cget php upgradepkg removepkg
   r=run();assert r.returncode==0,r.stderr+r.stdout
   assert config.read_text()==f'DISK_ATA_PORTS=({after})\n'
   assert ('ATA mapping migrated from 1 2 0 0 to 1 2 3 4.' in r.stdout)==(before=='1 2 0 0'),r.stdout
- print('Four-bay defaults, migration, custom mapping preservation, rollback and step-by-step output passed.')
+ # No driver for the running kernel: a manual installation fails without changes.
+ config.write_text('CUSTOM=preserved\n');prior_stop=stop.read_text()
+ r=run(kernel='6.18.61-Unraid',preflight=3);assert r.returncode==3,r.stdout+r.stderr
+ assert monitor.read_text()==old and '[3/8]' not in r.stdout and not (base/'notified').exists()
+ # Other compatibility failures stop the installation, also during system startup.
+ r=run(kernel='6.18.61-Unraid',preflight=1,emhttpd=False);assert r.returncode==1 and monitor.read_text()==old
+ # During system startup the plugin installs without LED control and notifies;
+ # the monitor is not started (a start would fail here).
+ r=run(fail=True,kernel='6.18.61-Unraid',preflight=3,emhttpd=False);assert r.returncode==0,r.stdout+r.stderr
+ for text in ['System startup: installing without LED control','[4/8] Installing files','LED monitor not started: no LED driver for kernel 6.18.61-Unraid.',
+              ' UGREEN DXP4800 Pro LEDs is installed without LED control.','LED driver missing for kernel 6.18.61-Unraid: update the plugin on the Plugins page.']:
+  assert text in r.stdout,(text,r.stdout)
+ assert 'LED controller:' not in r.stdout and ' UGREEN DXP4800 Pro LEDs is installed.' not in r.stdout
+ notified=(base/'notified').read_text()
+ assert '-s|LED driver missing for kernel 6.18.61-Unraid|' in notified and '-i|alert|-l|/Plugins|' in notified,notified
+ assert monitor.read_text()!=old and config.read_text()=='CUSTOM=preserved\n' and stop.read_text()==prior_stop
+ print('Four-bay defaults, migration, custom mapping preservation, rollback, startup installation without a kernel driver and step-by-step output passed.')

@@ -1,3 +1,7 @@
+###1.6.5
+- Keep the plugin installed when the NAS starts with a kernel that has no bundled LED driver, for example after an Unraid update. LED control stays off, an Unraid notification links to the Plugins page and LED Settings shows a warning on every tab; the plugin can then be updated from the Plugins page and LED control resumes without a reboot. Settings can still be saved, while Identify and Restart monitor are unavailable. Previously the installation failed at startup and Unraid moved the plugin to Plugin File Install Errors, so the update was not offered.
+- A manual installation on a kernel without a bundled LED driver still fails, with the error shown on the Plugins page.
+
 ###1.6.4
 - Wait for the I2C device nodes after loading the SMBus drivers, retry the LED controller detection up to five times before installation fails, and report the reply of each Intel SMBus adapter in the error. Previously a single failed SMBus read stopped the installation with LED MCU not found on Intel SMBus I801.
 
