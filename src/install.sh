@@ -21,9 +21,19 @@ else
   echo "Updating UGREEN DXP4800 Pro LEDs from $old_version to $version"
 fi
 step 2 'Checking compatibility'
-"$root/preflight.sh" "$root/payload/usr/local/lib/ugreen-pro-leds"
+driver_missing=0
+# Exit status 3: only the LED driver for the running kernel is missing. During
+# system startup (before emhttpd starts), install without LED control so the
+# plugin stays installed and can be updated from the Plugins page; Unraid would
+# otherwise move it to plugins-error. A manual installation still fails.
+"$root/preflight.sh" "$root/payload/usr/local/lib/ugreen-pro-leds" || {
+  preflight_status=$?
+  (( preflight_status == 3 )) && ! pgrep -x emhttpd >/dev/null || exit "$preflight_status"
+  driver_missing=1
+  detail 'System startup: installing without LED control until a plugin update provides this driver.'
+}
 kernel=$(uname -r)
-[[ -f $root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko && $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko") == "$kernel "* ]] || { echo 'Missing or incompatible bundled LED module.' >&2; exit 1; }
+(( driver_missing )) || [[ -f $root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko && $(modinfo -F vermagic "$root/payload/usr/local/lib/ugreen-pro-leds/$kernel/led-ugreen.ko") == "$kernel "* ]] || { echo 'Missing or incompatible bundled LED module.' >&2; exit 1; }
 step 3 'Saving the current state for rollback'
 mkdir -p "$plugin"
 transaction=$(mktemp -d /tmp/ugreen-pro-transaction.XXXXXX)
@@ -119,9 +129,19 @@ if mapping=$(grep -Eo '^DISK_ATA_PORTS=\([01] [02] [03] [04]\)$' "$plugin/settin
   [[ ${mapping%)} == '1 2 3 4' ]] || detail "ATA mapping migrated from ${mapping%)} to 1 2 3 4."
 fi
 step 7 'Starting LED monitor'
-/usr/local/sbin/ugreen-pro-leds start | sed "s/^/      /"
+if (( driver_missing )); then
+  detail "LED monitor not started: no LED driver for kernel $kernel."
+  notify=/usr/local/emhttp/webGui/scripts/notify
+  if [[ -x $notify ]]; then
+    "$notify" -e 'UGREEN DXP4800 Pro LEDs' -s "LED driver missing for kernel $kernel" \
+      -d 'Front-panel LED control is unavailable. Update UGREEN DXP4800 Pro LEDs on the Plugins page to a version that supports this Unraid release.' \
+      -i alert -l /Plugins >/dev/null 2>&1 || true
+  fi
+else
+  /usr/local/sbin/ugreen-pro-leds start | sed "s/^/      /"
+fi
 # Summarize the hardware state reported by the monitor; the first connectivity check can take a few seconds.
-if [[ -d $status ]]; then
+if (( ! driver_missing )) && [[ -d $status ]]; then
   for _ in {1..12}; do [[ -f $status/network ]] && break; sleep 1; done
   [[ ! -f $status/controller ]] || detail "LED controller: $(cat "$status/controller")"
   if [[ -f $status/network ]]; then
@@ -157,5 +177,10 @@ previous=''
 [[ -z $old_version || $old_version == "$version" ]] || previous=" (previous: $old_version)"
 rule=------------------------------------------------------------
 printf '\n%s\n' "$rule"
-printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed.' "Version: $version$previous" 'Settings: LED Settings in the Settings menu'
+if (( driver_missing )); then
+  printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed without LED control.' "Version: $version$previous" \
+    "LED driver missing for kernel $kernel: update the plugin on the Plugins page."
+else
+  printf ' %s\n' 'UGREEN DXP4800 Pro LEDs is installed.' "Version: $version$previous" 'Settings: LED Settings in the Settings menu'
+fi
 printf '%s\n\n' "$rule"

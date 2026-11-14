@@ -41,12 +41,22 @@ function ugreen_pro_identify_bay(int $bay, ?callable $command = null): bool
     return $bay >= 1 && $bay <= 4 && $command("/usr/local/sbin/ugreen-pro-leds identify $bay") === 0;
 }
 
+// Running kernel when the installed plugin has no LED driver for it, otherwise ''.
+// During system startup the plugin then installs without LED control.
+function ugreen_pro_missing_driver_kernel(string $moduleRoot = '/usr/local/lib/ugreen-pro-leds', ?string $kernel = null): string
+{
+    $kernel ??= php_uname('r');
+    if (!is_dir($moduleRoot)) return '';
+    return is_file("$moduleRoot/$kernel/led-ugreen.ko") ? '' : $kernel;
+}
+
 // Read the state the LED monitor publishes in /run; nothing here touches the hardware.
-function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status', string $runDir = '/run'): array
+function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status', string $runDir = '/run', ?string $missingDriver = null): array
 {
     $pid = trim((string)@file_get_contents("$runDir/ugreen-pro-leds.pid"));
     $running = is_file("$runDir/ugreen-pro-leds.ready") && preg_match('/^\d+$/', $pid) && is_dir("/proc/$pid");
-    $status = ['running' => $running, 'controller' => '', 'night' => false, 'network' => [], 'bays' => []];
+    $status = ['running' => $running, 'missing_driver' => $missingDriver ?? ugreen_pro_missing_driver_kernel(),
+        'controller' => '', 'night' => false, 'network' => [], 'bays' => []];
     if (!$running) return $status;
     $status['controller'] = trim((string)@file_get_contents("$statusDir/controller"));
     $status['night'] = trim((string)@file_get_contents("$statusDir/night")) === '1';
@@ -64,6 +74,12 @@ function ugreen_pro_live_status(string $statusDir = '/run/ugreen-pro-leds.status
 // Plain-text labels keyed by data-live element; escaped by the page and set as text by settings.js.
 function ugreen_pro_live_labels(array $status): array
 {
+    if (!$status['running'] && ($status['missing_driver'] ?? '') !== '') {
+        $missing = ['monitor' => "LED monitor not started: no LED driver for kernel {$status['missing_driver']}. Update the plugin on the Plugins page.",
+            'lan' => 'LED driver missing'];
+        for ($bay = 1; $bay <= 4; ++$bay) $missing["bay$bay"] = 'LED driver missing';
+        return $missing;
+    }
     if (!$status['running']) {
         $stopped = ['monitor' => 'LED monitor stopped. Apply restarts it; see /var/log/ugreen-pro-leds.log for details.',
             'lan' => 'LED monitor stopped'];
@@ -124,6 +140,12 @@ function ugreen_pro_settings_state(): array
         }
         $action = $_POST['ugreen_pro_action'];
         $submittedGroup = $_POST['ugreen_pro_group'] ?? '';
+        $missingDriver = ugreen_pro_missing_driver_kernel();
+        if ($missingDriver !== '' && in_array($action, ['identify', 'restart'], true)) {
+            $ugreenNotice = "LED control is unavailable: no LED driver for kernel $missingDriver. Update the plugin on the Plugins page.";
+            $ugreenNoticeClass = 'error';
+            return $state = compact('ugreenValues', 'ugreenErrors', 'ugreenNotice', 'ugreenNoticeClass');
+        }
         if ($action === 'identify') {
             $bay = $_POST['ugreen_pro_bay'] ?? '';
             if (is_string($bay) && preg_match('/^[1-4]$/', $bay) && ugreen_pro_identify_bay((int)$bay)) {
@@ -165,6 +187,11 @@ function ugreen_pro_settings_state(): array
             } elseif (!ugreen_pro_write_atomic($ugreenSettingsPath, ugreen_pro_render_settings($ugreenValues))) {
                 $ugreenNotice = 'Could not save settings to the Unraid boot device.';
                 $ugreenNoticeClass = 'error';
+            } elseif ($missingDriver !== '') {
+                // No monitor can run; keep the settings for the plugin update that adds the driver.
+                $ugreenNotice = ($action === 'reset' ? 'Defaults restored for this tab.' : 'Settings saved.') .
+                    " They take effect after a plugin update provides the LED driver for kernel $missingDriver.";
+                $ugreenNoticeClass = 'success';
             } elseif (ugreen_pro_restart_monitor()) {
                 $ugreenNotice = $action === 'reset' ? 'Defaults restored for this tab and LED monitor restarted.' :
                     'Settings saved and LED monitor restarted.';

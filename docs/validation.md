@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.5
+
+At system startup Unraid reinstalls every plugin in `/boot/config/plugins` and moves a plugin whose installation fails to `/boot/config/plugins-error`. After an Unraid update to a kernel without a bundled LED module, the compatibility check failed, so the plugin left the list of installed plugins and the Plugins page could not offer the version that supports the new kernel; the Unraid notification sent by the check asked for an update that was no longer possible. The compatibility check now reports a missing or mismatched module with a dedicated exit status after all other checks pass. During system startup, detected by the absence of `emhttpd`, the installer then installs the plugin without loading the driver or starting the monitor and sends the notification with a link to the Plugins page. LED Settings shows a warning on every tab, saves settings without restarting the monitor and disables Identify and Restart monitor; the monitor status and diagnostics report name the missing driver. A manual installation on such a kernel still fails. The LED monitor behaviour with a matching driver and the kernel modules are unchanged from 1.6.4.
+
+Local checks on November 14, 2026 passed the full automated suite, including new regressions for the dedicated exit status of the compatibility check, the failed manual installation, the startup installation without LED control and its notification, and the live state with a missing driver, and the package, metadata and reproducibility checks for the generated 1.6.5 installer and checksum.
+
 ## Version 1.6.4
 
 On one DXP4800 Pro (board revision `DXP4800Pro V1.5 251030`, Unraid 7.4.0, two DDR5 modules), installation of 1.6.3 failed twice with LED MCU not found on Intel SMBus I801, although manual reads of register 0x5a at address 0x3a returned `0xc5b2`, with and without the LED driver loaded. The detection read the signature once per Intel SMBus I801 adapter and discarded the `i2cget` error output. The monitor now waits for udev after loading the SMBus drivers, retries the signature read up to five times, 0.2 seconds apart, and reports the reply or error of each I801 adapter when detection fails. The settings interface, installer steps and kernel modules are unchanged from 1.6.3.
