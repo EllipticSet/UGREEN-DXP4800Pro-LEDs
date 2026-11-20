@@ -1,5 +1,11 @@
 # Validation
 
+## Version 1.6.6
+
+Version 1.6.6 supports Unraid 7.4.1 and retains support for Unraid 7.3.2, 7.3.3, 7.3.4 and 7.4.0. The new module was built against the checksum-pinned `6.18.64-Unraid` archive, using the existing hardening patch. Compared with `6.18.60-Unraid`, the I2C and LED kernel configuration is unchanged, and the Intel I801 SMBus driver, I2C core, I2C SMBus and LED class sources and the I2C and LED headers are identical. The settings interface, installer, LED monitor and existing kernel modules are unchanged from 1.6.5.
+
+Local checks on November 20, 2026 passed the full automated suite, including the preflight and update regressions for `6.18.64-Unraid`, a rejected module built for another kernel, and the package, metadata and reproducibility checks for the generated 1.6.6 installer and checksum.
+
 ## Version 1.6.5
 
 At system startup Unraid reinstalls every plugin in `/boot/config/plugins` and moves a plugin whose installation fails to `/boot/config/plugins-error`. After an Unraid update to a kernel without a bundled LED module, the compatibility check failed, so the plugin left the list of installed plugins and the Plugins page could not offer the version that supports the new kernel; the Unraid notification sent by the check asked for an update that was no longer possible. The compatibility check now reports a missing or mismatched module with a dedicated exit status after all other checks pass. During system startup, detected by the absence of `emhttpd`, the installer then installs the plugin without loading the driver or starting the monitor and sends the notification with a link to the Plugins page. LED Settings shows a warning on every tab, saves settings without restarting the monitor and disables Identify and Restart monitor; the monitor status and diagnostics report name the missing driver. A manual installation on such a kernel still fails. The LED monitor behaviour with a matching driver and the kernel modules are unchanged from 1.6.4.
