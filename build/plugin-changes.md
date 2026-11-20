@@ -1,3 +1,7 @@
+###1.6.6
+- Add Unraid 7.4.1 support with a rebuilt driver for 6.18.64-Unraid.
+- Retain support for Unraid 7.3.2, 7.3.3, 7.3.4 and 7.4.0.
+
 ###1.6.5
 - Keep the plugin installed when the NAS starts with a kernel that has no bundled LED driver, for example after an Unraid update. LED control stays off, an Unraid notification links to the Plugins page and LED Settings shows a warning on every tab; the plugin can then be updated from the Plugins page and LED control resumes without a reboot. Settings can still be saved, while Identify and Restart monitor are unavailable. Previously the installation failed at startup and Unraid moved the plugin to Plugin File Install Errors, so the update was not offered.
 - A manual installation on a kernel without a bundled LED driver still fails, with the error shown on the Plugins page.

@@ -7,6 +7,7 @@ KERNEL_ARCHIVE_SHA256 = {
     '6.18.54-Unraid': '5c8795f9c7a60a01f7135018d0339466f180c7d2bef6f2b35bae8711783c6e00',
     '6.18.58-Unraid': 'da2ae45037a7f8049bbc9eeb306cf5385f59216c8c055c6ee827d243b016e962',
     '6.18.60-Unraid': 'a623319a2651767adcb7551dc356676830c89f77a4909722876c874e3829bbdd',
+    '6.18.64-Unraid': '177852d0a1abafdf56074262ada1cec1daba55144ef2182b5455df6db15fa7d7',
 }
 KERNELS = tuple(KERNEL_ARCHIVE_SHA256)
 PREBUILT_KERNEL = '6.18.38-Unraid'
@@ -18,7 +19,7 @@ def module_source(root, kernel):
 
 def module_sha256(root, kernel):
     return PREBUILT_SHA256 if kernel == PREBUILT_KERNEL else (root/'vendor/modules'/kernel/'led-ugreen.ko.sha256').read_text().split()[0]
-VERSION = '1.6.5'
+VERSION = '1.6.6'
 PKG = f'ugreen-pro-leds-{VERSION}-x86_64-1'
 VENDOR_FILES = (
     'README.md', 'LICENSE', 'GPL-2.0.txt', 'flybrys-LICENSE', 'ich777-LICENSE',
