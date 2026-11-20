@@ -173,8 +173,8 @@ The combined plugin installs only on a kernel for which both modules exist:
 
 | Module | Kernels in this branch | Location |
 | --- | --- | --- |
-| Emulated MCU `ugreen-mcu-sim.ko` | `6.18.38-Unraid`, `6.18.54-Unraid`, `6.18.58-Unraid`, `6.18.60-Unraid` | `lab/mcu-sim/modules/` |
-| Production LED driver `led-ugreen.ko` | `6.18.54-Unraid`, `6.18.58-Unraid`, `6.18.60-Unraid` | `vendor/modules/` (inside the production `.plg`) |
+| Emulated MCU `ugreen-mcu-sim.ko` | `6.18.38-Unraid`, `6.18.54-Unraid`, `6.18.58-Unraid`, `6.18.60-Unraid`, `6.18.64-Unraid` | `lab/mcu-sim/modules/` |
+| Production LED driver `led-ugreen.ko` | `6.18.54-Unraid`, `6.18.58-Unraid`, `6.18.60-Unraid`, `6.18.64-Unraid` | `vendor/modules/` (inside the production `.plg`) |
 
 From production 1.6.2, the compatibility check accepts Unraid prereleases
 (`-alpha`, `-beta` and `-rc` suffixes, for example `7.4.0-rc.2`). A prerelease
