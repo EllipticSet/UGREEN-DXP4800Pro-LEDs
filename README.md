@@ -3,115 +3,30 @@
 This branch belongs exclusively to `beta-testing`. Do not merge it into `main`,
 publish its package as a release, or add it to Community Applications.
 
-The builder uses the unchanged production plugin sources to create a separate
-`UGREEN-DXP4800Pro-LEDs-LAB.plg` artifact. It replaces hardware discovery and LED
-sysfs access only in the generated package. The normal build and committed public
-plugin remain unchanged. The builder fails when expected source anchors change;
-review the adapter before testing a changed production monitor.
-The [emulated LED MCU](#emulated-led-mcu-hardware-identical-mode) instead runs
-the unchanged production plugin against an emulated controller.
-
-| Laboratory | Package | Production code | Kernel requirement |
-| --- | --- | --- | --- |
-| File-based simulation | `UGREEN-DXP4800Pro-LEDs-LAB.plg` | Monitor and web UI; hardware discovery and LED sysfs replaced | None; no kernel module is loaded |
-| Emulated LED MCU | `dist/lab-mcu/UGREEN-DXP4800Pro-LEDs.plg` | Complete production plugin, unchanged | Simulator module and bundled LED driver for the running kernel |
+The laboratory runs the **unchanged production plugin** in a disposable Unraid
+test VM against an emulated LED MCU. The builder combines the committed production
+`UGREEN-DXP4800Pro-LEDs.plg` with the `ugreen-mcu-sim` kernel module into a
+separate VM-only package, `dist/lab-mcu/UGREEN-DXP4800Pro-LEDs.plg`. The normal
+build and the committed public plugin remain unchanged.
 
 ## Branch contents
 
 The root README is the official laboratory guide. `lab/README.md` redirects here.
+`lab/mcu-sim/` contains the emulated MCU, its packaging and its tests.
 `src/`, `build/`, `vendor/` and `tests/` retain the production baseline required
 for compatibility checks. `docs/production-readme.md` preserves the stable package
 input; public plugin documentation is maintained on [main](https://github.com/EllipticSet/UGREEN-DXP4800Pro-LEDs/tree/main).
 The release-publishing workflow is excluded from this branch.
 
-## VM restrictions
+The **Beta laboratory** GitHub Actions workflow runs the laboratory tests, checks
+the committed simulator modules against their source and builds the package on
+every push to `beta-testing`. These CI builds use a fictional fixture UUID and
+cannot be installed in the real laboratory VM.
 
-Every build requires the UUID of its disposable QEMU VM through `--vm-uuid`.
-There is no default or maintainer VM identifier in the repository. The generated
-package stores only a SHA-256 comparison value, never the UUID itself. It accepts
-only the matching VM.
-It rejects a DXP4800 Pro host, a different UUID, unexpected non-USB disks,
-a loaded physical LED module, or an existing production monitor.
+## Emulated LED MCU
 
-The VM requires exactly one virtual boot disk with serial `LABBOOT001` and one
-virtual array disk with serial `LABARRAY001`, for example
-`<serial>LABBOOT001</serial>` in the libvirt `<disk>` definition. Without them,
-installation stops with `LAB ONLY: expected virtual boot and array disks are missing.`
-Any other non-USB disk stops it with `LAB ONLY: unexpected non-USB disk; refusing to run.`
-Its own preflight checks replace the production compatibility check, so it also
-installs on Unraid prereleases whose kernel has no bundled LED driver.
-
-## Build and install
-
-The **Beta laboratory** GitHub Actions workflow runs simulator tests and builds
-an artifact on every push to `beta-testing`. These CI artifacts use a fictional
-fixture UUID and cannot be installed in the real laboratory VM.
-
-Build the installable package locally with the VM UUID using the command below.
-Verify `UGREEN-DXP4800Pro-LEDs-LAB.plg.sha256` before installation.
-Install the LAB file through Plugins in the test VM, or from its VM terminal:
-
-```bash
-plugin install /path/to/UGREEN-DXP4800Pro-LEDs-LAB.plg
-```
-
-For local builds, Python 3 is sufficient:
-
-```bash
-python3 lab/test.py
-python3 lab/build.py --vm-uuid YOUR_TEST_VM_UUID
-```
-
-Runtime tests require Linux and Bash 4+. On macOS the build/isolation test runs and
-the Linux runtime tests are explicitly skipped. GitHub Actions runs all tests.
-No binary kernel module is included or loaded by this simulator. Automatic updates
-from the public plugin URL are disabled in the generated LAB plugin. Installation
-errors, such as a VM guard refusal, are shown on the Plugins page instead of only
-the generic failure message. Remove the
-LAB plugin through Plugins before replacing it with a different package; settings
-are retained. Uninstallation does not unload host hardware drivers.
-
-## Scenarios
-
-Settings → LED Settings displays a **LAB SIMULATION** notice. The original tabs,
-validation, Apply, per-tab defaults, preview, persistence, restart and recovery
-logic are retained. Simulated LED attributes are ordinary files in
-`/run/ugreen-led-lab/leds`; scenario inputs persist under the plugin's `lab/`
-configuration directory. Default scenario: all four bays active, network online.
-
-Use the VM terminal to select inputs:
-
-```bash
-ugreen-led-lab bay 1 active
-ugreen-led-lab bay 2 standby
-ugreen-led-lab bay 3 failed
-ugreen-led-lab bay 4 empty
-ugreen-led-lab network offline
-ugreen-led-lab network down
-ugreen-led-lab network online
-ugreen-led-lab activity 1
-ugreen-led-lab status
-```
-
-Wait for the configured refresh and health/connectivity intervals. Fresh lab
-settings use ten-second intervals. Existing valid settings retain their intervals;
-the invalid five-second connectivity/health defaults from early LAB builds are
-automatically repaired to ten seconds during installation.
-An initially empty bay remains dark; removing an already detected simulated disk
-shows the production disappearance warning. To test an initially empty bay,
-select `empty` and restart the monitor before inspecting output. Disk counters,
-SMART states and network reachability are injected inputs; they do not query the
-real virtual array or Internet. The virtual array separately exercises Unraid
-array start/stop and the plugin's web integration. Preview is the original visual
-settings preview, not a live hardware readout.
-
-## Emulated LED MCU (hardware-identical mode)
-
-`lab/mcu-sim/` provides a second, separate laboratory that runs the **unchanged
-production plugin** in the test VM. Instead
-of replacing LED sysfs with files, the kernel module `ugreen-mcu-sim` registers an
-SMBus adapter named like the NAS controller (`SMBus I801 adapter (UGREEN MCU
-simulator)`) with an emulated LED MCU at `0x3a`. It answers the chip ID `0xc5b2`,
+The kernel module `ugreen-mcu-sim` registers an SMBus adapter named like the NAS
+controller (`SMBus I801 adapter (UGREEN MCU simulator)`) with an emulated LED MCU at `0x3a`. It answers the chip ID `0xc5b2`,
 validates the 12-byte legacy frames and their checksums, reports the last command
 status at `0x80` and each LED state at `0x81 + id`, and ACKs but does not execute
 the SMBus block framing, like the DXP4800 Pro MCU. The production installer,
@@ -212,8 +127,8 @@ boot. Removal runs the production removal first, then removes the simulator. To
 test a release candidate before it reaches `main`, pass its `.plg` (with the
 `.sha256` beside it) with `--plugin path/to/UGREEN-DXP4800Pro-LEDs.plg`.
 
-In the VM, remove `UGREEN-DXP4800Pro-LEDs-LAB`, the regular plugin and any
-separate `UGREEN-DXP4800Pro-LAB-MCU` plugin first (settings are retained), then
+In the VM, remove the regular plugin and any separate
+`UGREEN-DXP4800Pro-LAB-MCU` plugin first (settings are retained), then
 install the combined plugin. The package refuses to install without a hypervisor
 or on a VM with another UUID, and the module refuses to load outside a virtual
 machine. Removal also restores `smartctl`.
@@ -243,17 +158,17 @@ check `lsmod | grep led_class` before the first start and record the result.
 
 Record the source commit, Unraid version, kernel, workflow run, and each result:
 
-1. Install, monitor status and LAB notice; installation output on the Plugins
+1. Install, MCU binding and monitor status; installation output on the Plugins
    page.
 2. Apply all four tabs, invalid input, brightness zero and restore tab defaults.
 3. Five-second LAN/SMART previews and Stop preview.
-4. Active, standby breathing on/off, SMART failure, disappearance/reappearance,
-   initially empty bay, and injected activity.
-5. Network online, offline and link down; selected connectivity method.
+4. Activity from disk reads, forced standby with breathing on/off, forced SMART
+   failure and identification, checked on the NAS Front (LAB) page.
+5. LAN blinking from real traffic and the selected connectivity method.
 6. Unraid array stop/start, VM reboot, saved settings, uninstall and reinstall.
 
-Label results **simulated**. UI and runtime success does not establish physical
-LED compatibility. Exact module availability/vermagic, module insertion, Intel
-I801 binding, MCU protocol and physical timing require separate validation.
+Label results **simulated**. Success in the laboratory does not establish physical
+LED compatibility. The Intel I801 controller, the physical MCU and physical LED
+timing require separate validation on the NAS.
 Never claim hardware support solely from this laboratory. Promote only reviewed
 production fixes to `main`; exclude `lab/` and the laboratory workflow/artifacts.
