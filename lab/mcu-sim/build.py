@@ -3,9 +3,9 @@
 import argparse
 import base64
 import hashlib
-import importlib.util
 from pathlib import Path
 import shutil
+import tarfile
 import tempfile
 import uuid
 import xml.etree.ElementTree as ET
@@ -14,9 +14,27 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 NAME = 'UGREEN-DXP4800Pro-LAB-MCU'
 PLUGIN = ROOT / 'UGREEN-DXP4800Pro-LEDs.plg'
-spec = importlib.util.spec_from_file_location('lab_build', ROOT / 'lab/build.py')
-lab = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(lab)
+
+
+def archive(stage, destination):
+    """Write a reproducible xz tarball: root ownership, zero mtimes, normalized modes."""
+    with tarfile.open(destination, 'w:xz', format=tarfile.USTAR_FORMAT) as out:
+        for path in sorted(stage.rglob('*')):
+            info = out.gettarinfo(str(path), str(path.relative_to(stage)))
+            info.uid = info.gid = info.mtime = 0
+            info.uname = info.gname = 'root'
+            info.mode = 0o755 if path.is_dir() or path.stat().st_mode & 0o111 else 0o644
+            if path.is_dir():
+                out.addfile(info)
+            else:
+                with path.open('rb') as stream:
+                    out.addfile(info, stream)
+
+
+def write(path, content, executable=False):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+    path.chmod(0o755 if executable else 0o644)
 
 
 def modules(directory):
@@ -56,20 +74,20 @@ def build(output, vm_uuid, module_dir=HERE / 'modules', plugin=PLUGIN):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(module, target)
         install = (HERE / 'install.sh').read_text().replace('# @GUARD@', guard.replace('#!/bin/bash\n', ''))
-        lab.write(stage / 'install.sh', install, True)
+        write(stage / 'install.sh', install, True)
         uninstall = (HERE / 'uninstall.sh').read_text()
-        lab.write(stage / 'uninstall.sh', uninstall, True)
-        lab.write(stage / 'ugreen-mcu-lab.sh', (HERE / 'ugreen-mcu-lab.sh').read_text(), True)
-        lab.write(stage / 'smartctl-shim.sh', (HERE / 'smartctl-shim.sh').read_text(), True)
+        write(stage / 'uninstall.sh', uninstall, True)
+        write(stage / 'ugreen-mcu-lab.sh', (HERE / 'ugreen-mcu-lab.sh').read_text(), True)
+        write(stage / 'smartctl-shim.sh', (HERE / 'smartctl-shim.sh').read_text(), True)
         for source in sorted((HERE / 'web').iterdir()):
-            lab.write(stage / 'web' / source.name, source.read_text())
+            write(stage / 'web' / source.name, source.read_text())
         # Same front-panel photo and icon as the production plugin.
         for source, destination in ((ROOT / 'src/web/images/nas-front.png', 'web/images/nas-front.png'),
                                     (ROOT / 'src/web/icons/icon-azure.png', 'web/icons/front.png')):
             (stage / destination).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, stage / destination)
         bundle = output / 'lab-mcu-bundle.tar.xz'
-        lab.archive(stage, bundle)
+        archive(stage, bundle)
         checksum = hashlib.sha256(bundle.read_bytes()).hexdigest()
         script = '''set -euo pipefail
 scratch=$(mktemp -d /tmp/ugreen-mcu-lab-install.XXXXXX)
@@ -103,8 +121,8 @@ fi
         ET.indent(plugin)
         path = output / f'{base.get("name")}.plg'
         ET.ElementTree(plugin).write(path, encoding='utf-8', xml_declaration=True)
-        lab.write(output / (path.name + '.sha256'), hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name + '\n')
-        lab.write(output / 'BUILD.txt', f'LAB SIMULATION — production plugin {base.get("version")} with the emulated LED MCU\n'
+        write(output / (path.name + '.sha256'), hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name + '\n')
+        write(output / 'BUILD.txt', f'LAB SIMULATION — production plugin {base.get("version")} with the emulated LED MCU\n'
                   'MCU kernels: ' + ', '.join(kernels) +
                   '\nVM binding: SHA-256 comparison; UUID not stored\n')
     return path
